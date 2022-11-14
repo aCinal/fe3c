@@ -128,7 +128,7 @@ TEST(FIELD_ELEMENTS_ED25519_64, StrongReduce_ElementEqualToOneMoreThanTheModulus
 TEST(FIELD_ELEMENTS_ED25519_64, WeakReduce_ElementEqualToOneMoreThanTheModulus_NoOp) {
 
     fe input = { 0x7ffffffffffedULL + 1, 0x7ffffffffffffULL, 0x7ffffffffffffULL, 0x7ffffffffffffULL, 0x7ffffffffffffULL };
-    fe expected = { 0x7ffffffffffedULL + 1, 0x7ffffffffffffULL, 0x7ffffffffffffULL, 0x7ffffffffffffULL, 0x7ffffffffffffULL };
+    fe expected = input;
     fe output;
     fe_weak_reduce(&output, &input);
     MEMCMP_EQUAL(&expected, &output, sizeof(fe));
@@ -137,7 +137,7 @@ TEST(FIELD_ELEMENTS_ED25519_64, WeakReduce_ElementEqualToOneMoreThanTheModulus_N
 TEST(FIELD_ELEMENTS_ED25519_64, StrongReduce_ElementEqualToOneLessThanTheModulus_NoOp) {
 
     fe input = { 0x7ffffffffffedULL - 1, 0x7ffffffffffffULL, 0x7ffffffffffffULL, 0x7ffffffffffffULL, 0x7ffffffffffffULL };
-    fe expected = { 0x7ffffffffffedULL - 1, 0x7ffffffffffffULL, 0x7ffffffffffffULL, 0x7ffffffffffffULL, 0x7ffffffffffffULL };
+    fe expected = input;
     fe output;
     fe_strong_reduce(&output, &input);
     MEMCMP_EQUAL(&expected, &output, sizeof(fe));
@@ -146,7 +146,7 @@ TEST(FIELD_ELEMENTS_ED25519_64, StrongReduce_ElementEqualToOneLessThanTheModulus
 TEST(FIELD_ELEMENTS_ED25519_64, WeakReduce_ElementEqualToOneLessThanTheModulus_NoOp) {
 
     fe input = { 0x7ffffffffffedULL - 1, 0x7ffffffffffffULL, 0x7ffffffffffffULL, 0x7ffffffffffffULL, 0x7ffffffffffffULL };
-    fe expected = { 0x7ffffffffffedULL - 1, 0x7ffffffffffffULL, 0x7ffffffffffffULL, 0x7ffffffffffffULL, 0x7ffffffffffffULL };
+    fe expected = input;
     fe output;
     fe_weak_reduce(&output, &input);
     MEMCMP_EQUAL(&expected, &output, sizeof(fe));
@@ -325,9 +325,12 @@ TEST(FIELD_ELEMENTS_ED25519_64, Mul_StabilityTest_RemainBoundedAndProduceCorrect
 
         fe_mul(&accumulator, &accumulator, &input);
 
-        /* Check that the result is always canonical */
-        /* TODO: Check if the result really needs to be canonical (and not just bounded by 2p) */
-        CHECK_EQUAL(1, fe_is_canonical(&accumulator));
+        /* Check that the result is always bounded by 2*p */
+        CHECK_TRUE(accumulator.ed25519[0] <  0xfffffffffffdaULL);
+        CHECK_TRUE(accumulator.ed25519[1] <= 0xffffffffffffeULL);
+        CHECK_TRUE(accumulator.ed25519[2] <= 0xffffffffffffeULL);
+        CHECK_TRUE(accumulator.ed25519[3] <= 0xffffffffffffeULL);
+        CHECK_TRUE(accumulator.ed25519[4] <= 0xffffffffffffeULL);
     }
 
     MEMCMP_EQUAL(&expected, &accumulator, sizeof(fe));
@@ -343,13 +346,12 @@ TEST(FIELD_ELEMENTS_ED25519_64, Mul_StabilityTest2_RemainBoundedAndProduceCorrec
 
         fe_mul(&input, &input, &input);
 
-        /* Check that the result is always canonical */
-        /* TODO: Check if the result really needs to be canonical (and not just bounded by 2p) */
-        CHECK_TRUE(input.ed25519[0] < 0x7ffffffffffedULL);
-        CHECK_TRUE(input.ed25519[1] <= 0x7ffffffffffffULL);
-        CHECK_TRUE(input.ed25519[2] <= 0x7ffffffffffffULL);
-        CHECK_TRUE(input.ed25519[3] <= 0x7ffffffffffffULL);
-        CHECK_TRUE(input.ed25519[4] <= 0x7ffffffffffffULL);
+        /* Check that the result is always bounded by 2*p */
+        CHECK_TRUE(input.ed25519[0] <  0xfffffffffffdaULL);
+        CHECK_TRUE(input.ed25519[1] <= 0xffffffffffffeULL);
+        CHECK_TRUE(input.ed25519[2] <= 0xffffffffffffeULL);
+        CHECK_TRUE(input.ed25519[3] <= 0xffffffffffffeULL);
+        CHECK_TRUE(input.ed25519[4] <= 0xffffffffffffeULL);
     }
 
     MEMCMP_EQUAL(&expected, &input, sizeof(fe));

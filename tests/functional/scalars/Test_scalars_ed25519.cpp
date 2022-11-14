@@ -1,11 +1,11 @@
 #include <CppUTest/TestHarness.h>
 #include <scalars/scalars.h>
 
-TEST_GROUP(SCALARS_ED25519_64) {
+TEST_GROUP(SCALARS_ED25519) {
 
 };
 
-TEST(SCALARS_ED25519_64, IsCanonical_AllBytesLessThanOrEqualToOrder_ShouldReturnTrue) {
+TEST(SCALARS_ED25519, IsCanonical_AllBytesLessThanOrEqualToOrder_ShouldReturnTrue) {
 
     const u8 input[] = {
         0xec, 0xd2, 0xf4, 0x5b, 0x1b, 0x62, 0x11, 0x57,
@@ -17,7 +17,7 @@ TEST(SCALARS_ED25519_64, IsCanonical_AllBytesLessThanOrEqualToOrder_ShouldReturn
     CHECK_EQUAL(1, canonical);
 }
 
-TEST(SCALARS_ED25519_64, IsCanonical_CanonicalButSomeBytesLargerThanOrder_ShouldReturnTrue) {
+TEST(SCALARS_ED25519, IsCanonical_CanonicalButSomeBytesLargerThanOrder_ShouldReturnTrue) {
 
     const u8 input[] = {
         0xef, 0xdd, 0xff, 0x55, 0x1a, 0x66, 0x12, 0x58,
@@ -29,7 +29,7 @@ TEST(SCALARS_ED25519_64, IsCanonical_CanonicalButSomeBytesLargerThanOrder_Should
     CHECK_EQUAL(1, canonical);
 }
 
-TEST(SCALARS_ED25519_64, IsCanonical_CanonicalButMostBytesEqualToOrder_ShouldReturnTrue) {
+TEST(SCALARS_ED25519, IsCanonical_CanonicalButMostBytesEqualToOrder_ShouldReturnTrue) {
 
     const u8 input[] = {
         0xec, 0xd3, 0xf5, 0x5c, 0x1a, 0x63, 0x12, 0x58,
@@ -41,7 +41,7 @@ TEST(SCALARS_ED25519_64, IsCanonical_CanonicalButMostBytesEqualToOrder_ShouldRet
     CHECK_EQUAL(1, canonical);
 }
 
-TEST(SCALARS_ED25519_64, IsCanonical_OneLargerThanOrder_ShouldReturnFalse) {
+TEST(SCALARS_ED25519, IsCanonical_OneLargerThanOrder_ShouldReturnFalse) {
 
     const u8 input[] = {
         0xee, 0xd3, 0xf5, 0x5c, 0x1a, 0x63, 0x12, 0x58,
@@ -53,7 +53,7 @@ TEST(SCALARS_ED25519_64, IsCanonical_OneLargerThanOrder_ShouldReturnFalse) {
     CHECK_EQUAL(0, canonical);
 }
 
-TEST(SCALARS_ED25519_64, IsCanonical_EqualToOrder_ShouldReturnFalse) {
+TEST(SCALARS_ED25519, IsCanonical_EqualToOrder_ShouldReturnFalse) {
 
     const u8 input[] = {
         0xed, 0xd3, 0xf5, 0x5c, 0x1a, 0x63, 0x12, 0x58,
@@ -65,7 +65,7 @@ TEST(SCALARS_ED25519_64, IsCanonical_EqualToOrder_ShouldReturnFalse) {
     CHECK_EQUAL(0, canonical);
 }
 
-TEST(SCALARS_ED25519_64, Reduce_MuchSmallerThanOrder_NoOp) {
+TEST(SCALARS_ED25519, Reduce_MuchSmallerThanOrder_NoOp) {
 
     u8 input[] = {
         0xe0, 0xd0, 0xf0, 0x50, 0x10, 0x60, 0x10, 0x50,
@@ -87,7 +87,7 @@ TEST(SCALARS_ED25519_64, Reduce_MuchSmallerThanOrder_NoOp) {
     MEMCMP_EQUAL(expected, input, sizeof(expected));
 }
 
-TEST(SCALARS_ED25519_64, Reduce_EqualTo2To252_NoOp) {
+TEST(SCALARS_ED25519, Reduce_EqualTo2To252_NoOp) {
 
     u8 input[] = {
         0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -109,7 +109,7 @@ TEST(SCALARS_ED25519_64, Reduce_EqualTo2To252_NoOp) {
     MEMCMP_EQUAL(expected, input, sizeof(expected));
 }
 
-TEST(SCALARS_ED25519_64, Reduce_EqualToOrder_ReduceToZero) {
+TEST(SCALARS_ED25519, Reduce_EqualToOrder_ReduceToZero) {
 
     u8 input[] = {
         0xed, 0xd3, 0xf5, 0x5c, 0x1a, 0x63, 0x12, 0x58,
@@ -131,7 +131,7 @@ TEST(SCALARS_ED25519_64, Reduce_EqualToOrder_ReduceToZero) {
     MEMCMP_EQUAL(expected, input, sizeof(expected));
 }
 
-TEST(SCALARS_ED25519_64, Reduce_EqualToTwiceTheOrder_ReduceToZero) {
+TEST(SCALARS_ED25519, Reduce_EqualToTwiceTheOrder_ReduceToZero) {
 
     u8 input[] = {
         0xda, 0xa7, 0xeb, 0xb9, 0x34, 0xc6, 0x24, 0xb0,
@@ -153,7 +153,7 @@ TEST(SCALARS_ED25519_64, Reduce_EqualToTwiceTheOrder_ReduceToZero) {
     MEMCMP_EQUAL(expected, input, sizeof(expected));
 }
 
-TEST(SCALARS_ED25519_64, Reduce_EqualToOrderPlusOne_ReduceToOne) {
+TEST(SCALARS_ED25519, Reduce_EqualToOrderPlusOne_ReduceToOne) {
 
     u8 input[] = {
         0xee, 0xd3, 0xf5, 0x5c, 0x1a, 0x63, 0x12, 0x58,
@@ -175,7 +175,7 @@ TEST(SCALARS_ED25519_64, Reduce_EqualToOrderPlusOne_ReduceToOne) {
     MEMCMP_EQUAL(expected, input, sizeof(expected));
 }
 
-TEST(SCALARS_ED25519_64, Reduce_EqualToOrderMinusOne_NoOp) {
+TEST(SCALARS_ED25519, Reduce_EqualToOrderMinusOne_NoOp) {
 
     u8 input[] = {
         0xec, 0xd3, 0xf5, 0x5c, 0x1a, 0x63, 0x12, 0x58,
@@ -197,7 +197,7 @@ TEST(SCALARS_ED25519_64, Reduce_EqualToOrderMinusOne_NoOp) {
     MEMCMP_EQUAL(expected, input, sizeof(expected));
 }
 
-TEST(SCALARS_ED25519_64, Reduce_MaxPossibleInput_ReduceCorrectly) {
+TEST(SCALARS_ED25519, Reduce_MaxPossibleInput_ReduceCorrectly) {
 
     u8 input[] = {
         0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
@@ -219,7 +219,7 @@ TEST(SCALARS_ED25519_64, Reduce_MaxPossibleInput_ReduceCorrectly) {
     MEMCMP_EQUAL(expected, input, sizeof(expected));
 }
 
-TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs1_ProduceCorrectResult) {
+TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs1_ProduceCorrectResult) {
 
     const u8 a[] = {
         0xc0, 0x9f, 0x5e, 0xb7, 0xc6, 0x05, 0xbd, 0x23,
@@ -250,7 +250,7 @@ TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs1_ProduceCorrectResult) {
     MEMCMP_EQUAL(expected, output, sizeof(expected));
 }
 
-TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs2_ProduceCorrectResult) {
+TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs2_ProduceCorrectResult) {
 
     const u8 a[] = {
         0x8a, 0x90, 0x86, 0x95, 0xed, 0xee, 0xa0, 0x5d,
@@ -281,7 +281,7 @@ TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs2_ProduceCorrectResult) {
     MEMCMP_EQUAL(expected, output, sizeof(expected));
 }
 
-TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs3_ProduceCorrectResult) {
+TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs3_ProduceCorrectResult) {
 
     const u8 a[] = {
         0xf2, 0x24, 0x11, 0xf9, 0x97, 0x91, 0xa9, 0x60,
@@ -312,7 +312,7 @@ TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs3_ProduceCorrectResult) {
     MEMCMP_EQUAL(expected, output, sizeof(expected));
 }
 
-TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs4_ProduceCorrectResult) {
+TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs4_ProduceCorrectResult) {
 
     const u8 a[] = {
         0xb1, 0x75, 0x68, 0x4a, 0x5e, 0xd0, 0x91, 0x5c,
@@ -343,7 +343,7 @@ TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs4_ProduceCorrectResult) {
     MEMCMP_EQUAL(expected, output, sizeof(expected));
 }
 
-TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs5_ProduceCorrectResult) {
+TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs5_ProduceCorrectResult) {
 
     const u8 a[] = {
         0x54, 0x67, 0x20, 0x25, 0x7f, 0x52, 0xe8, 0x15,
@@ -374,7 +374,7 @@ TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs5_ProduceCorrectResult) {
     MEMCMP_EQUAL(expected, output, sizeof(expected));
 }
 
-TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs6_ProduceCorrectResult) {
+TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs6_ProduceCorrectResult) {
 
     const u8 a[] = {
         0x54, 0xfa, 0x2d, 0xe2, 0x74, 0x31, 0xfe, 0x4a,
@@ -405,7 +405,7 @@ TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs6_ProduceCorrectResult) {
     MEMCMP_EQUAL(expected, output, sizeof(expected));
 }
 
-TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs7_ProduceCorrectResult) {
+TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs7_ProduceCorrectResult) {
 
     const u8 a[] = {
         0xd1, 0x7a, 0xe8, 0xe2, 0x18, 0xe9, 0xba, 0xdc,
@@ -436,7 +436,7 @@ TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs7_ProduceCorrectResult) {
     MEMCMP_EQUAL(expected, output, sizeof(expected));
 }
 
-TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs8_ProduceCorrectResult) {
+TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs8_ProduceCorrectResult) {
 
     const u8 a[] = {
         0x9b, 0x27, 0xaa, 0x48, 0xac, 0xfd, 0xb9, 0x47,
@@ -467,7 +467,7 @@ TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs8_ProduceCorrectResult) {
     MEMCMP_EQUAL(expected, output, sizeof(expected));
 }
 
-TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs9_ProduceCorrectResult) {
+TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs9_ProduceCorrectResult) {
 
     const u8 a[] = {
         0x97, 0x27, 0x5c, 0x96, 0xe1, 0x4b, 0xca, 0xd7,
@@ -498,7 +498,7 @@ TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs9_ProduceCorrectResult) {
     MEMCMP_EQUAL(expected, output, sizeof(expected));
 }
 
-TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs10_ProduceCorrectResult) {
+TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs10_ProduceCorrectResult) {
 
     const u8 a[] = {
         0xe9, 0xe9, 0xd0, 0xd8, 0x8f, 0xe5, 0x69, 0x23,
@@ -529,7 +529,7 @@ TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs10_ProduceCorrectResult) 
     MEMCMP_EQUAL(expected, output, sizeof(expected));
 }
 
-TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs11_ProduceCorrectResult) {
+TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs11_ProduceCorrectResult) {
 
     const u8 a[] = {
         0x99, 0xfc, 0x19, 0xb8, 0x46, 0x30, 0x1a, 0x75,
@@ -560,7 +560,7 @@ TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs11_ProduceCorrectResult) 
     MEMCMP_EQUAL(expected, output, sizeof(expected));
 }
 
-TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs12_ProduceCorrectResult) {
+TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs12_ProduceCorrectResult) {
 
     const u8 a[] = {
         0x92, 0xd1, 0xbb, 0xd3, 0xbf, 0xcd, 0xa0, 0x25,
@@ -591,7 +591,7 @@ TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs12_ProduceCorrectResult) 
     MEMCMP_EQUAL(expected, output, sizeof(expected));
 }
 
-TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs13_ProduceCorrectResult) {
+TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs13_ProduceCorrectResult) {
 
     const u8 a[] = {
         0x7d, 0xac, 0xf5, 0xaa, 0x5a, 0x42, 0x3e, 0xca,
@@ -622,7 +622,7 @@ TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs13_ProduceCorrectResult) 
     MEMCMP_EQUAL(expected, output, sizeof(expected));
 }
 
-TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs14_ProduceCorrectResult) {
+TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs14_ProduceCorrectResult) {
 
     const u8 a[] = {
         0x4a, 0xd3, 0x9d, 0xb7, 0xbe, 0xfe, 0x50, 0xbb,
@@ -653,7 +653,7 @@ TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs14_ProduceCorrectResult) 
     MEMCMP_EQUAL(expected, output, sizeof(expected));
 }
 
-TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs15_ProduceCorrectResult) {
+TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs15_ProduceCorrectResult) {
 
     const u8 a[] = {
         0xef, 0xe1, 0xf1, 0xc5, 0x5e, 0x0a, 0x1c, 0x95,
@@ -684,7 +684,7 @@ TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs15_ProduceCorrectResult) 
     MEMCMP_EQUAL(expected, output, sizeof(expected));
 }
 
-TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs16_ProduceCorrectResult) {
+TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs16_ProduceCorrectResult) {
 
     const u8 a[] = {
         0xa9, 0x97, 0x78, 0x90, 0x31, 0x5d, 0x64, 0xb4,
@@ -715,7 +715,7 @@ TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs16_ProduceCorrectResult) 
     MEMCMP_EQUAL(expected, output, sizeof(expected));
 }
 
-TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs17_ProduceCorrectResult) {
+TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs17_ProduceCorrectResult) {
 
     const u8 a[] = {
         0x63, 0xc3, 0x13, 0x34, 0x1a, 0xc2, 0x66, 0x50,
@@ -746,7 +746,7 @@ TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs17_ProduceCorrectResult) 
     MEMCMP_EQUAL(expected, output, sizeof(expected));
 }
 
-TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs18_ProduceCorrectResult) {
+TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs18_ProduceCorrectResult) {
 
     const u8 a[] = {
         0xf8, 0x07, 0x96, 0x2b, 0x06, 0x79, 0x64, 0x73,
@@ -777,7 +777,7 @@ TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs18_ProduceCorrectResult) 
     MEMCMP_EQUAL(expected, output, sizeof(expected));
 }
 
-TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs19_ProduceCorrectResult) {
+TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs19_ProduceCorrectResult) {
 
     const u8 a[] = {
         0xcd, 0x83, 0x2c, 0xec, 0x92, 0x56, 0x13, 0x5e,
@@ -808,7 +808,7 @@ TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs19_ProduceCorrectResult) 
     MEMCMP_EQUAL(expected, output, sizeof(expected));
 }
 
-TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs20_ProduceCorrectResult) {
+TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs20_ProduceCorrectResult) {
 
     const u8 a[] = {
         0xe7, 0xc9, 0xea, 0xde, 0xe2, 0x82, 0xe2, 0x40,
@@ -839,7 +839,7 @@ TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs20_ProduceCorrectResult) 
     MEMCMP_EQUAL(expected, output, sizeof(expected));
 }
 
-TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs21_ProduceCorrectResult) {
+TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs21_ProduceCorrectResult) {
 
     const u8 a[] = {
         0x33, 0xd5, 0x72, 0xa2, 0x1e, 0xc0, 0xf4, 0x3c,
@@ -870,7 +870,7 @@ TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs21_ProduceCorrectResult) 
     MEMCMP_EQUAL(expected, output, sizeof(expected));
 }
 
-TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs22_ProduceCorrectResult) {
+TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs22_ProduceCorrectResult) {
 
     const u8 a[] = {
         0x10, 0x70, 0x50, 0x4a, 0xfa, 0xda, 0x84, 0x9b,
@@ -901,7 +901,7 @@ TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs22_ProduceCorrectResult) 
     MEMCMP_EQUAL(expected, output, sizeof(expected));
 }
 
-TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs23_ProduceCorrectResult) {
+TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs23_ProduceCorrectResult) {
 
     const u8 a[] = {
         0x6c, 0x49, 0xb5, 0xa2, 0x83, 0x67, 0x2a, 0x14,
@@ -932,7 +932,7 @@ TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs23_ProduceCorrectResult) 
     MEMCMP_EQUAL(expected, output, sizeof(expected));
 }
 
-TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs24_ProduceCorrectResult) {
+TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs24_ProduceCorrectResult) {
 
     const u8 a[] = {
         0x61, 0x26, 0x02, 0x4e, 0xa6, 0x95, 0xbd, 0x9f,
@@ -963,7 +963,7 @@ TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs24_ProduceCorrectResult) 
     MEMCMP_EQUAL(expected, output, sizeof(expected));
 }
 
-TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs25_ProduceCorrectResult) {
+TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs25_ProduceCorrectResult) {
 
     const u8 a[] = {
         0x11, 0x7f, 0x46, 0x62, 0xc9, 0xac, 0x32, 0xa2,
@@ -994,7 +994,7 @@ TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs25_ProduceCorrectResult) 
     MEMCMP_EQUAL(expected, output, sizeof(expected));
 }
 
-TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs26_ProduceCorrectResult) {
+TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs26_ProduceCorrectResult) {
 
     const u8 a[] = {
         0x57, 0x42, 0x5c, 0xd0, 0x62, 0x07, 0xdc, 0x87,
@@ -1025,7 +1025,7 @@ TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs26_ProduceCorrectResult) 
     MEMCMP_EQUAL(expected, output, sizeof(expected));
 }
 
-TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs27_ProduceCorrectResult) {
+TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs27_ProduceCorrectResult) {
 
     const u8 a[] = {
         0x1e, 0xe3, 0x06, 0x7f, 0xdd, 0x59, 0x1b, 0x9f,
@@ -1056,7 +1056,7 @@ TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs27_ProduceCorrectResult) 
     MEMCMP_EQUAL(expected, output, sizeof(expected));
 }
 
-TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs28_ProduceCorrectResult) {
+TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs28_ProduceCorrectResult) {
 
     const u8 a[] = {
         0xb0, 0xaf, 0x36, 0x97, 0x68, 0xed, 0x88, 0xdd,
@@ -1087,7 +1087,7 @@ TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs28_ProduceCorrectResult) 
     MEMCMP_EQUAL(expected, output, sizeof(expected));
 }
 
-TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs29_ProduceCorrectResult) {
+TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs29_ProduceCorrectResult) {
 
     const u8 a[] = {
         0xfd, 0xa8, 0xd9, 0xfa, 0x34, 0xa4, 0x2e, 0xdc,
@@ -1118,7 +1118,7 @@ TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs29_ProduceCorrectResult) 
     MEMCMP_EQUAL(expected, output, sizeof(expected));
 }
 
-TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs30_ProduceCorrectResult) {
+TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs30_ProduceCorrectResult) {
 
     const u8 a[] = {
         0xd9, 0xc0, 0xbd, 0x09, 0xfa, 0x45, 0x20, 0x51,
@@ -1149,7 +1149,7 @@ TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs30_ProduceCorrectResult) 
     MEMCMP_EQUAL(expected, output, sizeof(expected));
 }
 
-TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs31_ProduceCorrectResult) {
+TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs31_ProduceCorrectResult) {
 
     const u8 a[] = {
         0xba, 0x3d, 0x1e, 0x0d, 0xaf, 0x33, 0xe4, 0x5b,
@@ -1180,7 +1180,7 @@ TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs31_ProduceCorrectResult) 
     MEMCMP_EQUAL(expected, output, sizeof(expected));
 }
 
-TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs32_ProduceCorrectResult) {
+TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs32_ProduceCorrectResult) {
 
     const u8 a[] = {
         0xe0, 0x95, 0x0c, 0x01, 0xc2, 0x19, 0x83, 0x35,
@@ -1211,7 +1211,7 @@ TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs32_ProduceCorrectResult) 
     MEMCMP_EQUAL(expected, output, sizeof(expected));
 }
 
-TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs33_ProduceCorrectResult) {
+TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs33_ProduceCorrectResult) {
 
     const u8 a[] = {
         0x97, 0x50, 0x55, 0xd1, 0xbd, 0x41, 0x1c, 0x87,
@@ -1242,7 +1242,7 @@ TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs33_ProduceCorrectResult) 
     MEMCMP_EQUAL(expected, output, sizeof(expected));
 }
 
-TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs34_ProduceCorrectResult) {
+TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs34_ProduceCorrectResult) {
 
     const u8 a[] = {
         0x05, 0x02, 0x73, 0x35, 0x66, 0x88, 0xcf, 0xda,
@@ -1273,7 +1273,7 @@ TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs34_ProduceCorrectResult) 
     MEMCMP_EQUAL(expected, output, sizeof(expected));
 }
 
-TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs35_ProduceCorrectResult) {
+TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs35_ProduceCorrectResult) {
 
     const u8 a[] = {
         0x21, 0x26, 0x2a, 0xe6, 0x24, 0x5b, 0xa1, 0xea,
@@ -1304,7 +1304,7 @@ TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs35_ProduceCorrectResult) 
     MEMCMP_EQUAL(expected, output, sizeof(expected));
 }
 
-TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs36_ProduceCorrectResult) {
+TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs36_ProduceCorrectResult) {
 
     const u8 a[] = {
         0x50, 0x35, 0xe6, 0xfb, 0xee, 0x4a, 0x65, 0xf9,
@@ -1335,7 +1335,7 @@ TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs36_ProduceCorrectResult) 
     MEMCMP_EQUAL(expected, output, sizeof(expected));
 }
 
-TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs37_ProduceCorrectResult) {
+TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs37_ProduceCorrectResult) {
 
     const u8 a[] = {
         0x49, 0x37, 0x67, 0x30, 0xd1, 0x67, 0x34, 0x95,
@@ -1366,7 +1366,7 @@ TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs37_ProduceCorrectResult) 
     MEMCMP_EQUAL(expected, output, sizeof(expected));
 }
 
-TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs38_ProduceCorrectResult) {
+TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs38_ProduceCorrectResult) {
 
     const u8 a[] = {
         0xf3, 0xaa, 0x53, 0xac, 0xbf, 0x49, 0x08, 0x00,
@@ -1397,7 +1397,7 @@ TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs38_ProduceCorrectResult) 
     MEMCMP_EQUAL(expected, output, sizeof(expected));
 }
 
-TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs39_ProduceCorrectResult) {
+TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs39_ProduceCorrectResult) {
 
     const u8 a[] = {
         0xaa, 0xec, 0x88, 0x6d, 0xc0, 0x26, 0x41, 0xa0,
@@ -1428,7 +1428,7 @@ TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs39_ProduceCorrectResult) 
     MEMCMP_EQUAL(expected, output, sizeof(expected));
 }
 
-TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs40_ProduceCorrectResult) {
+TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs40_ProduceCorrectResult) {
 
     const u8 a[] = {
         0x10, 0xa9, 0xce, 0x2b, 0xbc, 0x47, 0x41, 0x07,
@@ -1459,7 +1459,7 @@ TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs40_ProduceCorrectResult) 
     MEMCMP_EQUAL(expected, output, sizeof(expected));
 }
 
-TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs41_ProduceCorrectResult){
+TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs41_ProduceCorrectResult){
 
     const u8 a[] = {
         0x39, 0xf4, 0x1d, 0x1a, 0xf6, 0x2f, 0x26, 0x13,
@@ -1490,7 +1490,7 @@ TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs41_ProduceCorrectResult){
     MEMCMP_EQUAL(expected, output, sizeof(expected));
 }
 
-TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs42_ProduceCorrectResult){
+TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs42_ProduceCorrectResult){
 
     const u8 a[] = {
         0x02, 0x0f, 0x35, 0x9d, 0xf8, 0x1f, 0xf8, 0x21,
@@ -1521,7 +1521,7 @@ TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs42_ProduceCorrectResult){
     MEMCMP_EQUAL(expected, output, sizeof(expected));
 }
 
-TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs43_ProduceCorrectResult){
+TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs43_ProduceCorrectResult){
 
     const u8 a[] = {
         0xc0, 0x44, 0xd3, 0x08, 0x06, 0xf0, 0xef, 0xe7,
@@ -1552,7 +1552,7 @@ TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs43_ProduceCorrectResult){
     MEMCMP_EQUAL(expected, output, sizeof(expected));
 }
 
-TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs44_ProduceCorrectResult){
+TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs44_ProduceCorrectResult){
 
     const u8 a[] = {
         0x35, 0x55, 0x16, 0x15, 0xbd, 0xcc, 0xb7, 0xf4,
@@ -1583,7 +1583,7 @@ TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs44_ProduceCorrectResult){
     MEMCMP_EQUAL(expected, output, sizeof(expected));
 }
 
-TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs45_ProduceCorrectResult){
+TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs45_ProduceCorrectResult){
 
     const u8 a[] = {
         0x88, 0xdd, 0x86, 0x26, 0x2e, 0xf2, 0xf3, 0x8d,
@@ -1614,7 +1614,7 @@ TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs45_ProduceCorrectResult){
     MEMCMP_EQUAL(expected, output, sizeof(expected));
 }
 
-TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs46_ProduceCorrectResult){
+TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs46_ProduceCorrectResult){
 
     const u8 a[] = {
         0x07, 0xfe, 0xc8, 0x6c, 0xff, 0x2f, 0x4c, 0x17,
@@ -1645,7 +1645,7 @@ TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs46_ProduceCorrectResult){
     MEMCMP_EQUAL(expected, output, sizeof(expected));
 }
 
-TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs47_ProduceCorrectResult){
+TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs47_ProduceCorrectResult){
 
     const u8 a[] = {
         0x61, 0x4c, 0x74, 0x5c, 0xca, 0xab, 0x67, 0xa9,
@@ -1676,7 +1676,7 @@ TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs47_ProduceCorrectResult){
     MEMCMP_EQUAL(expected, output, sizeof(expected));
 }
 
-TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs48_ProduceCorrectResult){
+TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs48_ProduceCorrectResult){
 
     const u8 a[] = {
         0xd9, 0x50, 0x2e, 0x6a, 0xff, 0xc3, 0xa2, 0xca,
@@ -1707,7 +1707,7 @@ TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs48_ProduceCorrectResult){
     MEMCMP_EQUAL(expected, output, sizeof(expected));
 }
 
-TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs49_ProduceCorrectResult){
+TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs49_ProduceCorrectResult){
 
     const u8 a[] = {
         0x09, 0x52, 0x1b, 0xac, 0xf7, 0x4a, 0xba, 0xc5,
@@ -1738,7 +1738,7 @@ TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs49_ProduceCorrectResult){
     MEMCMP_EQUAL(expected, output, sizeof(expected));
 }
 
-TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs50_ProduceCorrectResult){
+TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs50_ProduceCorrectResult){
 
     const u8 a[] = {
         0x8c, 0x07, 0xc2, 0x9e, 0x48, 0x5b, 0xae, 0xce,
@@ -1769,7 +1769,7 @@ TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs50_ProduceCorrectResult){
     MEMCMP_EQUAL(expected, output, sizeof(expected));
 }
 
-TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs51_ProduceCorrectResult){
+TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs51_ProduceCorrectResult){
 
     const u8 a[] = {
         0x6a, 0x8a, 0x35, 0x1c, 0x44, 0x46, 0x04, 0x8e,
@@ -1800,7 +1800,7 @@ TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs51_ProduceCorrectResult){
     MEMCMP_EQUAL(expected, output, sizeof(expected));
 }
 
-TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs52_ProduceCorrectResult){
+TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs52_ProduceCorrectResult){
 
     const u8 a[] = {
         0xc4, 0xc1, 0x76, 0x64, 0xa7, 0x5e, 0x47, 0xbc,
@@ -1831,7 +1831,7 @@ TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs52_ProduceCorrectResult){
     MEMCMP_EQUAL(expected, output, sizeof(expected));
 }
 
-TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs53_ProduceCorrectResult){
+TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs53_ProduceCorrectResult){
 
     const u8 a[] = {
         0x15, 0x72, 0x98, 0x40, 0x54, 0x12, 0x79, 0xef,
@@ -1862,7 +1862,7 @@ TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs53_ProduceCorrectResult){
     MEMCMP_EQUAL(expected, output, sizeof(expected));
 }
 
-TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs54_ProduceCorrectResult){
+TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs54_ProduceCorrectResult){
 
     const u8 a[] = {
         0xb1, 0xb9, 0xbe, 0xb0, 0x43, 0x10, 0x43, 0x7d,
@@ -1893,7 +1893,7 @@ TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs54_ProduceCorrectResult){
     MEMCMP_EQUAL(expected, output, sizeof(expected));
 }
 
-TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs55_ProduceCorrectResult){
+TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs55_ProduceCorrectResult){
 
     const u8 a[] = {
         0xbf, 0x56, 0x87, 0xfb, 0x4f, 0x0f, 0xdd, 0xdb,
@@ -1924,7 +1924,7 @@ TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs55_ProduceCorrectResult){
     MEMCMP_EQUAL(expected, output, sizeof(expected));
 }
 
-TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs56_ProduceCorrectResult){
+TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs56_ProduceCorrectResult){
 
     const u8 a[] = {
         0x85, 0xd5, 0x72, 0x73, 0xac, 0x05, 0x9f, 0xc8,
@@ -1955,7 +1955,7 @@ TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs56_ProduceCorrectResult){
     MEMCMP_EQUAL(expected, output, sizeof(expected));
 }
 
-TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs57_ProduceCorrectResult){
+TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs57_ProduceCorrectResult){
 
     const u8 a[] = {
         0x47, 0xa1, 0x02, 0x9d, 0x85, 0x0b, 0xf8, 0x65,
@@ -1986,7 +1986,7 @@ TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs57_ProduceCorrectResult){
     MEMCMP_EQUAL(expected, output, sizeof(expected));
 }
 
-TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs58_ProduceCorrectResult){
+TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs58_ProduceCorrectResult){
 
     const u8 a[] = {
         0x1a, 0x10, 0x78, 0x7f, 0xab, 0x8e, 0x2e, 0xd5,
@@ -2017,7 +2017,7 @@ TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs58_ProduceCorrectResult){
     MEMCMP_EQUAL(expected, output, sizeof(expected));
 }
 
-TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs59_ProduceCorrectResult){
+TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs59_ProduceCorrectResult){
 
     const u8 a[] = {
         0xe4, 0x9e, 0xd3, 0x59, 0x1d, 0x0b, 0xe4, 0xa1,
@@ -2048,7 +2048,7 @@ TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs59_ProduceCorrectResult){
     MEMCMP_EQUAL(expected, output, sizeof(expected));
 }
 
-TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs60_ProduceCorrectResult){
+TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs60_ProduceCorrectResult){
 
     const u8 a[] = {
         0x22, 0xf2, 0xb0, 0x54, 0x23, 0x6f, 0x6e, 0x51,
@@ -2079,7 +2079,7 @@ TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs60_ProduceCorrectResult){
     MEMCMP_EQUAL(expected, output, sizeof(expected));
 }
 
-TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs61_ProduceCorrectResult){
+TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs61_ProduceCorrectResult){
 
     const u8 a[] = {
         0x78, 0x70, 0xd8, 0xd1, 0xbb, 0x9e, 0xfd, 0x04,
@@ -2110,7 +2110,7 @@ TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs61_ProduceCorrectResult){
     MEMCMP_EQUAL(expected, output, sizeof(expected));
 }
 
-TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs62_ProduceCorrectResult){
+TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs62_ProduceCorrectResult){
 
     const u8 a[] = {
         0x42, 0x6f, 0xbf, 0x6d, 0x52, 0xf4, 0x32, 0x84,
@@ -2141,7 +2141,7 @@ TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs62_ProduceCorrectResult){
     MEMCMP_EQUAL(expected, output, sizeof(expected));
 }
 
-TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs63_ProduceCorrectResult){
+TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs63_ProduceCorrectResult){
 
     const u8 a[] = {
         0x86, 0xd1, 0x8a, 0x66, 0x5c, 0xa7, 0x90, 0x31,
@@ -2172,7 +2172,7 @@ TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs63_ProduceCorrectResult){
     MEMCMP_EQUAL(expected, output, sizeof(expected));
 }
 
-TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs64_ProduceCorrectResult){
+TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs64_ProduceCorrectResult){
 
     const u8 a[] = {
         0xa9, 0x9d, 0xb0, 0x1b, 0x6e, 0xee, 0xb4, 0x56,
@@ -2203,7 +2203,7 @@ TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs64_ProduceCorrectResult){
     MEMCMP_EQUAL(expected, output, sizeof(expected));
 }
 
-TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs65_ProduceCorrectResult){
+TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs65_ProduceCorrectResult){
 
     const u8 a[] = {
         0xd0, 0x18, 0x3e, 0x00, 0x9d, 0xf4, 0xcc, 0x61,
@@ -2234,7 +2234,7 @@ TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs65_ProduceCorrectResult){
     MEMCMP_EQUAL(expected, output, sizeof(expected));
 }
 
-TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs66_ProduceCorrectResult){
+TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs66_ProduceCorrectResult){
 
     const u8 a[] = {
         0xcd, 0x29, 0x26, 0xd7, 0xae, 0x71, 0xc7, 0xa7,
@@ -2265,7 +2265,7 @@ TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs66_ProduceCorrectResult){
     MEMCMP_EQUAL(expected, output, sizeof(expected));
 }
 
-TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs67_ProduceCorrectResult){
+TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs67_ProduceCorrectResult){
 
     const u8 a[] = {
         0x84, 0xc8, 0x85, 0x10, 0x17, 0x07, 0xad, 0x4e,
@@ -2296,7 +2296,7 @@ TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs67_ProduceCorrectResult){
     MEMCMP_EQUAL(expected, output, sizeof(expected));
 }
 
-TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs68_ProduceCorrectResult){
+TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs68_ProduceCorrectResult){
 
     const u8 a[] = {
         0x59, 0xc3, 0x74, 0x98, 0xde, 0xe0, 0xea, 0xd3,
@@ -2327,7 +2327,7 @@ TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs68_ProduceCorrectResult){
     MEMCMP_EQUAL(expected, output, sizeof(expected));
 }
 
-TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs69_ProduceCorrectResult){
+TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs69_ProduceCorrectResult){
 
     const u8 a[] = {
         0x88, 0x5d, 0xfc, 0x71, 0xc5, 0x72, 0x0d, 0x2a,
@@ -2358,7 +2358,7 @@ TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs69_ProduceCorrectResult){
     MEMCMP_EQUAL(expected, output, sizeof(expected));
 }
 
-TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs70_ProduceCorrectResult){
+TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs70_ProduceCorrectResult){
 
     const u8 a[] = {
         0xb3, 0x19, 0x99, 0x6e, 0x53, 0x1b, 0x09, 0xa7,
@@ -2389,7 +2389,7 @@ TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs70_ProduceCorrectResult){
     MEMCMP_EQUAL(expected, output, sizeof(expected));
 }
 
-TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs71_ProduceCorrectResult){
+TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs71_ProduceCorrectResult){
 
     const u8 a[] = {
         0x87, 0x80, 0x69, 0x48, 0xe2, 0xcc, 0x60, 0x69,
@@ -2420,7 +2420,7 @@ TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs71_ProduceCorrectResult){
     MEMCMP_EQUAL(expected, output, sizeof(expected));
 }
 
-TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs72_ProduceCorrectResult){
+TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs72_ProduceCorrectResult){
 
     const u8 a[] = {
         0xad, 0x3f, 0xa3, 0x01, 0xcd, 0x07, 0xb9, 0x3b,
@@ -2451,7 +2451,7 @@ TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs72_ProduceCorrectResult){
     MEMCMP_EQUAL(expected, output, sizeof(expected));
 }
 
-TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs73_ProduceCorrectResult){
+TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs73_ProduceCorrectResult){
 
     const u8 a[] = {
         0xd8, 0xdf, 0xa7, 0xf8, 0xa8, 0x86, 0xc3, 0xc6,
@@ -2482,7 +2482,7 @@ TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs73_ProduceCorrectResult){
     MEMCMP_EQUAL(expected, output, sizeof(expected));
 }
 
-TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs74_ProduceCorrectResult){
+TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs74_ProduceCorrectResult){
 
     const u8 a[] = {
         0xd4, 0x83, 0xc0, 0xbe, 0x17, 0x84, 0x94, 0xb9,
@@ -2513,7 +2513,7 @@ TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs74_ProduceCorrectResult){
     MEMCMP_EQUAL(expected, output, sizeof(expected));
 }
 
-TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs75_ProduceCorrectResult){
+TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs75_ProduceCorrectResult){
 
     const u8 a[] = {
         0x1c, 0xa4, 0x2e, 0x24, 0x8d, 0xc1, 0xb2, 0xf1,
@@ -2544,7 +2544,7 @@ TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs75_ProduceCorrectResult){
     MEMCMP_EQUAL(expected, output, sizeof(expected));
 }
 
-TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs76_ProduceCorrectResult){
+TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs76_ProduceCorrectResult){
 
     const u8 a[] = {
         0xda, 0x8e, 0x30, 0xd4, 0x83, 0x1d, 0x03, 0x4a,
@@ -2575,7 +2575,7 @@ TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs76_ProduceCorrectResult){
     MEMCMP_EQUAL(expected, output, sizeof(expected));
 }
 
-TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs77_ProduceCorrectResult){
+TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs77_ProduceCorrectResult){
 
     const u8 a[] = {
         0x0c, 0xb2, 0x0b, 0xc6, 0x2d, 0x55, 0xbe, 0xde,
@@ -2606,7 +2606,7 @@ TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs77_ProduceCorrectResult){
     MEMCMP_EQUAL(expected, output, sizeof(expected));
 }
 
-TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs78_ProduceCorrectResult){
+TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs78_ProduceCorrectResult){
 
     const u8 a[] = {
         0x6f, 0x4b, 0xd5, 0x4c, 0x4b, 0xb2, 0x55, 0x31,
@@ -2637,7 +2637,7 @@ TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs78_ProduceCorrectResult){
     MEMCMP_EQUAL(expected, output, sizeof(expected));
 }
 
-TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs79_ProduceCorrectResult){
+TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs79_ProduceCorrectResult){
 
     const u8 a[] = {
         0x11, 0xd5, 0x50, 0xd5, 0x8d, 0xa4, 0x39, 0x20,
@@ -2668,7 +2668,7 @@ TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs79_ProduceCorrectResult){
     MEMCMP_EQUAL(expected, output, sizeof(expected));
 }
 
-TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs80_ProduceCorrectResult){
+TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs80_ProduceCorrectResult){
 
     const u8 a[] = {
         0x6d, 0x36, 0x89, 0xeb, 0x7b, 0xba, 0x93, 0x67,
@@ -2699,7 +2699,7 @@ TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs80_ProduceCorrectResult){
     MEMCMP_EQUAL(expected, output, sizeof(expected));
 }
 
-TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs81_ProduceCorrectResult){
+TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs81_ProduceCorrectResult){
 
     const u8 a[] = {
         0x15, 0x78, 0x3f, 0x41, 0x58, 0x66, 0x69, 0x0e,
@@ -2730,7 +2730,7 @@ TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs81_ProduceCorrectResult){
     MEMCMP_EQUAL(expected, output, sizeof(expected));
 }
 
-TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs82_ProduceCorrectResult){
+TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs82_ProduceCorrectResult){
 
     const u8 a[] = {
         0x20, 0xf2, 0x30, 0xed, 0x00, 0x9b, 0x35, 0xab,
@@ -2761,7 +2761,7 @@ TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs82_ProduceCorrectResult){
     MEMCMP_EQUAL(expected, output, sizeof(expected));
 }
 
-TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs83_ProduceCorrectResult){
+TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs83_ProduceCorrectResult){
 
     const u8 a[] = {
         0x4f, 0xa7, 0x4d, 0xb3, 0x1a, 0x51, 0xd9, 0x9b,
@@ -2792,7 +2792,7 @@ TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs83_ProduceCorrectResult){
     MEMCMP_EQUAL(expected, output, sizeof(expected));
 }
 
-TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs84_ProduceCorrectResult){
+TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs84_ProduceCorrectResult){
 
     const u8 a[] = {
         0x6f, 0xd4, 0xa4, 0x79, 0x72, 0xa4, 0x65, 0x63,
@@ -2823,7 +2823,7 @@ TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs84_ProduceCorrectResult){
     MEMCMP_EQUAL(expected, output, sizeof(expected));
 }
 
-TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs85_ProduceCorrectResult){
+TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs85_ProduceCorrectResult){
 
     const u8 a[] = {
         0xcd, 0x58, 0x7b, 0x83, 0x20, 0x17, 0xff, 0x52,
@@ -2854,7 +2854,7 @@ TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs85_ProduceCorrectResult){
     MEMCMP_EQUAL(expected, output, sizeof(expected));
 }
 
-TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs86_ProduceCorrectResult){
+TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs86_ProduceCorrectResult){
 
     const u8 a[] = {
         0x5d, 0xbe, 0x2b, 0x85, 0xcd, 0x32, 0x7e, 0x84,
@@ -2885,7 +2885,7 @@ TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs86_ProduceCorrectResult){
     MEMCMP_EQUAL(expected, output, sizeof(expected));
 }
 
-TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs87_ProduceCorrectResult){
+TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs87_ProduceCorrectResult){
 
     const u8 a[] = {
         0x2b, 0x3b, 0x8d, 0xe6, 0xd5, 0x43, 0xd7, 0xd2,
@@ -2916,7 +2916,7 @@ TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs87_ProduceCorrectResult){
     MEMCMP_EQUAL(expected, output, sizeof(expected));
 }
 
-TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs88_ProduceCorrectResult){
+TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs88_ProduceCorrectResult){
 
     const u8 a[] = {
         0x70, 0xc9, 0xa9, 0x4f, 0x7c, 0x4b, 0xb1, 0x04,
@@ -2947,7 +2947,7 @@ TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs88_ProduceCorrectResult){
     MEMCMP_EQUAL(expected, output, sizeof(expected));
 }
 
-TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs89_ProduceCorrectResult){
+TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs89_ProduceCorrectResult){
 
     const u8 a[] = {
         0x87, 0x86, 0x8f, 0xa7, 0x69, 0x10, 0x4c, 0xee,
@@ -2978,7 +2978,7 @@ TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs89_ProduceCorrectResult){
     MEMCMP_EQUAL(expected, output, sizeof(expected));
 }
 
-TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs90_ProduceCorrectResult){
+TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs90_ProduceCorrectResult){
 
     const u8 a[] = {
         0x2e, 0xa6, 0x96, 0x82, 0x48, 0x96, 0x85, 0xf3,
@@ -3009,7 +3009,7 @@ TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs90_ProduceCorrectResult){
     MEMCMP_EQUAL(expected, output, sizeof(expected));
 }
 
-TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs91_ProduceCorrectResult){
+TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs91_ProduceCorrectResult){
 
     const u8 a[] = {
         0xd5, 0x23, 0x0c, 0xe5, 0x83, 0x7a, 0x0c, 0x2a,
@@ -3040,7 +3040,7 @@ TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs91_ProduceCorrectResult){
     MEMCMP_EQUAL(expected, output, sizeof(expected));
 }
 
-TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs92_ProduceCorrectResult){
+TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs92_ProduceCorrectResult){
 
     const u8 a[] = {
         0x23, 0xe6, 0xe0, 0xea, 0x03, 0xaa, 0x45, 0x39,
@@ -3071,7 +3071,7 @@ TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs92_ProduceCorrectResult){
     MEMCMP_EQUAL(expected, output, sizeof(expected));
 }
 
-TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs93_ProduceCorrectResult){
+TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs93_ProduceCorrectResult){
 
     const u8 a[] = {
         0xf0, 0xba, 0xad, 0xdc, 0xf7, 0xa6, 0x9b, 0xdb,
@@ -3102,7 +3102,7 @@ TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs93_ProduceCorrectResult){
     MEMCMP_EQUAL(expected, output, sizeof(expected));
 }
 
-TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs94_ProduceCorrectResult){
+TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs94_ProduceCorrectResult){
 
     const u8 a[] = {
         0xbc, 0xc8, 0xf6, 0x89, 0xc2, 0x07, 0xbd, 0x1d,
@@ -3133,7 +3133,7 @@ TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs94_ProduceCorrectResult){
     MEMCMP_EQUAL(expected, output, sizeof(expected));
 }
 
-TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs95_ProduceCorrectResult){
+TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs95_ProduceCorrectResult){
 
     const u8 a[] = {
         0xec, 0x61, 0x9d, 0x3d, 0x69, 0x65, 0x71, 0x76,
@@ -3164,7 +3164,7 @@ TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs95_ProduceCorrectResult){
     MEMCMP_EQUAL(expected, output, sizeof(expected));
 }
 
-TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs96_ProduceCorrectResult){
+TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs96_ProduceCorrectResult){
 
     const u8 a[] = {
         0xfd, 0x00, 0x44, 0xc6, 0x96, 0x5f, 0x0f, 0x0a,
@@ -3195,7 +3195,7 @@ TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs96_ProduceCorrectResult){
     MEMCMP_EQUAL(expected, output, sizeof(expected));
 }
 
-TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs97_ProduceCorrectResult){
+TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs97_ProduceCorrectResult){
 
     const u8 a[] = {
         0xa9, 0xb3, 0xd4, 0x0c, 0x98, 0xb6, 0x00, 0xe5,
@@ -3226,7 +3226,7 @@ TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs97_ProduceCorrectResult){
     MEMCMP_EQUAL(expected, output, sizeof(expected));
 }
 
-TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs98_ProduceCorrectResult){
+TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs98_ProduceCorrectResult){
 
     const u8 a[] = {
         0x20, 0x2b, 0x37, 0xc8, 0xe2, 0xcb, 0xfd, 0x0f,
@@ -3257,7 +3257,7 @@ TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs98_ProduceCorrectResult){
     MEMCMP_EQUAL(expected, output, sizeof(expected));
 }
 
-TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs99_ProduceCorrectResult){
+TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs99_ProduceCorrectResult){
 
     const u8 a[] = {
         0xbb, 0x96, 0xb9, 0x29, 0x45, 0x21, 0xcd, 0xf7,
@@ -3288,7 +3288,7 @@ TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs99_ProduceCorrectResult){
     MEMCMP_EQUAL(expected, output, sizeof(expected));
 }
 
-TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs100_ProduceCorrectResult){
+TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs100_ProduceCorrectResult){
 
     const u8 a[] = {
         0x07, 0x1c, 0xa0, 0x70, 0xa3, 0xab, 0x67, 0x85,
@@ -3319,7 +3319,7 @@ TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs100_ProduceCorrectResult)
     MEMCMP_EQUAL(expected, output, sizeof(expected));
 }
 
-TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs101_ProduceCorrectResult){
+TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs101_ProduceCorrectResult){
 
     const u8 a[] = {
         0xc2, 0x9d, 0x86, 0xc3, 0x8a, 0x8c, 0x0e, 0x8a,
@@ -3350,7 +3350,7 @@ TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs101_ProduceCorrectResult)
     MEMCMP_EQUAL(expected, output, sizeof(expected));
 }
 
-TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs102_ProduceCorrectResult){
+TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs102_ProduceCorrectResult){
 
     const u8 a[] = {
         0xf5, 0xb5, 0xe5, 0x15, 0xa9, 0xab, 0xcb, 0x62,
@@ -3381,7 +3381,7 @@ TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs102_ProduceCorrectResult)
     MEMCMP_EQUAL(expected, output, sizeof(expected));
 }
 
-TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs103_ProduceCorrectResult){
+TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs103_ProduceCorrectResult){
 
     const u8 a[] = {
         0xcc, 0x67, 0xb7, 0x74, 0xfb, 0x2d, 0x73, 0x58,
@@ -3412,7 +3412,7 @@ TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs103_ProduceCorrectResult)
     MEMCMP_EQUAL(expected, output, sizeof(expected));
 }
 
-TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs104_ProduceCorrectResult){
+TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs104_ProduceCorrectResult){
 
     const u8 a[] = {
         0xbe, 0x5b, 0x62, 0x6b, 0x20, 0x0c, 0xcb, 0x87,
@@ -3443,7 +3443,7 @@ TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs104_ProduceCorrectResult)
     MEMCMP_EQUAL(expected, output, sizeof(expected));
 }
 
-TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs105_ProduceCorrectResult){
+TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs105_ProduceCorrectResult){
 
     const u8 a[] = {
         0xfa, 0xe8, 0x78, 0x63, 0xbc, 0xba, 0x9e, 0xd9,
@@ -3474,7 +3474,7 @@ TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs105_ProduceCorrectResult)
     MEMCMP_EQUAL(expected, output, sizeof(expected));
 }
 
-TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs106_ProduceCorrectResult){
+TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs106_ProduceCorrectResult){
 
     const u8 a[] = {
         0x69, 0xdf, 0x55, 0x26, 0x2c, 0xa7, 0x10, 0x3d,
@@ -3505,7 +3505,7 @@ TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs106_ProduceCorrectResult)
     MEMCMP_EQUAL(expected, output, sizeof(expected));
 }
 
-TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs107_ProduceCorrectResult){
+TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs107_ProduceCorrectResult){
 
     const u8 a[] = {
         0x7b, 0x91, 0x98, 0x92, 0xcc, 0xc2, 0x0d, 0xee,
@@ -3536,7 +3536,7 @@ TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs107_ProduceCorrectResult)
     MEMCMP_EQUAL(expected, output, sizeof(expected));
 }
 
-TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs108_ProduceCorrectResult){
+TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs108_ProduceCorrectResult){
 
     const u8 a[] = {
         0xad, 0x01, 0x2e, 0xa1, 0x4f, 0x77, 0x1e, 0x6a,
@@ -3567,7 +3567,7 @@ TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs108_ProduceCorrectResult)
     MEMCMP_EQUAL(expected, output, sizeof(expected));
 }
 
-TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs109_ProduceCorrectResult){
+TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs109_ProduceCorrectResult){
 
     const u8 a[] = {
         0xbf, 0x74, 0x11, 0xda, 0x07, 0x79, 0x1a, 0x4b,
@@ -3598,7 +3598,7 @@ TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs109_ProduceCorrectResult)
     MEMCMP_EQUAL(expected, output, sizeof(expected));
 }
 
-TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs110_ProduceCorrectResult){
+TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs110_ProduceCorrectResult){
 
     const u8 a[] = {
         0x74, 0x94, 0xff, 0x4b, 0x18, 0x8a, 0xd6, 0xbd,
@@ -3629,7 +3629,7 @@ TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs110_ProduceCorrectResult)
     MEMCMP_EQUAL(expected, output, sizeof(expected));
 }
 
-TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs111_ProduceCorrectResult){
+TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs111_ProduceCorrectResult){
 
     const u8 a[] = {
         0xde, 0x84, 0x46, 0x3c, 0xc2, 0x20, 0x36, 0xad,
@@ -3660,7 +3660,7 @@ TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs111_ProduceCorrectResult)
     MEMCMP_EQUAL(expected, output, sizeof(expected));
 }
 
-TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs112_ProduceCorrectResult){
+TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs112_ProduceCorrectResult){
 
     const u8 a[] = {
         0x33, 0xc2, 0x1c, 0x68, 0x29, 0x73, 0x56, 0x79,
@@ -3691,7 +3691,7 @@ TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs112_ProduceCorrectResult)
     MEMCMP_EQUAL(expected, output, sizeof(expected));
 }
 
-TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs113_ProduceCorrectResult){
+TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs113_ProduceCorrectResult){
 
     const u8 a[] = {
         0x4b, 0xd2, 0x78, 0x47, 0xe9, 0xc4, 0x0f, 0xfa,
@@ -3722,7 +3722,7 @@ TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs113_ProduceCorrectResult)
     MEMCMP_EQUAL(expected, output, sizeof(expected));
 }
 
-TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs114_ProduceCorrectResult){
+TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs114_ProduceCorrectResult){
 
     const u8 a[] = {
         0xcc, 0x5e, 0x8b, 0xc9, 0x7c, 0x2c, 0xad, 0x18,
@@ -3753,7 +3753,7 @@ TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs114_ProduceCorrectResult)
     MEMCMP_EQUAL(expected, output, sizeof(expected));
 }
 
-TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs115_ProduceCorrectResult){
+TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs115_ProduceCorrectResult){
 
     const u8 a[] = {
         0x31, 0xbd, 0x94, 0x68, 0x0b, 0x04, 0x22, 0xde,
@@ -3784,7 +3784,7 @@ TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs115_ProduceCorrectResult)
     MEMCMP_EQUAL(expected, output, sizeof(expected));
 }
 
-TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs116_ProduceCorrectResult){
+TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs116_ProduceCorrectResult){
 
     const u8 a[] = {
         0x6d, 0x82, 0x49, 0xbb, 0x39, 0x4a, 0x80, 0x90,
@@ -3815,7 +3815,7 @@ TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs116_ProduceCorrectResult)
     MEMCMP_EQUAL(expected, output, sizeof(expected));
 }
 
-TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs117_ProduceCorrectResult){
+TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs117_ProduceCorrectResult){
 
     const u8 a[] = {
         0xc7, 0x1f, 0x2b, 0xa8, 0xf8, 0xde, 0xc1, 0x19,
@@ -3846,7 +3846,7 @@ TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs117_ProduceCorrectResult)
     MEMCMP_EQUAL(expected, output, sizeof(expected));
 }
 
-TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs118_ProduceCorrectResult){
+TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs118_ProduceCorrectResult){
 
     const u8 a[] = {
         0xe2, 0xa4, 0x02, 0x3c, 0x16, 0x65, 0x87, 0x2b,
@@ -3877,7 +3877,7 @@ TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs118_ProduceCorrectResult)
     MEMCMP_EQUAL(expected, output, sizeof(expected));
 }
 
-TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs119_ProduceCorrectResult){
+TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs119_ProduceCorrectResult){
 
     const u8 a[] = {
         0x7c, 0x0e, 0xb8, 0x0a, 0xe1, 0xa2, 0x5f, 0x1e,
@@ -3908,7 +3908,7 @@ TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs119_ProduceCorrectResult)
     MEMCMP_EQUAL(expected, output, sizeof(expected));
 }
 
-TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs120_ProduceCorrectResult){
+TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs120_ProduceCorrectResult){
 
     const u8 a[] = {
         0xb8, 0x38, 0xcb, 0xfe, 0x76, 0x01, 0x5c, 0xf2,
@@ -3939,7 +3939,7 @@ TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs120_ProduceCorrectResult)
     MEMCMP_EQUAL(expected, output, sizeof(expected));
 }
 
-TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs121_ProduceCorrectResult){
+TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs121_ProduceCorrectResult){
 
     const u8 a[] = {
         0xd8, 0xad, 0x55, 0xf0, 0x2d, 0x2d, 0x32, 0xcb,
@@ -3970,7 +3970,7 @@ TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs121_ProduceCorrectResult)
     MEMCMP_EQUAL(expected, output, sizeof(expected));
 }
 
-TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs122_ProduceCorrectResult){
+TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs122_ProduceCorrectResult){
 
     const u8 a[] = {
         0x89, 0x27, 0x72, 0x98, 0xcc, 0xfa, 0x44, 0x6e,
@@ -4001,7 +4001,7 @@ TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs122_ProduceCorrectResult)
     MEMCMP_EQUAL(expected, output, sizeof(expected));
 }
 
-TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs123_ProduceCorrectResult){
+TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs123_ProduceCorrectResult){
 
     const u8 a[] = {
         0xac, 0xfb, 0x85, 0xc0, 0x57, 0x79, 0x7b, 0x70,
@@ -4032,7 +4032,7 @@ TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs123_ProduceCorrectResult)
     MEMCMP_EQUAL(expected, output, sizeof(expected));
 }
 
-TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs124_ProduceCorrectResult){
+TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs124_ProduceCorrectResult){
 
     const u8 a[] = {
         0xa8, 0x98, 0x1f, 0xc3, 0x09, 0xfb, 0x51, 0x32,
@@ -4063,7 +4063,7 @@ TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs124_ProduceCorrectResult)
     MEMCMP_EQUAL(expected, output, sizeof(expected));
 }
 
-TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs125_ProduceCorrectResult){
+TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs125_ProduceCorrectResult){
 
     const u8 a[] = {
         0x44, 0x1c, 0xff, 0x2e, 0x83, 0xff, 0x8b, 0x06,
@@ -4094,7 +4094,7 @@ TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs125_ProduceCorrectResult)
     MEMCMP_EQUAL(expected, output, sizeof(expected));
 }
 
-TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs126_ProduceCorrectResult){
+TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs126_ProduceCorrectResult){
 
     const u8 a[] = {
         0x75, 0x06, 0xe4, 0x06, 0xa6, 0xc6, 0x65, 0xfb,
@@ -4125,7 +4125,7 @@ TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs126_ProduceCorrectResult)
     MEMCMP_EQUAL(expected, output, sizeof(expected));
 }
 
-TEST(SCALARS_ED25519_64, Muladd_RandomlyGeneratedInputs127_ProduceCorrectResult){
+TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs127_ProduceCorrectResult){
 
     const u8 a[] = {
         0xf8, 0x75, 0x62, 0xc9, 0x43, 0x4f, 0xed, 0x4f,

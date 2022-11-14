@@ -62,7 +62,7 @@ void eddsa_sign(const eddsa_sign_request * req) {
     /* Prune the buffer before generating the public key as specified by RFC 8032
      * sections 5.1.5 (Ed25519) and 5.2.5 (Ed448) */
     curve->prune_buffer(hash_secret_key);
-
+    /* Recover the public key */
     point public_key;
     gops->multiply_basepoint(&public_key, hash_secret_key);
     gops->encode(encoded_public_key, &public_key);
@@ -80,9 +80,9 @@ void eddsa_sign(const eddsa_sign_request * req) {
     iov[4].iov_base = req->message;
     iov[4].iov_len = req->message_length;
     h(ephemeral_scalar, iov, 5);
-
-    /* Note that for the ephemeral (r in RFC 8032) is derived from the entire hash output (2b bits) */
     sops->reduce(ephemeral_scalar);
+
+    /* Compute the public commitment */
     point commitment;
     gops->multiply_basepoint(&commitment, ephemeral_scalar);
     gops->encode(encoded_commitment, &commitment);
@@ -147,13 +147,12 @@ int eddsa_verify(const eddsa_verify_request * req) {
      * SHA-512 for Ed25519 */
     hash h = curve->hash_function;
 
-    point public_key;
-    point commitment;
-    point response_point;
     /* Note that point decoding may fail - we will still however continue with the verification to the end */
     /* TODO: Check if decode needs to set the points to something valid (e.g. the neutral element) so as to
      * not risk any undefined behaviour/fpe during the dummy computations that follow */
+    point public_key;
     verified &= gops->decode(&public_key, req->public_key);
+    point commitment;
     verified &= gops->decode(&commitment, req->signature);
 
     /* Check that the response scalar is valid, i.e. less than the prime order of the subgroup (do not do the
@@ -185,6 +184,7 @@ int eddsa_verify(const eddsa_verify_request * req) {
     gops->points_add(&commitment, &commitment, &public_key);
 
     /* Compute S B */
+    point response_point;
     gops->multiply_basepoint(&response_point, &req->signature[curve->b_in_bytes]);
     /* Check if 2^c S B == 2^c R + h A */
     verified &= gops->points_equal(&response_point, &commitment);

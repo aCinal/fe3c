@@ -21,28 +21,28 @@ static const fe ed25519_d = { .ed25519 = { 0x34dca135978a3, 0x1a8283b156ebd, 0x5
 static const fe fe_zero = { .ed25519 = { 0, 0, 0, 0, 0 } };
 /* Multiplicative identity in the field */
 static const fe fe_one = { .ed25519 = { 1, 0, 0, 0, 0 } };
-/* Square root of -1 in the field (the "positive" or even one) */
+/* "Positive" (even) square root of -1 in the field */
 static const fe fe_i = { .ed25519 = { 0x61b274a0ea0b0, 0xd5a5fc8f189d, 0x7ef5e9cbd0c60, 0x78595a6804c9e, 0x2b8324804fc1d } };
 
 static inline u64 _load_64(const u8 src[8]) {
 
     /* Integer encoding is always little endian according to RFC 8032 */
+    u64 dst;
 #if FE3C_LILENDIAN_TARGET
-    u64 qword;
     /* Target already little endian - copy the bytes with no shifts */
-    (void) memcpy(&qword, src, 8);
+    (void) memcpy(&dst, src, 8);
 #else
     /* Big-endian target or endianness unknown (take the safe route) */
-    u64 qword = (u64) src[0];
-    qword |= (u64) src[1] << 8;
-    qword |= (u64) src[2] << 16;
-    qword |= (u64) src[3] << 24;
-    qword |= (u64) src[4] << 32;
-    qword |= (u64) src[5] << 40;
-    qword |= (u64) src[6] << 48;
-    qword |= (u64) src[7] << 56;
+    dst  = (u64) src[0];
+    dst |= (u64) src[1] << 8;
+    dst |= (u64) src[2] << 16;
+    dst |= (u64) src[3] << 24;
+    dst |= (u64) src[4] << 32;
+    dst |= (u64) src[5] << 40;
+    dst |= (u64) src[6] << 48;
+    dst |= (u64) src[7] << 56;
 #endif
-    return qword;
+    return dst;
 }
 
 static inline void _store_64(u8 dst[8], u64 src) {
@@ -52,13 +52,13 @@ static inline void _store_64(u8 dst[8], u64 src) {
     (void) memcpy(dst, &src, 8);
 #else
     /* After each write do a shift (src is a local variable) */
-    dst[0] = (u8) src; src >>= 8;
-    dst[1] = (u8) src; src >>= 8;
-    dst[2] = (u8) src; src >>= 8;
-    dst[3] = (u8) src; src >>= 8;
-    dst[4] = (u8) src; src >>= 8;
-    dst[5] = (u8) src; src >>= 8;
-    dst[6] = (u8) src; src >>= 8;
+    dst[0] = (u8) src;  src >>= 8;
+    dst[1] = (u8) src;  src >>= 8;
+    dst[2] = (u8) src;  src >>= 8;
+    dst[3] = (u8) src;  src >>= 8;
+    dst[4] = (u8) src;  src >>= 8;
+    dst[5] = (u8) src;  src >>= 8;
+    dst[6] = (u8) src;  src >>= 8;
     dst[7] = (u8) src;
 #endif
 }
@@ -71,7 +71,7 @@ static inline void _store_64(u8 dst[8], u64 src) {
 static inline int fe_is_canonical(const fe * a) {
 
     int canonical = 1;
-    canonical &= (a->ed25519[0] < 0x7ffffffffffedULL);
+    canonical &= (a->ed25519[0] <  0x7ffffffffffedULL);
     canonical &= (a->ed25519[1] <= 0x7ffffffffffffULL);
     canonical &= (a->ed25519[2] <= 0x7ffffffffffffULL);
     canonical &= (a->ed25519[3] <= 0x7ffffffffffffULL);
@@ -526,33 +526,32 @@ static inline void fe_exp_p_minus_5_over_8(fe * r, const fe * a) {
  * @param[out] buffer Output buffer for the encoded field element
  * @param[in] a Field element to encode
  */
-static inline void fe_encode(u8 * buffer, const fe * a) {
+static inline void fe_encode(u8 * buffer, fe * a) {
 
     /* The field elements get encoded as little-endian byte strings according to RFC 8032 */
-    fe e;
     fe_limb_type t0, t1, t2, t3;
 
     /* Canonicalize the element first */
-    fe_strong_reduce(&e, a);
+    fe_strong_reduce(a, a);
 
     /* Store the temporary results of bit operations in separate variables (mapped to separate
      * registers) to allow for greater instruction-level parallelism */
 
     /* Store the lowest limb + whatever can fit (13 bits) of the second lowest limb */
-    t0 = e.ed25519[0] | (e.ed25519[1] << 51);
-    /* 13 bits of e.ed25519[1] are in t0, store the rest (38 bits) here + whatever can fit
-     * (26 bits) of e.ed25519[2] */
-    t1 = ( e.ed25519[1] >> 13 ) | ( e.ed25519[2] << 38 );
-    /* 26 bits of e.ed25519[2] are in t1, store the rest (25 bits) here + whatever can fit
-     * (39 bits) of e.ed25519[3] */
-    t2 = ( e.ed25519[2] >> 26 ) | ( e.ed25519[3] << 25 );
-    /* Store the top 51-39=12 bits of e.ed25519[3] and all of e.ed25519[4] */
-    t3 = ( e.ed25519[3] >> 39 ) | ( e.ed25519[4] << 12 );
+    t0 = a->ed25519[0] | (a->ed25519[1] << 51);
+    /* 13 bits of a->ed25519[1] are in t0, store the rest (38 bits) here + whatever can fit
+     * (26 bits) of a->ed25519[2] */
+    t1 = ( a->ed25519[1] >> 13 ) | ( a->ed25519[2] << 38 );
+    /* 26 bits of a->ed25519[2] are in t1, store the rest (25 bits) here + whatever can fit
+     * (39 bits) of a->ed25519[3] */
+    t2 = ( a->ed25519[2] >> 26 ) | ( a->ed25519[3] << 25 );
+    /* Store the top 51-39=12 bits of a->ed25519[3] and all of a->ed25519[4] */
+    t3 = ( a->ed25519[3] >> 39 ) | ( a->ed25519[4] << 12 );
 
-    _store_64(buffer, t0);
-    _store_64(buffer + 8, t1);
-    _store_64(buffer + 16, t2);
-    _store_64(buffer + 24, t3);
+    _store_64(&buffer[0], t0);
+    _store_64(&buffer[8], t1);
+    _store_64(&buffer[16], t2);
+    _store_64(&buffer[24], t3);
 }
 
 /**
@@ -562,19 +561,19 @@ static inline void fe_encode(u8 * buffer, const fe * a) {
  */
 static inline void fe_decode(fe * r, const u8 * buffer) {
 
-    r->ed25519[0] = ( _load_64(buffer) ) & LOW_51_BITS_MASK;
+    r->ed25519[0] = ( _load_64(&buffer[0]) ) & LOW_51_BITS_MASK;
     /* Do not offset by 8 now since we have dropped the top byte
      * and a few more bits from the first word by masking. Offset
      * by 51 bits (6 bytes + 3 bits of shift): */
-    r->ed25519[1] = ( _load_64(buffer + 6) >> 3 ) & LOW_51_BITS_MASK;
+    r->ed25519[1] = ( _load_64(&buffer[6]) >> 3 ) & LOW_51_BITS_MASK;
     /* Same spiel - offset by another 51 bits */
-    r->ed25519[2] = ( _load_64(buffer + 12) >> 6 ) & LOW_51_BITS_MASK;
+    r->ed25519[2] = ( _load_64(&buffer[12]) >> 6 ) & LOW_51_BITS_MASK;
     /* Now the "shift" bits have added up to over a byte, and so
      * we offset by 3*6+1 bytes and the leftover bit */
-    r->ed25519[3] = ( _load_64(buffer + 19) >> 1 ) & LOW_51_BITS_MASK;
+    r->ed25519[3] = ( _load_64(&buffer[19]) >> 1 ) & LOW_51_BITS_MASK;
     /* Load the last limb (note that the last bit gets naturally ignored
      * as required by RFC 8032) */
-    r->ed25519[4] = ( _load_64(buffer + 25) >> 4 ) & LOW_51_BITS_MASK;
+    r->ed25519[4] = ( _load_64(&buffer[25]) >> 4 ) & LOW_51_BITS_MASK;
 }
 
 /**

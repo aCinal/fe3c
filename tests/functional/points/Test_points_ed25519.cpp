@@ -161,10 +161,14 @@ TEST(POINTS_ED25519, Add_AddReciprocalsOfEachOther_ResultInIdentity) {
 TEST(POINTS_ED25519, Add_AddPointOfOrder2ToItself_ResultInIdentity) {
 
     point input = {
-        .X = { .ed25519 = { 0, 0, 0, 0, 0 } },
+        .X = { .ed25519 = { 0 } },
+#if FE3C_64BIT
         .Y = { .ed25519 = { 0x7ffffffffffedULL - 1, 0x7ffffffffffffULL, 0x7ffffffffffffULL, 0x7ffffffffffffULL, 0x7ffffffffffffULL } },
-        .Z = { .ed25519 = { 1, 0, 0, 0, 0 } },
-        .T = { .ed25519 = { 0, 0, 0, 0, 0 } }
+#else
+        .Y = { .ed25519 = { 0x3ffffed - 1, 0x1ffffff, 0x3ffffff, 0x1ffffff, 0x3ffffff, 0x1ffffff, 0x3ffffff, 0x1ffffff, 0x3ffffff, 0x1ffffff } },
+#endif
+        .Z = { .ed25519 = { 1 } },
+        .T = { .ed25519 = { 0 } }
     };
     point output;
     u8 encoded_output[32];
@@ -180,11 +184,16 @@ TEST(POINTS_ED25519, Add_AddPointOfOrder2ToItself_ResultInIdentity) {
 TEST(POINTS_ED25519, Add_AddPointOfOrder4ToItself_TestForIdentityAtEachStep) {
 
     point input = {
+#if FE3C_64BIT
         .X = { .ed25519 = { 0x61b274a0ea0b0, 0xd5a5fc8f189d, 0x7ef5e9cbd0c60, 0x78595a6804c9e, 0x2b8324804fc1d } },
+#else
+        .X = { { 0x20ea0b0, 0x186c9d2, 0x8f189d, 0x35697f, 0xbd0c60, 0x1fbd7a7, 0x2804c9e, 0x1e16569, 0x4fc1d, 0xae0c92 } },
+#endif
         .Y = { .ed25519 = { 0, 0, 0, 0, 0 } },
         .Z = { .ed25519 = { 1, 0, 0, 0, 0 } },
         .T = { .ed25519 = { 0, 0, 0, 0, 0 } }
     };
+
     point output;
     u8 encoded_output[32];
     const u8 expected_final_output[] = \

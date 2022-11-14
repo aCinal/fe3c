@@ -18,7 +18,6 @@ extern "C" {
     /* Use 10 25.5-bit (mixed-radix) limbs (i.e. alternating pattern of 26 and 25 bits in each limb) */
     #define ED25519_FE_LIMB_COUNT       10
     #define ED448_FE_LIMB_COUNT         10
-    /* TODO: Understand why libsodium uses signed 32-bit integers here */
     typedef u32 fe_limb_type;
 #elif FE3C_64BIT
     /* Use 5 51-bit (uniform-radix) limbs allowing for 13 bits of overflow (2^13 additions before any reduction is

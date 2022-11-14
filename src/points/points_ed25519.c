@@ -188,7 +188,6 @@ static int ed25519_decode(point * p, const u8 * buf) {
     /* So as to not allocate any more variables on the stack reuse p->T
      * for temporary storage of intermediate results */
 
-    /* Set p->T temporarily to v^2 */
     /* Set p->T to u v */
     fe_mul(&p->T, &u, &v);
     /* Raise p->T to (p-5)/8 */
@@ -327,12 +326,21 @@ static void ed25519_scalar_multiply(point * r, const point * p, const u8 * s) {
 static void ed25519_multiply_basepoint(point * r, const u8 * s) {
 
     /* TODO: Use precomputation (comb method) */
+#if FE3C_64BIT
     static const point basepoint = {
         .X = { .ed25519 = { 0x62d608f25d51a, 0x412a4b4f6592a, 0x75b7171a4b31d, 0x1ff60527118fe, 0x216936d3cd6e5 } },
         .Y = { .ed25519 = { 0x6666666666658, 0x4cccccccccccc, 0x1999999999999, 0x3333333333333, 0x6666666666666 } },
         .Z = fe_one,
         .T = { .ed25519 = { 0x68ab3a5b7dda3, 0xeea2a5eadbb, 0x2af8df483c27e, 0x332b375274732, 0x67875f0fd78b7 } }
     };
+#else
+    static const point basepoint = {
+        .X = { .ed25519 = { 0x325d51a, 0x18b5823, 0xf6592a, 0x104a92d, 0x1a4b31d, 0x1d6dc5c, 0x27118fe, 0x7fd814, 0x13cd6e5, 0x85a4db } },
+        .Y = { .ed25519 = { 0x2666658, 0x1999999, 0xcccccc, 0x1333333, 0x1999999, 0x666666, 0x3333333, 0xcccccc, 0x2666666, 0x1999999 } },
+        .Z = fe_one,
+        .T = { .ed25519 = { 0x1b7dda3, 0x1a2ace9, 0x25eadbb, 0x3ba8a, 0x83c27e, 0xabe37d, 0x1274732, 0xccacdd, 0xfd78b7, 0x19e1d7c } }
+    };
+#endif
 
     ed25519_scalar_multiply(r, &basepoint, s);
 }

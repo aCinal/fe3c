@@ -5,7 +5,7 @@
     #error "Build system inconsistency detected! scalars_ed25519_64.c in use despite FE3C_64BIT not being set"
 #endif /* !FE3C_64BIT */
 
-#define LOW_42_BITS_MASK  0x3ffffffffff
+#define LOW_42_BITS_MASK    0x3ffffffffff
 
 /* Order of the group as per RFC 7748 */
 #define GROUP_ORDER_WORD_0  0x5812631a5cf5d3ed
@@ -20,61 +20,61 @@
 static inline u64 load_64(const u8 src[8]) {
 
     /* Integer encoding is always little endian according to RFC 8032 */
+    u64 dst;
 #if FE3C_LILENDIAN_TARGET
-    u64 qword;
     /* Target already little endian - copy the bytes with no shifts */
-    (void) memcpy(&qword, src, 8);
+    (void) memcpy(&dst, src, 8);
 #else
     /* Big-endian target or endianness unknown (take the safe route) */
-    u64 qword = (u64) src[0];
-    qword |= (u64) src[1] << 8;
-    qword |= (u64) src[2] << 16;
-    qword |= (u64) src[3] << 24;
-    qword |= (u64) src[4] << 32;
-    qword |= (u64) src[5] << 40;
-    qword |= (u64) src[6] << 48;
-    qword |= (u64) src[7] << 56;
+    dst  = (u64) src[0];
+    dst |= (u64) src[1] << 8;
+    dst |= (u64) src[2] << 16;
+    dst |= (u64) src[3] << 24;
+    dst |= (u64) src[4] << 32;
+    dst |= (u64) src[5] << 40;
+    dst |= (u64) src[6] << 48;
+    dst |= (u64) src[7] << 56;
 #endif
-    return qword;
+    return dst;
 }
 
-static inline u64 load_48(const u8 src[8]) {
+static inline u64 load_48(const u8 src[6]) {
 
     /* Integer encoding is always little endian according to RFC 8032 */
+    u64 dst;
 #if FE3C_LILENDIAN_TARGET
-    u64 qword;
     /* Target already little endian - copy the bytes with no shifts */
-    (void) memcpy(&qword, src, 6);
+    (void) memcpy(&dst, src, 6);
 #else
     /* Big-endian target or endianness unknown (take the safe route) */
-    u64 qword = (u64) src[0];
-    qword |= (u64) src[1] << 8;
-    qword |= (u64) src[2] << 16;
-    qword |= (u64) src[3] << 24;
-    qword |= (u64) src[4] << 32;
-    qword |= (u64) src[5] << 40;
+    dst  = (u64) src[0];
+    dst |= (u64) src[1] << 8;
+    dst |= (u64) src[2] << 16;
+    dst |= (u64) src[3] << 24;
+    dst |= (u64) src[4] << 32;
+    dst |= (u64) src[5] << 40;
 #endif
-    return qword;
+    return dst;
 }
 
-static inline u64 load_56(const u8 src[8]) {
+static inline u64 load_56(const u8 src[7]) {
 
     /* Integer encoding is always little endian according to RFC 8032 */
+    u64 dst;
 #if FE3C_LILENDIAN_TARGET
-    u64 qword;
     /* Target already little endian - copy the bytes with no shifts */
-    (void) memcpy(&qword, src, 6);
+    (void) memcpy(&dst, src, 6);
 #else
     /* Big-endian target or endianness unknown (take the safe route) */
-    u64 qword = (u64) src[0];
-    qword |= (u64) src[1] << 8;
-    qword |= (u64) src[2] << 16;
-    qword |= (u64) src[3] << 24;
-    qword |= (u64) src[4] << 32;
-    qword |= (u64) src[5] << 40;
-    qword |= (u64) src[6] << 48;
+    dst = (u64) src[0];
+    dst |= (u64) src[1] << 8;
+    dst |= (u64) src[2] << 16;
+    dst |= (u64) src[3] << 24;
+    dst |= (u64) src[4] << 32;
+    dst |= (u64) src[5] << 40;
+    dst |= (u64) src[6] << 48;
 #endif
-    return qword;
+    return dst;
 }
 
 static void ed25519_scalar_reduce(u8 * s) {
@@ -111,10 +111,10 @@ static void ed25519_scalar_reduce(u8 * s) {
 
     /* Note that limbs t0-t5 contain the value of s modulo 2^252. Let c denote the low
      * two 64-bit words of the group order L, namely let c = L - 2^252. In 42-bit limbs
-     * c can be represented as (c2, c1, c0). Take the limbs t6-t11 and multiply them by
-     * c and subtract the product from the low part (t0-t5). We rely here on the identity
+     * c can be represented as (c2, c1, c0). Take the limbs t6-t11, multiply them by c,
+     * and subtract the product from the low part (t0-t5). We rely here on the identity:
      *
-     *            s := x + 2^252 y = x + (2^252 + c) y - c y = x - c y (mod L)
+     *           s := x + 2^252 y = x + (2^252 + c) y - c y = x - c y (mod L)
      */
 
     /* Naive schoolbok multiplication of (c2, c1, c0) and (t11, t10, t9, t8, t7, t6) split
@@ -179,12 +179,13 @@ static void ed25519_scalar_reduce(u8 * s) {
     /* In the first limb we only have 2 bits for byte number 5,
      * the high 6 bits we must take from the next limb */
     s[5]  = ( t0 >> 40 ) | ( t1 << 2 );
-    /* Low 6 bits form t1 we have already encoded into s[5] */
+    /* Low 6 bits from t1 we have already encoded into s[5] */
     s[6]  = ( t1 >> 6 );
     s[7]  = ( t1 >> 14 );
     s[8]  = ( t1 >> 22 );
     s[9]  = ( t1 >> 30 );
-    /* Only 4 bits do we have for byte 10 (top 4 bits of limb t1) */
+    /* Only 4 bits do we have for byte 10 in limb t1, the rest
+     * must come from t2 */
     s[10] = ( t1 >> 38 ) | ( t2 << 4 );
     s[11] = ( t2 >> 4 );
     s[12] = ( t2 >> 12 );
@@ -208,7 +209,6 @@ static void ed25519_scalar_reduce(u8 * s) {
     s[28] = ( t5 >> 14 );
     s[29] = ( t5 >> 22 );
     s[30] = ( t5 >> 30 );
-    /* Recall that limb t5 contains 50 bits */
     s[31] = ( t5 >> 38 );
 }
 
@@ -275,8 +275,8 @@ static void ed25519_scalars_muladd(u8 * r, const u8 * a, const u8 * b, const u8 
     c4  = ( load_48(&c[21]) >> 0 ) & LOW_42_BITS_MASK;
     c5  = ( load_48(&c[26]) >> 2 );
 
-    /* Do the naive schoolbook multiplication - note that a*b takes 11 limbs (11 columns
-     * in the multplication algorithm). Offset the first 6 limbs by the limbs of c
+    /* Do the naive schoolbook multiplication - note that a*b takes 11 (12 with carry) limbs
+     * (columns in the multplication algorithm). Offset the first 6 limbs by the limbs of c
      *
      *                                         a5     a4     a3     a2     a1     a0
      *                                         b5     b4     b3     b2     b1     b0
