@@ -12,12 +12,14 @@ typedef struct point {
     fe X;
     fe Y;
     fe Z;
+#if FE3C_SUPPORT_CURVE_ED25519
     fe T;
+#endif /* FE3C_SUPPORT_CURVE_ED25519 */
 } point;
 
 typedef struct group_ops {
     __attribute__((warn_unused_result))
-    int   (* points_equal)        (point * p, point * q);                         /**< Check if two points are equal */
+    int   (* points_equal)        (const point * p, const point * q);             /**< Check if two points are equal */
     void  (* encode)              (u8 * buf, const point * p);                    /**< Encode the point */
     __attribute__((warn_unused_result))
     int   (* decode)              (point * p, const u8 * buf);                    /**< Try decoding the point, set to the neutral element (0, 1) if decoding fails */

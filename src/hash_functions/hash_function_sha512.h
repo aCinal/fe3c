@@ -7,7 +7,7 @@
 
 #define SHA512_MESSAGE_SCHEDULE_WORD_COUNT  ( 80 )           /**< The number of words in the message schedule */
 #define SHA512_WORKING_VARIABLES_COUNT      ( 8 )            /**< The number of working variables (words) */
-#define SHA512_INPUT_BLOCK_SIZE_BYTES       ( 1024 / 8 )     /**< The size of the input block in bytes (128) */
+#define SHA512_BLOCK_SIZE_BYTES             ( 1024 / 8 )     /**< The size of the input block in bytes (128) */
 #define SHA512_STATE_WORD_COUNT             ( 8 )            /**< The size of the state */
 #define SHA512_ROUNDS_COUNT                 ( 80 )           /**< The number of rounds of SHA512 compression function */
 
@@ -29,7 +29,7 @@
  * @note The constants were derived to be the first 64 bits of the fractional parts of the cube
  *       roots of the first eighty prime numbers
  */
-static const u64 magic_constants[] = {
+static const u64 round_constants[] = {
     0x428a2f98d728ae22ULL, 0x7137449123ef65cdULL, 0xb5c0fbcfec4d3b2fULL, 0xe9b5dba58189dbbcULL,
     0x3956c25bf348b538ULL, 0x59f111f1b605d019ULL, 0x923f82a4af194f9bULL, 0xab1c5ed5da6d8118ULL,
     0xd807aa98a3030242ULL, 0x12835b0145706fbeULL, 0x243185be4ee4b28cULL, 0x550c7dc3d5ffb4e2ULL,
@@ -80,7 +80,7 @@ typedef struct sha512_working_variables {
 } sha512_working_variables;
 
 /* Let the compiler allocate the array(s) according to their initializer(s) and later validate the size(s) */
-FE3C_COMPILE_TIME_SANITY_CHECK(sizeof(magic_constants) / sizeof(magic_constants[0]) == SHA512_MESSAGE_SCHEDULE_WORD_COUNT);
+FE3C_COMPILE_TIME_SANITY_CHECK(sizeof(round_constants) / sizeof(round_constants[0]) == SHA512_MESSAGE_SCHEDULE_WORD_COUNT);
 FE3C_COMPILE_TIME_SANITY_CHECK(sizeof(state_initialization_vector) / sizeof(state_initialization_vector[0]) == SHA512_STATE_WORD_COUNT);
 FE3C_COMPILE_TIME_SANITY_CHECK(sizeof(sha512_working_variables) / sizeof(u64) == SHA512_WORKING_VARIABLES_COUNT);
 

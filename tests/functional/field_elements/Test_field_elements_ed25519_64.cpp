@@ -172,7 +172,7 @@ TEST(FIELD_ELEMENTS_ED25519_64, StrongReduce_ElementWithOverflowInEachLimb_Norma
 
 TEST(FIELD_ELEMENTS_ED25519_64, StrongReduce_ElementWithMaxOverflowInEachLimb_NormalizeSuccessfully) {
 
-    fe input = { 0xffffffffffffffff, 0xffffffffffffffff, 0xffffffffffffffff, 0xffffffffffffffff, 0xffffffffffffffff };
+    fe input = { 0xffffffffffffffffULL, 0xffffffffffffffffULL, 0xffffffffffffffffULL, 0xffffffffffffffffULL, 0xffffffffffffffffULL };
     fe expected = { 0x25fff, 0x1fff, 0x1fff, 0x1fff, 0x1fff };
     fe output;
     fe_strong_reduce(&output, &input);
@@ -233,7 +233,7 @@ TEST(FIELD_ELEMENTS_ED25519_64, Sub_ModulusMinusModulus_CongruentToZero) {
 
     fe input1 = { 0x7ffffffffffedULL, 0x7ffffffffffffULL, 0x7ffffffffffffULL, 0x7ffffffffffffULL, 0x7ffffffffffffULL };
     fe input2 = { 0x7ffffffffffedULL, 0x7ffffffffffffULL, 0x7ffffffffffffULL, 0x7ffffffffffffULL, 0x7ffffffffffffULL };
-    fe canonical = {};
+    fe canonical = fe_zero;
     fe output;
     fe_sub(&output, &input1, &input2);
     /* Expect subtraction to result in a non-canonical form, e.g. for a - b we may expect to get a + 2p - b */

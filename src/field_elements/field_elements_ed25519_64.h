@@ -179,7 +179,7 @@ static inline void fe_weak_reduce(fe * r, const fe * a) {
      *
      *     a mod p = (x + sy) mod (s - c)
      *             = (x + (s - c)y + cy) mod (s - c)
-     *             = (x + cy) mod m
+     *             = (x + cy) mod p
      *
      * To split a into (x, y) we simply let the carries bubble up to the top
      * limb. Whatever has overflown the top limb is equal to y and in the limbs
@@ -228,36 +228,26 @@ static inline void fe_strong_reduce(fe * r, const fe * a) {
 
     /* Compute r-p and conditionally use it as a result if r is larger than p */
     fe t;
-    u128 c = 19;
-    /* Store r + 19 in t (we will subtract 2^255 from it resulting in t = r - p) */
-    c += r->ed25519[0];
-    t.ed25519[0] = c & LOW_51_BITS_MASK;
-    c >>= 51;
+    /* Store r + 19 in t (we will subtract 2^255 from it, resulting in t = r - p) */
+    t.ed25519[0] = r->ed25519[0] + 19;
+    t.ed25519[1] = r->ed25519[1];
+    t.ed25519[2] = r->ed25519[2];
+    t.ed25519[3] = r->ed25519[3];
+    t.ed25519[4] = r->ed25519[4];
 
-    c += r->ed25519[1];
-    t.ed25519[1] = c & LOW_51_BITS_MASK;
-    c >>= 51;
+    t.ed25519[1] += t.ed25519[0] >> 51;  t.ed25519[0] &= LOW_51_BITS_MASK;
+    t.ed25519[2] += t.ed25519[1] >> 51;  t.ed25519[1] &= LOW_51_BITS_MASK;
+    t.ed25519[3] += t.ed25519[2] >> 51;  t.ed25519[2] &= LOW_51_BITS_MASK;
+    t.ed25519[4] += t.ed25519[3] >> 51;  t.ed25519[3] &= LOW_51_BITS_MASK;
+    /* At this point t.ed25519[4] contains the highest limb of r + 19 (extended to 128 bits). Try
+     * subtracting 2^255 - if we get an underflow this means that r < 2^255 - 19 and so r is the
+     * final result. Otherwise we must return r - p (note that this includes the case where r = p,
+     * as no underflow will occur then and t.ed25519[4] will be equal to zero). */
+    t.ed25519[4] -= (1ULL << 51);
 
-    c += r->ed25519[2];
-    t.ed25519[2] = c & LOW_51_BITS_MASK;
-    c >>= 51;
-
-    c += r->ed25519[3];
-    t.ed25519[3] = c & LOW_51_BITS_MASK;
-    c >>= 51;
-
-    c += r->ed25519[4];
-    /* At this point c contains the highest limb of r + 19 (extended to 128 bits). Try subtracting 2^255
-     * - if we get an underflow this means that r < 2^255 - 19 and so is the final result. Otherwise
-     * we must return r - p (note that this includes the case where r = p, as no underflow will occur
-     * then and c will be equal to zero) */
-    c -= (1ULL << 51);
-    /* If r >= p then we have just subtracted a factor of p = 2^255 - 19 and t is what we should return */
-    t.ed25519[4] = c & LOW_51_BITS_MASK;
-
-    /* Check the highest bit of c for underflow. If the highest bit is set then underflow
-     * occurred and so we return r, otherwise we set r ::= t and return that */
-    fe_conditional_move(r, &t, (c >> 127) ^ 1);
+    /* Check the highest bit of t.ed25519[4] for underflow. If the highest bit is set then
+     * underflow occurred and so we return r, otherwise we set r ::= t and return that */
+    fe_conditional_move(r, &t, (t.ed25519[4] >> 63) ^ 1);
 }
 
 /**
@@ -373,9 +363,9 @@ static inline void fe_mul(fe * r, const fe * a, const fe * b) {
      *                               |
      *      2^255 cutoff_____________|
      *
-     * All the partial products to the left of the 2^255 cutoff correspond to the "b"
-     * term in the identity above and so are shifted down by 2^255 after multiplying
-     * by 19.
+     * All the partial products to the left of the 2^255 cutoff point correspond to
+     * the b term in the identity above and so are shifted down by 2^255 after
+     * multiplying by 19.
      */
     r0 = a0*b0 + 19 * ( a1*b4 + a2*b3 + a3*b2 + a4*b1 );
 
@@ -506,7 +496,7 @@ static inline void fe_exp_p_minus_5_over_8(fe * r, const fe * a) {
     fe_mul(r, r, &x);
 
     /* Do a square-and-multiply step for the remaining 248 ones in the binary
-     * representation of the exponent (p-2) */
+     * representation of the exponent */
     for (int i = 0; i < 248; i++) {
 
         fe_square(r, r);
@@ -529,7 +519,7 @@ static inline void fe_exp_p_minus_5_over_8(fe * r, const fe * a) {
 static inline void fe_encode(u8 * buffer, fe * a) {
 
     /* The field elements get encoded as little-endian byte strings according to RFC 8032 */
-    fe_limb_type t0, t1, t2, t3;
+    u64 t0, t1, t2, t3;
 
     /* Canonicalize the element first */
     fe_strong_reduce(a, a);
@@ -538,7 +528,7 @@ static inline void fe_encode(u8 * buffer, fe * a) {
      * registers) to allow for greater instruction-level parallelism */
 
     /* Store the lowest limb + whatever can fit (13 bits) of the second lowest limb */
-    t0 = a->ed25519[0] | (a->ed25519[1] << 51);
+    t0 = ( a->ed25519[0] >>  0 ) | ( a->ed25519[1] << 51 );
     /* 13 bits of a->ed25519[1] are in t0, store the rest (38 bits) here + whatever can fit
      * (26 bits) of a->ed25519[2] */
     t1 = ( a->ed25519[1] >> 13 ) | ( a->ed25519[2] << 38 );
@@ -548,10 +538,10 @@ static inline void fe_encode(u8 * buffer, fe * a) {
     /* Store the top 51-39=12 bits of a->ed25519[3] and all of a->ed25519[4] */
     t3 = ( a->ed25519[3] >> 39 ) | ( a->ed25519[4] << 12 );
 
-    _store_64(&buffer[0], t0);
-    _store_64(&buffer[8], t1);
-    _store_64(&buffer[16], t2);
-    _store_64(&buffer[24], t3);
+    _store_64(&buffer[0 * 8], t0);
+    _store_64(&buffer[1 * 8], t1);
+    _store_64(&buffer[2 * 8], t2);
+    _store_64(&buffer[3 * 8], t3);
 }
 
 /**

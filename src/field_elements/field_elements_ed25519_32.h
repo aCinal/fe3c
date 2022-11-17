@@ -280,48 +280,37 @@ static inline void fe_strong_reduce(fe * r, const fe * a) {
 
     /* Compute r-p and conditionally use it as a result if r is larger than p */
     fe t;
-    u64 c = 19;
     /* Store r + 19 in t (we will subtract 2^255 from it resulting in t = r - p) */
-    c += r->ed25519[0];
-    t.ed25519[0] = c & LOW_26_BITS_MASK;
-    c >>= 26;
-    c += r->ed25519[1];
-    t.ed25519[1] = c & LOW_25_BITS_MASK;
-    c >>= 25;
-    c += r->ed25519[2];
-    t.ed25519[2] = c & LOW_26_BITS_MASK;
-    c >>= 26;
-    c += r->ed25519[3];
-    t.ed25519[3] = c & LOW_25_BITS_MASK;
-    c >>= 25;
-    c += r->ed25519[4];
-    t.ed25519[4] = c & LOW_26_BITS_MASK;
-    c >>= 26;
-    c += r->ed25519[5];
-    t.ed25519[5] = c & LOW_25_BITS_MASK;
-    c >>= 25;
-    c += r->ed25519[6];
-    t.ed25519[6] = c & LOW_26_BITS_MASK;
-    c >>= 26;
-    c += r->ed25519[7];
-    t.ed25519[7] = c & LOW_25_BITS_MASK;
-    c >>= 25;
-    c += r->ed25519[8];
-    t.ed25519[8] = c & LOW_26_BITS_MASK;
-    c >>= 26;
-    c += r->ed25519[9];
-    /* At this point c contains the highest limb of r + 19 (extended to 64 bits). Try subtracting 2^255
-     * - if we get an underflow this means that r < 2^255 - 19 and so is the final result. Otherwise
-     * we must return r - p (note that this includes the case where r = p, as no underflow will occur
-     * then and c will be equal to zero) */
-    c -= (1ULL << 25);
+    t.ed25519[0] = r->ed25519[0] + 19;
+    t.ed25519[1] = r->ed25519[1];
+    t.ed25519[2] = r->ed25519[2];
+    t.ed25519[3] = r->ed25519[3];
+    t.ed25519[4] = r->ed25519[4];
+    t.ed25519[5] = r->ed25519[5];
+    t.ed25519[6] = r->ed25519[6];
+    t.ed25519[7] = r->ed25519[7];
+    t.ed25519[8] = r->ed25519[8];
+    t.ed25519[9] = r->ed25519[9];
 
-    /* If r >= p then we have just subtracted a factor of p = 2^255 - 19 and t is what we should return */
-    t.ed25519[9] = c & LOW_25_BITS_MASK;
+    t.ed25519[1] += t.ed25519[0] >> 26;  t.ed25519[0] &= LOW_26_BITS_MASK;
+    t.ed25519[2] += t.ed25519[1] >> 25;  t.ed25519[1] &= LOW_25_BITS_MASK;
+    t.ed25519[3] += t.ed25519[2] >> 26;  t.ed25519[2] &= LOW_26_BITS_MASK;
+    t.ed25519[4] += t.ed25519[3] >> 25;  t.ed25519[3] &= LOW_25_BITS_MASK;
+    t.ed25519[5] += t.ed25519[4] >> 26;  t.ed25519[4] &= LOW_26_BITS_MASK;
+    t.ed25519[6] += t.ed25519[5] >> 25;  t.ed25519[5] &= LOW_25_BITS_MASK;
+    t.ed25519[7] += t.ed25519[6] >> 26;  t.ed25519[6] &= LOW_26_BITS_MASK;
+    t.ed25519[8] += t.ed25519[7] >> 25;  t.ed25519[7] &= LOW_25_BITS_MASK;
+    t.ed25519[9] += t.ed25519[8] >> 26;  t.ed25519[8] &= LOW_26_BITS_MASK;
 
-    /* Check the highest bit of c for underflow. If the highest bit is set then underflow
-     * occurred and so we return r, otherwise we set r ::= t and return that */
-    fe_conditional_move(r, &t, (c >> 63) ^ 1);
+    /* At this point t.ed25519[9] contains the highest limb of r + 19 (extended to 128 bits). Try
+     * subtracting 2^255 - if we get an underflow this means that r < 2^255 - 19 and so r is the
+     * final result. Otherwise we must return r - p (note that this includes the case where r = p,
+     * as no underflow will occur then and t.ed25519[4] will be equal to zero). */
+    t.ed25519[9] -= (1ULL << 25);
+
+    /* Check the highest bit of t.ed25519[4] for underflow. If the highest bit is set then
+     * underflow occurred and so we return r, otherwise we set r ::= t and return that */
+    fe_conditional_move(r, &t, (t.ed25519[9] >> 31) ^ 1);
 }
 
 /**
@@ -685,7 +674,7 @@ static inline void fe_exp_p_minus_5_over_8(fe * r, const fe * a) {
 static inline void fe_encode(u8 * buffer, fe * a) {
 
     /* The field elements get encoded as little-endian byte strings according to RFC 8032 */
-    fe_limb_type t0, t1, t2, t3, t4, t5, t6, t7;
+    u32 t0, t1, t2, t3, t4, t5, t6, t7;
 
     /* Canonicalize the element first */
     fe_strong_reduce(a, a);

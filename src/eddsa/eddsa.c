@@ -28,6 +28,10 @@ void eddsa_sign(const eddsa_sign_request * req) {
      * and/or the message has been prehashed */
     int use_context = (req->context_length > 0);
     int use_dom_string = (use_context | req->phflag);
+#if FE3C_SUPPORT_CURVE_ED448
+    /* Note that EdDSA with curve Ed448 always uses the dom string */
+        use_dom_string |= (req->curve_id == EDDSA_CURVE_ED448);
+#endif
     /* Edwards curve to be used */
     const curve * curve = curves[req->curve_id];
     /* iovec buffer for hash function requests */
@@ -41,7 +45,7 @@ void eddsa_sign(const eddsa_sign_request * req) {
     u8 encoded_public_key[curve->b_in_bytes];
     u8 encoded_commitment[curve->b_in_bytes];
     /* Buffer for the context variant of EdDSA */
-    u8 dom_bytes[] = {
+    const u8 dom_bytes[] = {
         req->phflag,
         req->context_length
     };
@@ -80,6 +84,7 @@ void eddsa_sign(const eddsa_sign_request * req) {
     iov[4].iov_base = req->message;
     iov[4].iov_len = req->message_length;
     h(ephemeral_scalar, iov, 5);
+
     sops->reduce(ephemeral_scalar);
 
     /* Compute the public commitment */
@@ -127,6 +132,10 @@ int eddsa_verify(const eddsa_verify_request * req) {
      * and/or the message has been prehashed */
     int use_context = (req->context_length > 0);
     int use_dom_string = (use_context | req->phflag);
+#if FE3C_SUPPORT_CURVE_ED448
+    /* Note that EdDSA with curve Ed448 always uses the dom string */
+        use_dom_string |= (req->curve_id == EDDSA_CURVE_ED448);
+#endif
     /* Edwards curve to be used */
     const curve * curve = curves[req->curve_id];
     /* iovec buffer for hash function requests */
@@ -134,7 +143,7 @@ int eddsa_verify(const eddsa_verify_request * req) {
     /* Intermediate buffer for hash function output */
     u8 digest[2 * curve->b_in_bytes];
     /* Buffer for the context variant of EdDSA */
-    u8 dom_bytes[] = {
+    const u8 dom_bytes[] = {
         req->phflag,
         req->context_length
     };

@@ -3,7 +3,7 @@
 
 TEST_GROUP(POINTS_ED25519) {
 
-    point identity = {
+    const point identity = {
         .X = { .ed25519 = { 0 } },
         .Y = { .ed25519 = { 1 } },
         .Z = { .ed25519 = { 1 } },
@@ -31,17 +31,6 @@ TEST(POINTS_ED25519, Decode_CommitmentFromRfcTest1_SuccessfullyDecode) {
     CHECK_EQUAL(1, success);
 }
 
-TEST(POINTS_ED25519, Decode_PointOfOrder4_FailDecoding) {
-
-    point decoded;
-    /* Encode the point with y=0 */
-    const u8 encoded[] = \
-        "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00" \
-        "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00";
-    int success = ed25519_group_ops.decode(&decoded, encoded);
-    CHECK_EQUAL(0, success);
-}
-
 TEST(POINTS_ED25519, Decode_PointOfOrder1_FailDecoding) {
 
     point decoded;
@@ -60,6 +49,17 @@ TEST(POINTS_ED25519, Decode_PointOfOrder2_FailDecoding) {
     const u8 encoded[] = \
         "\xec\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff" \
         "\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\x7f";
+    int success = ed25519_group_ops.decode(&decoded, encoded);
+    CHECK_EQUAL(0, success);
+}
+
+TEST(POINTS_ED25519, Decode_PointOfOrder4_FailDecoding) {
+
+    point decoded;
+    /* Encode the point with y=0 */
+    const u8 encoded[] = \
+        "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00" \
+        "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00";
     int success = ed25519_group_ops.decode(&decoded, encoded);
     CHECK_EQUAL(0, success);
 }
@@ -187,11 +187,11 @@ TEST(POINTS_ED25519, Add_AddPointOfOrder4ToItself_TestForIdentityAtEachStep) {
 #if FE3C_64BIT
         .X = { .ed25519 = { 0x61b274a0ea0b0, 0xd5a5fc8f189d, 0x7ef5e9cbd0c60, 0x78595a6804c9e, 0x2b8324804fc1d } },
 #else
-        .X = { { 0x20ea0b0, 0x186c9d2, 0x8f189d, 0x35697f, 0xbd0c60, 0x1fbd7a7, 0x2804c9e, 0x1e16569, 0x4fc1d, 0xae0c92 } },
+        .X = { .ed25519 = { 0x20ea0b0, 0x186c9d2, 0x8f189d, 0x35697f, 0xbd0c60, 0x1fbd7a7, 0x2804c9e, 0x1e16569, 0x4fc1d, 0xae0c92 } },
 #endif
-        .Y = { .ed25519 = { 0, 0, 0, 0, 0 } },
-        .Z = { .ed25519 = { 1, 0, 0, 0, 0 } },
-        .T = { .ed25519 = { 0, 0, 0, 0, 0 } }
+        .Y = { .ed25519 = { 0 } },
+        .Z = { .ed25519 = { 1 } },
+        .T = { .ed25519 = { 0 } }
     };
 
     point output;

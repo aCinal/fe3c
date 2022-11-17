@@ -12,7 +12,7 @@
 #define GROUP_ORDER_WORD_1  0x14def9dea2f79cd6
 #define GROUP_ORDER_WORD_2  0x0000000000000000
 #define GROUP_ORDER_WORD_3  0x1000000000000000
-/* Redefine the low half of the order, this time in 42-bit limbs instead of 64-bit words*/
+/* Redefine the low half of the order, this time in 42-bit limbs instead of 64-bit words */
 #define GROUP_ORDER_LIMB_0  0x31a5cf5d3ed
 #define GROUP_ORDER_LIMB_1  0x1e735960498
 #define GROUP_ORDER_LIMB_2  0x14def9dea2f
@@ -63,10 +63,10 @@ static inline u64 load_56(const u8 src[7]) {
     u64 dst;
 #if FE3C_LILENDIAN_TARGET
     /* Target already little endian - copy the bytes with no shifts */
-    (void) memcpy(&dst, src, 6);
+    (void) memcpy(&dst, src, 7);
 #else
     /* Big-endian target or endianness unknown (take the safe route) */
-    dst = (u64) src[0];
+    dst  = (u64) src[0];
     dst |= (u64) src[1] << 8;
     dst |= (u64) src[2] << 16;
     dst |= (u64) src[3] << 24;
@@ -86,28 +86,27 @@ static void ed25519_scalar_reduce(u8 * s) {
      * LOW_42_BITS_MASK == ( (1 << 42) - 1 ) is equivalent to reduction modulo 2^42 (same as
      * for unsigned integers). Similarly shifting by 42 bits to the right is equivalent to
      * dividing by 2^42 while preserving the sign. */
-    i128 t0, t1, t2, t3, t4, t5, t6, t7, t8, t9, t10, t11;
 
     /* Parse the scalar into limbs */
-    t0  = ( load_48(&s[ 0]) >> 0 ) & LOW_42_BITS_MASK;
+    i128 t0  = ( load_48(&s[ 0]) >> 0 ) & LOW_42_BITS_MASK;
     /* Five full bytes were written into t0 as well as two
      * additional bits. Skip the five bytes by offsetting
      * into the array and skip the two bits by shifting. */
-    t1  = ( load_48(&s[ 5]) >> 2 ) & LOW_42_BITS_MASK;
-    t2  = ( load_48(&s[10]) >> 4 ) & LOW_42_BITS_MASK;
-    t3  = ( load_48(&s[15]) >> 6 ) & LOW_42_BITS_MASK;
+    i128 t1  = ( load_48(&s[ 5]) >> 2 ) & LOW_42_BITS_MASK;
+    i128 t2  = ( load_48(&s[10]) >> 4 ) & LOW_42_BITS_MASK;
+    i128 t3  = ( load_48(&s[15]) >> 6 ) & LOW_42_BITS_MASK;
     /* At this point the 2-bit shifts have accumulated to
      * a full byte. Only do the offset but by six instead
      * of five bytes. */
-    t4  = ( load_48(&s[21]) >> 0 ) & LOW_42_BITS_MASK;
-    t5  = ( load_48(&s[26]) >> 2 ) & LOW_42_BITS_MASK;
-    t6  = ( load_48(&s[31]) >> 4 ) & LOW_42_BITS_MASK;
-    t7  = ( load_48(&s[36]) >> 6 ) & LOW_42_BITS_MASK;
-    t8  = ( load_48(&s[42]) >> 0 ) & LOW_42_BITS_MASK;
-    t9  = ( load_48(&s[47]) >> 2 ) & LOW_42_BITS_MASK;
-    t10 = ( load_48(&s[52]) >> 4 ) & LOW_42_BITS_MASK;
+    i128 t4  = ( load_48(&s[21]) >> 0 ) & LOW_42_BITS_MASK;
+    i128 t5  = ( load_48(&s[26]) >> 2 ) & LOW_42_BITS_MASK;
+    i128 t6  = ( load_48(&s[31]) >> 4 ) & LOW_42_BITS_MASK;
+    i128 t7  = ( load_48(&s[36]) >> 6 ) & LOW_42_BITS_MASK;
+    i128 t8  = ( load_48(&s[42]) >> 0 ) & LOW_42_BITS_MASK;
+    i128 t9  = ( load_48(&s[47]) >> 2 ) & LOW_42_BITS_MASK;
+    i128 t10 = ( load_48(&s[52]) >> 4 ) & LOW_42_BITS_MASK;
     /* Load the last 50 bits into t11 */
-    t11 = ( load_56(&s[57]) >> 6 );
+    i128 t11 = ( load_56(&s[57]) >> 6 );
 
     /* Note that limbs t0-t5 contain the value of s modulo 2^252. Let c denote the low
      * two 64-bit words of the group order L, namely let c = L - 2^252. In 42-bit limbs
@@ -171,19 +170,19 @@ static void ed25519_scalar_reduce(u8 * s) {
     t4 += t3 >> 42;  t3 &= LOW_42_BITS_MASK;
     t5 += t4 >> 42;  t4 &= LOW_42_BITS_MASK;
 
-    s[0]  = ( t0 >>  0 );
-    s[1]  = ( t0 >>  8 );
-    s[2]  = ( t0 >> 16 );
-    s[3]  = ( t0 >> 24 );
-    s[4]  = ( t0 >> 32 );
+    s[ 0] = ( t0 >>  0 );
+    s[ 1] = ( t0 >>  8 );
+    s[ 2] = ( t0 >> 16 );
+    s[ 3] = ( t0 >> 24 );
+    s[ 4] = ( t0 >> 32 );
     /* In the first limb we only have 2 bits for byte number 5,
      * the high 6 bits we must take from the next limb */
-    s[5]  = ( t0 >> 40 ) | ( t1 << 2 );
+    s[ 5] = ( t0 >> 40 ) | ( t1 << 2 );
     /* Low 6 bits from t1 we have already encoded into s[5] */
-    s[6]  = ( t1 >> 6 );
-    s[7]  = ( t1 >> 14 );
-    s[8]  = ( t1 >> 22 );
-    s[9]  = ( t1 >> 30 );
+    s[ 6] = ( t1 >> 6 );
+    s[ 7] = ( t1 >> 14 );
+    s[ 8] = ( t1 >> 22 );
+    s[ 9] = ( t1 >> 30 );
     /* Only 4 bits do we have for byte 10 in limb t1, the rest
      * must come from t2 */
     s[10] = ( t1 >> 38 ) | ( t2 << 4 );
@@ -212,9 +211,9 @@ static void ed25519_scalar_reduce(u8 * s) {
     s[31] = ( t5 >> 38 );
 }
 
-static int ed25519_scalar_is_canonical(const u8 s[32]) {
+static int ed25519_scalar_is_canonical(const u8 * s) {
 
-    /* Load the scalar into four 64-bit words */
+    /* Load the scalar into four 64-bit words (extended to 128 bits) */
     u128 s0 = load_64(&s[0 * 8]);
     u128 s1 = load_64(&s[1 * 8]);
     u128 s2 = load_64(&s[2 * 8]);
@@ -223,7 +222,7 @@ static int ed25519_scalar_is_canonical(const u8 s[32]) {
     /* Let L[0]-L[3] denote the four words of L and let
      * S[0]-S[3] denote the four words of the scalar s
      * (both in little-endian order). If the following
-     * subtraction underflows, then S[0] < L[0] */
+     * subtraction underflows, then S < L. */
     s0 -= GROUP_ORDER_WORD_0;
     /* Include the underflow in the next subtraction */
     s1 -= GROUP_ORDER_WORD_1 + (s0 >> 127);
@@ -241,39 +240,34 @@ static void ed25519_scalars_muladd(u8 * r, const u8 * a, const u8 * b, const u8 
      * subjected to reduction or the response scalar which is part of the signature). Use
      * intermediate 42-bit reduced-radix representation. */
 
-    i128 a0, a1, a2, a3, a4, a5;
-    i128 b0, b1, b2, b3, b4, b5;
-    i128 c0, c1, c2, c3, c4, c5;
-    i128 t0, t1, t2, t3, t4, t5, t6, t7, t8, t9, t10, t11;
-
     /* Parse the scalar a into limbs */
-    a0  = ( load_48(&a[ 0]) >> 0 ) & LOW_42_BITS_MASK;
+    i128 a0  = ( load_48(&a[ 0]) >> 0 ) & LOW_42_BITS_MASK;
     /* Five full bytes were written into a0 as well as two
      * additional bits. Skip the five bytes by offsetting
      * into the array and skip the two bits by shifting. */
-    a1  = ( load_48(&a[ 5]) >> 2 ) & LOW_42_BITS_MASK;
-    a2  = ( load_48(&a[10]) >> 4 ) & LOW_42_BITS_MASK;
-    a3  = ( load_48(&a[15]) >> 6 ) & LOW_42_BITS_MASK;
+    i128 a1  = ( load_48(&a[ 5]) >> 2 ) & LOW_42_BITS_MASK;
+    i128 a2  = ( load_48(&a[10]) >> 4 ) & LOW_42_BITS_MASK;
+    i128 a3  = ( load_48(&a[15]) >> 6 ) & LOW_42_BITS_MASK;
     /* At this point the 2-bit shifts have accumulated to
      * a full byte. Only do the offset but by six instead
      * of five bytes. */
-    a4  = ( load_48(&a[21]) >> 0 ) & LOW_42_BITS_MASK;
-    a5  = ( load_48(&a[26]) >> 2 );
+    i128 a4  = ( load_48(&a[21]) >> 0 ) & LOW_42_BITS_MASK;
+    i128 a5  = ( load_48(&a[26]) >> 2 );
 
     /* Repeat the same steps for b and c */
-    b0  = ( load_48(&b[ 0]) >> 0 ) & LOW_42_BITS_MASK;
-    b1  = ( load_48(&b[ 5]) >> 2 ) & LOW_42_BITS_MASK;
-    b2  = ( load_48(&b[10]) >> 4 ) & LOW_42_BITS_MASK;
-    b3  = ( load_48(&b[15]) >> 6 ) & LOW_42_BITS_MASK;
-    b4  = ( load_48(&b[21]) >> 0 ) & LOW_42_BITS_MASK;
-    b5  = ( load_48(&b[26]) >> 2 );
+    i128 b0  = ( load_48(&b[ 0]) >> 0 ) & LOW_42_BITS_MASK;
+    i128 b1  = ( load_48(&b[ 5]) >> 2 ) & LOW_42_BITS_MASK;
+    i128 b2  = ( load_48(&b[10]) >> 4 ) & LOW_42_BITS_MASK;
+    i128 b3  = ( load_48(&b[15]) >> 6 ) & LOW_42_BITS_MASK;
+    i128 b4  = ( load_48(&b[21]) >> 0 ) & LOW_42_BITS_MASK;
+    i128 b5  = ( load_48(&b[26]) >> 2 );
 
-    c0  = ( load_48(&c[ 0]) >> 0 ) & LOW_42_BITS_MASK;
-    c1  = ( load_48(&c[ 5]) >> 2 ) & LOW_42_BITS_MASK;
-    c2  = ( load_48(&c[10]) >> 4 ) & LOW_42_BITS_MASK;
-    c3  = ( load_48(&c[15]) >> 6 ) & LOW_42_BITS_MASK;
-    c4  = ( load_48(&c[21]) >> 0 ) & LOW_42_BITS_MASK;
-    c5  = ( load_48(&c[26]) >> 2 );
+    i128 c0  = ( load_48(&c[ 0]) >> 0 ) & LOW_42_BITS_MASK;
+    i128 c1  = ( load_48(&c[ 5]) >> 2 ) & LOW_42_BITS_MASK;
+    i128 c2  = ( load_48(&c[10]) >> 4 ) & LOW_42_BITS_MASK;
+    i128 c3  = ( load_48(&c[15]) >> 6 ) & LOW_42_BITS_MASK;
+    i128 c4  = ( load_48(&c[21]) >> 0 ) & LOW_42_BITS_MASK;
+    i128 c5  = ( load_48(&c[26]) >> 2 );
 
     /* Do the naive schoolbook multiplication - note that a*b takes 11 (12 with carry) limbs
      * (columns in the multplication algorithm). Offset the first 6 limbs by the limbs of c
@@ -290,19 +284,18 @@ static void ed25519_scalars_muladd(u8 * r, const u8 * a, const u8 * b, const u8 
      *                                         c5     c4     c3     c2     c1     c0
      */
 
-    t0  = c0 + a0*b0;
-    t1  = c1 + a0*b1 + a1*b0;
-    t2  = c2 + a0*b2 + a1*b1 + a2*b0;
-    t3  = c3 + a0*b3 + a1*b2 + a2*b1 + a3*b0;
-    t4  = c4 + a0*b4 + a1*b3 + a2*b2 + a3*b1 + a4*b0;
-    t5  = c5 + a0*b5 + a1*b4 + a2*b3 + a3*b2 + a4*b1 + a5*b0;
-    t6  =              a1*b5 + a2*b4 + a3*b3 + a4*b2 + a5*b1;
-    t7  =                      a2*b5 + a3*b4 + a4*b3 + a5*b2;
-    t8  =                              a3*b5 + a4*b4 + a5*b3;
-    t9  =                                      a4*b5 + a5*b4;
-    t10 =                                              a5*b5;
-    /* Leave t11 for any overflows */
-    t11 = 0;
+    i128 t0  = c0 + a0*b0;
+    i128 t1  = c1 + a0*b1 + a1*b0;
+    i128 t2  = c2 + a0*b2 + a1*b1 + a2*b0;
+    i128 t3  = c3 + a0*b3 + a1*b2 + a2*b1 + a3*b0;
+    i128 t4  = c4 + a0*b4 + a1*b3 + a2*b2 + a3*b1 + a4*b0;
+    i128 t5  = c5 + a0*b5 + a1*b4 + a2*b3 + a3*b2 + a4*b1 + a5*b0;
+    i128 t6  =              a1*b5 + a2*b4 + a3*b3 + a4*b2 + a5*b1;
+    i128 t7  =                      a2*b5 + a3*b4 + a4*b3 + a5*b2;
+    i128 t8  =                              a3*b5 + a4*b4 + a5*b3;
+    i128 t9  =                                      a4*b5 + a5*b4;
+    i128 t10 =                                              a5*b5;
+    i128 t11;
 
     t1  +=  t0 >> 42;  t0  &= LOW_42_BITS_MASK;
     t2  +=  t1 >> 42;  t1  &= LOW_42_BITS_MASK;
@@ -314,13 +307,14 @@ static void ed25519_scalars_muladd(u8 * r, const u8 * a, const u8 * b, const u8 
     t8  +=  t7 >> 42;  t7  &= LOW_42_BITS_MASK;
     t9  +=  t8 >> 42;  t8  &= LOW_42_BITS_MASK;
     t10 +=  t9 >> 42;  t9  &= LOW_42_BITS_MASK;
-    t11 += t10 >> 42;  t10 &= LOW_42_BITS_MASK;
+    /* Use t11 to store the overflow of t10 */
+    t11  = t10 >> 42;  t10 &= LOW_42_BITS_MASK;
 
     /* Bring down the limbs that exceed 2^252 according to the identity:
      *
-     *   x + 2^252 y = x + (2^252 + c) y - c y = x - c y (mod L)
+     *   x + 2^252 y = x + (2^252 + u) y - u y = x - u y (mod L)
      *
-     * where c = L - 2^252. See ed25519_scalar_reduce for a more detailed
+     * where u = L - 2^252. See ed25519_scalar_reduce for a more detailed
      * description.
      */
     t5 -= t11 * GROUP_ORDER_LIMB_0;
@@ -354,17 +348,14 @@ static void ed25519_scalars_muladd(u8 * r, const u8 * a, const u8 * b, const u8 
     t0 -= t6 * GROUP_ORDER_LIMB_0;
     t1 -= t6 * GROUP_ORDER_LIMB_1;
     t2 -= t6 * GROUP_ORDER_LIMB_2;
-    /* t6 is fully distributed among lower limbs and we will need it
-     * for handling overflow in t5. Clear it here to prepare it for
-     * this purpose. */
-    t6 = 0;
 
     t1 += t0 >> 42;  t0 &= LOW_42_BITS_MASK;
     t2 += t1 >> 42;  t1 &= LOW_42_BITS_MASK;
     t3 += t2 >> 42;  t2 &= LOW_42_BITS_MASK;
     t4 += t3 >> 42;  t3 &= LOW_42_BITS_MASK;
     t5 += t4 >> 42;  t4 &= LOW_42_BITS_MASK;
-    t6 += t5 >> 42;  t5 &= LOW_42_BITS_MASK;
+    /* Use t6 to store the overflow of t5 */
+    t6  = t5 >> 42;  t5 &= LOW_42_BITS_MASK;
 
     /* Something may have bubbled up into t6 (overflow in t5) */
     t0 -= t6 * GROUP_ORDER_LIMB_0;

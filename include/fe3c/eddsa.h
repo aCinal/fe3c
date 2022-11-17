@@ -18,7 +18,7 @@ typedef enum eddsa_curve {
 #endif /* FE3C_SUPPORT_CURVE_ED25519 */
 
 #if defined(FE3C_SUPPORT_CURVE_ED448)
-    EDDSA_CURVE_ED448,                /**< Ed448-Goldilocks */
+    EDDSA_CURVE_ED448,                /**< Ed448 */
 #endif /* FE3C_SUPPORT_CURVE_ED448 */
 
     /* Keep this last for boundary checking */

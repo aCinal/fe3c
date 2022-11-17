@@ -20,6 +20,7 @@ TEST(HASH_FUNCTION_SHA512, EmptyIovec) {
         "\x63\xb9\x31\xbd\x47\x41\x7a\x81\xa5\x38\x32\x7a\xf9\x27\xda\x3e";
 
     hash_sha512(output, nullptr, 0);
+
     MEMCMP_EQUAL(expected_output, output, HASH_OUTPUT_SIZE_IN_BYTES);
 }
 
@@ -93,6 +94,28 @@ TEST(HASH_FUNCTION_SHA512, GatherIoTest) {
     iov[1].iov_base = "The best. May it never change.";
     APPROPRIATE_IOV_LEN(iov[1]);
     iov[2].iov_base = "And may it never change us.";
+    APPROPRIATE_IOV_LEN(iov[2]);
+    hash_sha512(output, iov, 3);
+
+    MEMCMP_EQUAL(expected_output, output, HASH_OUTPUT_SIZE_IN_BYTES);
+}
+
+TEST(HASH_FUNCTION_SHA512, BufferSkippingTest) {
+
+    u8 output[HASH_OUTPUT_SIZE_IN_BYTES];
+    const u8 expected_output[] = \
+        "\x4e\xcd\xfe\x9c\x99\xbb\x3f\x66\xe8\xc7\x1c\x54\xc7\x94\xcf\xb5" \
+        "\xd3\x47\x82\xbe\x82\xa3\x41\x20\xf6\xb6\x68\x05\xee\xb2\xbb\x4d" \
+        "\x2b\xab\x70\x72\x82\xb8\x62\xd3\x41\x86\xef\x11\x03\xf1\xb3\xff" \
+        "\x2d\xdf\x60\x4d\x49\xe8\x39\xdc\xc3\xa0\x23\xc5\xd3\x1c\xf1\x3e";
+
+    struct iovec iov[3];
+    iov[0].iov_base = "Why did you throw the jack of hearts away?";
+    APPROPRIATE_IOV_LEN(iov[0]);
+    iov[1].iov_base = "Why did you throw the jack of hearts away?";
+    /* Expect the second buffer to be skipped */
+    iov[1].iov_len = 0;
+    iov[2].iov_base = "It was the only card in the deck that I had left to play.";
     APPROPRIATE_IOV_LEN(iov[2]);
     hash_sha512(output, iov, 3);
 

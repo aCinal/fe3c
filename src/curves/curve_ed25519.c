@@ -5,8 +5,8 @@
 #include <points/points.h>
 
 #if !FE3C_SUPPORT_CURVE_ED25519
-    #error "Build system inconsistency detected. Compiling field_elements_ed25519_64.c with FE3C_SUPPORT_CURVE_ED25519 undefined"
-#endif
+    #error "Build system inconsistency detected! curve_ed25519.c in use despite FE3C_SUPPORT_CURVE_ED25519 not being set"
+#endif /* !FE3C_SUPPORT_CURVE_ED25519 */
 
 static void prune_buffer(u8 * buffer);
 
@@ -28,8 +28,12 @@ void ed25519_init_curve(void) {
 
 static void prune_buffer(u8 * buffer) {
 
-    /* According to RFC 8032: 'Prune the buffer... */
-    buffer[0] &= 0xF8;   /* ...the lowest three bits of the first octet are cleared, so that the scalar is a multiple of the cofactor 8... */
-    buffer[31] &= 0x7F;  /* ...the highest bit of the last octet is cleared... */
-    buffer[31] |= 0x40;  /* ...and the second highest bit of the last octet is set' */
+    /* Prune the buffer or "clamp" the encoded scalar as specified by RFC 8032 */
+
+    /* The lowest three bits of the first octet are cleared, so that the scalar is a multiple of the cofactor 8 */
+    buffer[0] &= 0xf8;
+    /* The highest bit of the last octet is cleared... */
+    buffer[31] &= 0x7f;
+    /* ...and the second highest bit of the last octet is set */
+    buffer[31] |= 0x40;
 }

@@ -52,7 +52,7 @@ static inline int ed25519_is_on_curve(const point * p) {
 }
 #endif /* FE3C_ENABLE_SANITY_CHECKS */
 
-static int ed25519_points_equal(point * p, point * q) {
+static int ed25519_points_equal(const point * p, const point * q) {
 
     fe lhs;
     fe rhs;
@@ -87,7 +87,7 @@ static void ed25519_encode(u8 * buf, const point * p) {
 
     /* Encode the y-coordinate */
     fe_encode(buf, &y);
-    /* Encode the "sign" of the x coordinate (parity) in the most
+    /* Encode the "sign" of the x-coordinate (parity) in the most
      * significant bit of the last byte */
     FE3C_SANITY_CHECK( (buf[31] >> 7) == 0);
     buf[31] |= fe_lsb(&x) << 7;
@@ -136,7 +136,7 @@ static inline int ed25519_is_ok_order(const point * p) {
     /* TODO: Check against predefined table of low-order points */
     point q;
 
-    /* Double the point three times to obtain cofactor times the point */
+    /* Double the point three times to obtain cofactor (8) times the point */
     ed25519_point_double(&q, p);
     ed25519_point_double(&q, &q);
     ed25519_point_double(&q, &q);
@@ -159,7 +159,7 @@ static int ed25519_decode(point * p, const u8 * buf) {
      * and v = d y^2 + 1. The denominator is always non-zero mod p = 2^255 - 19.
      * To compute the square root we first compute the candidate square root
      * x = (u/v)^{(p+3)/8}. Let a = (u/v), b = a^{(p+3)/8} and note that
-     * a^{-1} b^2 = a a^{(p+3)/4} = a^{(p-1)/4} which is the square root of
+     * a^{-1} b^2 = a^{-1} a^{(p+3)/4} = a^{(p-1)/4} which is the square root of
      * a^{(p-1)/2} which is necessarily equal to -1, 1, or 0 (Legendre symbol).
      * If it is equal to 1, then b^2 is equal to a and so b is the square root.
      * If it is equal to -1, then -b^2 = a and so the square root of a is i b,

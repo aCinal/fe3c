@@ -30,7 +30,7 @@ void hash_sha512(u8 * output, const struct iovec * iov, int iovcnt) {
 
     /* Allocate an input block buffer of 1024 bits. SHA-512 processes the messages in
      * blocks of 1024 bits. The input message will be written into this buffer */
-    u8 block_buffer[SHA512_INPUT_BLOCK_SIZE_BYTES];
+    u8 block_buffer[SHA512_BLOCK_SIZE_BYTES];
     /* Note that RFC 6234 defines the message length to be the number of bits and
      * we require two 64-bit words to store it */
     u64 message_length_high = 0;
@@ -63,7 +63,7 @@ void hash_sha512(u8 * output, const struct iovec * iov, int iovcnt) {
 
         /* Write the message into the temporary buffer of size 1024 bits - once this
          * buffer is filled, process it and update the state */
-        size_t remaining_space = SHA512_INPUT_BLOCK_SIZE_BYTES - where_were_we;
+        size_t remaining_space = SHA512_BLOCK_SIZE_BYTES - where_were_we;
         if (input_length >= remaining_space) {
 
             /* Process whatever was left in the buffer by a previous iteration along with
@@ -75,16 +75,17 @@ void hash_sha512(u8 * output, const struct iovec * iov, int iovcnt) {
 
             /* Continue processing full 1024-bit blocks of the current input buffer (read it directly from the
              * input buffer not from the intermediate block buffer) */
-            while (input_length >= SHA512_INPUT_BLOCK_SIZE_BYTES) {
+            while (input_length >= SHA512_BLOCK_SIZE_BYTES) {
 
                 sha512_compress(state, input, message_schedule, working_variables);
-                input += SHA512_INPUT_BLOCK_SIZE_BYTES;
-                input_length -= SHA512_INPUT_BLOCK_SIZE_BYTES;
+                input += SHA512_BLOCK_SIZE_BYTES;
+                input_length -= SHA512_BLOCK_SIZE_BYTES;
             }
 
             where_were_we = 0;
-            /* At this point we are possibly left with some bytes remaining in the input buffer (less than 1024 bits)
-             * - put this remainder in the intermediate block buffer to be used by the next iteration */
+            /* At this point we are possibly left with some bytes remaining in the input buffer (fewer
+             * than SHA512_BLOCK_SIZE_BYTES) - put this remainder in the intermediate block buffer
+             * to be used by the next iteration */
         }
 
         (void) memcpy(&block_buffer[where_were_we], input, input_length);
@@ -95,14 +96,14 @@ void hash_sha512(u8 * output, const struct iovec * iov, int iovcnt) {
 
     /* Note that the last 16 octets are used to store the message length (Merkle-Damgard strengthening)
      * - check if we have some more free space in the current block */
-    if (where_were_we < SHA512_INPUT_BLOCK_SIZE_BYTES - 16) {
+    if (where_were_we < SHA512_BLOCK_SIZE_BYTES - 16) {
 
         /* Pad the additional free space with a one followed by zeroes */
         block_buffer[where_were_we] = 0x80;
         where_were_we++;
         /* Use a plain memset here, a compliant compiler cannot optimize it away (which is not the case
          * in places where we use purge_secrets instead) */
-        (void) memset(&block_buffer[where_were_we], 0, SHA512_INPUT_BLOCK_SIZE_BYTES - 16 - where_were_we);
+        (void) memset(&block_buffer[where_were_we], 0, SHA512_BLOCK_SIZE_BYTES - 16 - where_were_we);
 
     } else {
 
@@ -110,15 +111,15 @@ void hash_sha512(u8 * output, const struct iovec * iov, int iovcnt) {
          * and process it */
         block_buffer[where_were_we] = 0x80;
         where_were_we++;
-        (void) memset(&block_buffer[where_were_we], 0, SHA512_INPUT_BLOCK_SIZE_BYTES - where_were_we);
+        (void) memset(&block_buffer[where_were_we], 0, SHA512_BLOCK_SIZE_BYTES - where_were_we);
         sha512_compress(state, block_buffer, message_schedule, working_variables);
         /* Pad the next block with all zeroes up to the last 16 octets */
-        (void) memset(block_buffer, 0, SHA512_INPUT_BLOCK_SIZE_BYTES - 16);
+        (void) memset(block_buffer, 0, SHA512_BLOCK_SIZE_BYTES - 16);
     }
 
     /* Do the Merkle-Damgard strengthening and copy the message length into the last 16 octets of the padding */
-    store_bigendian_64(&block_buffer[SHA512_INPUT_BLOCK_SIZE_BYTES - 16], &message_length_high, 1);
-    store_bigendian_64(&block_buffer[SHA512_INPUT_BLOCK_SIZE_BYTES - 8], &message_length_low, 1);
+    store_bigendian_64(&block_buffer[SHA512_BLOCK_SIZE_BYTES - 16], &message_length_high, 1);
+    store_bigendian_64(&block_buffer[SHA512_BLOCK_SIZE_BYTES - 8], &message_length_low, 1);
     /* Do one final block processing */
     sha512_compress(state, block_buffer, message_schedule, working_variables);
     /* Copy the final state to the output buffer */
@@ -152,7 +153,7 @@ static inline void sha512_compress(u64 * state, const u8 * input_block, u64 * sc
         u64 T1 = work->h + \
                  BSIG1(work->e) + \
                  Ch(work->e, work->f, work->g) + \
-                 magic_constants[t] + \
+                 round_constants[t] + \
                  schedule[t];
         u64 T2 = BSIG0(work->a) + Maj(work->a, work->b, work->c);
 
@@ -181,10 +182,10 @@ static inline void sha512_compress(u64 * state, const u8 * input_block, u64 * sc
 static inline void sha512_prepare_message_schedule(u64 * schedule, const u8 * input) {
 
     /* Write the current input block into the first 16 words of the message schedule */
-    load_bigendian_64(schedule, input, SHA512_INPUT_BLOCK_SIZE_BYTES / 8);
+    load_bigendian_64(schedule, input, SHA512_BLOCK_SIZE_BYTES / 8);
 
     /* Fill in the rest of the message schedule */
-    for (int t = SHA512_INPUT_BLOCK_SIZE_BYTES / 8; t < SHA512_MESSAGE_SCHEDULE_WORD_COUNT; t++) {
+    for (int t = SHA512_BLOCK_SIZE_BYTES / 8; t < SHA512_MESSAGE_SCHEDULE_WORD_COUNT; t++) {
 
         /* TODO: Optimize initializing the message schedule - this can be done in parallel to actually
          * computing the hash */
@@ -198,7 +199,7 @@ static inline void sha512_prepare_message_schedule(u64 * schedule, const u8 * in
 
 static inline void store_bigendian_64(u8 * dst, const u64 * src, size_t wordcount) {
 #if FE3C_BIGENDIAN_TARGET
-    (void) memcpy(src, dst, wordcount * 8);
+    (void) memcpy(dst, src, wordcount * 8);
 #else
     /* Little-endian target or endianness unknown (take the safe route) - store the words
      * into bytes manually */
