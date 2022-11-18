@@ -13,13 +13,8 @@ extern "C" {
  */
 typedef enum eddsa_curve {
 
-#if defined(FE3C_SUPPORT_CURVE_ED25519)
     EDDSA_CURVE_ED25519,              /**< Ed25519 */
-#endif /* FE3C_SUPPORT_CURVE_ED25519 */
-
-#if defined(FE3C_SUPPORT_CURVE_ED448)
     EDDSA_CURVE_ED448,                /**< Ed448 */
-#endif /* FE3C_SUPPORT_CURVE_ED448 */
 
     /* Keep this last for boundary checking */
     EDDSA_NUMBER_OF_SUPPORTED_CURVES  /**< Number of supported curves */
@@ -175,6 +170,14 @@ int eddsa_get_public_key_length(eddsa_curve curve_id);
  * @see eddsa_curve
  */
 int eddsa_get_secret_key_length(eddsa_curve curve_id);
+
+/**
+ * @brief Check if the library has been compiled to support a given curve
+ * @param curve_id Identifier of the curve
+ * @return A non-zero value if a curve is supported, zero otherwise
+ * @see eddsa_curve
+ */
+int eddsa_is_curve_supported(eddsa_curve curve_id);
 
 #ifdef __cplusplus
 }
