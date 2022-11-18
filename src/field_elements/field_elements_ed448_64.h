@@ -28,7 +28,8 @@ static inline u64 _load_56(const u8 src[7]) {
     u64 dst;
 #if FE3C_LILENDIAN_TARGET
     /* Target already little endian - copy the bytes with no shifts */
-    (void) memcpy(&dst, src, 8);
+    dst = 0;
+    (void) memcpy(&dst, src, 7);
 #else
     /* Big-endian target or endianness unknown (take the safe route) */
     dst  = (u64) src[0];

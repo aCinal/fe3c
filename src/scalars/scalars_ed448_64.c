@@ -48,6 +48,7 @@ static inline u64 load_56(const u8 src[7]) {
     /* Integer encoding is always little endian according to RFC 8032 */
     u64 dst;
 #if FE3C_LILENDIAN_TARGET
+    dst = 0;
     /* Target already little endian - copy the bytes with no shifts */
     (void) memcpy(&dst, src, 7);
 #else

@@ -6,8 +6,8 @@
 
 static inline void sha512_compress(u64 * state, const u8 * input_block, u64 * schedule, sha512_working_variables * work);
 static inline void sha512_prepare_message_schedule(u64 * schedule, const u8 * input);
-static inline void store_bigendian_64(u8 * dst, const u64 * src, size_t wordcount);
-static inline void load_bigendian_64(u64 * dst, const u8 * src, size_t wordcount);
+static inline void store_64(u8 * dst, const u64 * src, size_t wordcount);
+static inline void load_64(u64 * dst, const u8 * src, size_t wordcount);
 
 void hash_sha512(u8 * output, const struct iovec * iov, int iovcnt) {
 
@@ -118,12 +118,12 @@ void hash_sha512(u8 * output, const struct iovec * iov, int iovcnt) {
     }
 
     /* Do the Merkle-Damgard strengthening and copy the message length into the last 16 octets of the padding */
-    store_bigendian_64(&block_buffer[SHA512_BLOCK_SIZE_BYTES - 16], &message_length_high, 1);
-    store_bigendian_64(&block_buffer[SHA512_BLOCK_SIZE_BYTES - 8], &message_length_low, 1);
+    store_64(&block_buffer[SHA512_BLOCK_SIZE_BYTES - 16], &message_length_high, 1);
+    store_64(&block_buffer[SHA512_BLOCK_SIZE_BYTES - 8], &message_length_low, 1);
     /* Do one final block processing */
     sha512_compress(state, block_buffer, message_schedule, working_variables);
     /* Copy the final state to the output buffer */
-    store_bigendian_64(output, state, SHA512_STATE_WORD_COUNT);
+    store_64(output, state, SHA512_STATE_WORD_COUNT);
 
     /* Purge the on-stack state */
     purge_secrets(state, sizeof(state));
@@ -182,7 +182,7 @@ static inline void sha512_compress(u64 * state, const u8 * input_block, u64 * sc
 static inline void sha512_prepare_message_schedule(u64 * schedule, const u8 * input) {
 
     /* Write the current input block into the first 16 words of the message schedule */
-    load_bigendian_64(schedule, input, SHA512_BLOCK_SIZE_BYTES / 8);
+    load_64(schedule, input, SHA512_BLOCK_SIZE_BYTES / 8);
 
     /* Fill in the rest of the message schedule */
     for (int t = SHA512_BLOCK_SIZE_BYTES / 8; t < SHA512_MESSAGE_SCHEDULE_WORD_COUNT; t++) {
@@ -197,7 +197,8 @@ static inline void sha512_prepare_message_schedule(u64 * schedule, const u8 * in
     }
 }
 
-static inline void store_bigendian_64(u8 * dst, const u64 * src, size_t wordcount) {
+static inline void store_64(u8 * dst, const u64 * src, size_t wordcount) {
+
 #if FE3C_BIGENDIAN_TARGET
     (void) memcpy(dst, src, wordcount * 8);
 #else
@@ -217,7 +218,8 @@ static inline void store_bigendian_64(u8 * dst, const u64 * src, size_t wordcoun
 #endif
 }
 
-static inline void load_bigendian_64(u64 * dst, const u8 * src, size_t wordcount) {
+static inline void load_64(u64 * dst, const u8 * src, size_t wordcount) {
+
 #if FE3C_BIGENDIAN_TARGET
     (void) memcpy(dst, src, wordcount * 8);
 #else

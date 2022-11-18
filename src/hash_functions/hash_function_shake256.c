@@ -204,13 +204,13 @@ static inline u64 load_64(const u8 src[8]) {
 
 static inline void store_64(u8 * dst, const u64 * src, int bytecount) {
 
-#if FE3C_LILENDIAN_TARGET
-    /* Target already little endian - copy the words with no shifts */
-    (void) memcpy(&dst, src, bytecount);
-#else
-    /* Big-endian target or endianness unknown (take the safe route) */
     int wordcount = bytecount >> 3;
     int trailer = bytecount & 0x7;
+#if FE3C_LILENDIAN_TARGET
+    /* Target already little endian - copy the full words with no shifts */
+    (void) memcpy(dst, src, wordcount << 3);
+#else
+    /* Big-endian target or endianness unknown (take the safe route) */
     for (size_t i = 0; i < wordcount; i++) {
 
         dst[8 * i + 0] = (u8) (src[i] >> 0 * 8);
@@ -222,10 +222,11 @@ static inline void store_64(u8 * dst, const u64 * src, int bytecount) {
         dst[8 * i + 6] = (u8) (src[i] >> 6 * 8);
         dst[8 * i + 7] = (u8) (src[i] >> 7 * 8);
     }
-
+#endif
+    /* Set the trailer manually for either endianness to not risk reading
+     * uninitialized stack later */
     for (size_t j = 0; j < trailer; j++) {
 
         dst[wordcount * 8 + j] = (u8) (src[wordcount] >> j * 8);
     }
-#endif
 }

@@ -99,7 +99,7 @@ AC_MSG_RESULT([
     $PACKAGE $VERSION
 
     Curve Ed25519 supported:             ${ed25519}
-    Curve Ed449 supported:               ${ed448}
+    Curve Ed448 supported:               ${ed448}
 
     Optimized for 32-bit architectures:  ${optimize32}
     Sanity checks enabled:               ${sanity_checks}

@@ -44,6 +44,7 @@ static inline u64 load_48(const u8 src[6]) {
     u64 dst;
 #if FE3C_LILENDIAN_TARGET
     /* Target already little endian - copy the bytes with no shifts */
+    dst = 0;
     (void) memcpy(&dst, src, 6);
 #else
     /* Big-endian target or endianness unknown (take the safe route) */
@@ -63,6 +64,7 @@ static inline u64 load_56(const u8 src[7]) {
     u64 dst;
 #if FE3C_LILENDIAN_TARGET
     /* Target already little endian - copy the bytes with no shifts */
+    dst = 0;
     (void) memcpy(&dst, src, 7);
 #else
     /* Big-endian target or endianness unknown (take the safe route) */

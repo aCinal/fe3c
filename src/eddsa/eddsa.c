@@ -252,6 +252,5 @@ int eddsa_get_secret_key_length(eddsa_curve curve_id) {
 
 int eddsa_is_curve_supported(eddsa_curve curve_id) {
 
-    FE3C_SANITY_CHECK(curve_id < EDDSA_NUMBER_OF_SUPPORTED_CURVES);
-    return (curves[curve_id] != NULL);
+    return (curve_id < EDDSA_NUMBER_OF_SUPPORTED_CURVES) && (curves[curve_id] != NULL);
 }
