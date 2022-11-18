@@ -4,10 +4,6 @@
 
 TEST_GROUP(EDDSA_FAIL_CASES_ED448) {
 
-    TEST_SETUP() {
-
-        ed448_init_curve();
-    }
 };
 
 TEST(EDDSA_FAIL_CASES_ED448, Verify_PublicKeyDecodingFails_ExpectVerificationFailure) {

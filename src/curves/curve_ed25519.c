@@ -10,21 +10,15 @@
 
 static void prune_buffer(u8 * buffer);
 
-static curve s_ed25519;
-
-void ed25519_init_curve(void) {
-
-    s_ed25519.hash_function = hash_sha512;
-    s_ed25519.gops = &ed25519_group_ops;
-    s_ed25519.sops = &ed25519_scalar_ops;
-    s_ed25519.prune_buffer = prune_buffer;
-    s_ed25519.b_in_bytes = 256 / 8;
-    s_ed25519.dom_string = "SigEd25519 no Ed25519 collisions";
-    s_ed25519.dom_string_length = 32;
-
-    /* Register the curve */
-    curves[EDDSA_CURVE_ED25519] = &s_ed25519;
-}
+curve ed25519_curve = {
+    .hash_function = hash_sha512,
+    .gops = &ed25519_group_ops,
+    .sops = &ed25519_scalar_ops,
+    .prune_buffer = prune_buffer,
+    .b_in_bytes = 256 / 8,
+    .dom_string = "SigEd25519 no Ed25519 collisions",
+    .dom_string_length = 32
+};
 
 static void prune_buffer(u8 * buffer) {
 

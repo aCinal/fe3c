@@ -128,11 +128,6 @@ typedef struct eddsa_verify_request {
 } eddsa_verify_request;
 
 /**
- * @brief Initialize the library
- */
-void fe3c_init(void);
-
-/**
  * @brief Produce an EdDSA signature over a given message
  * @param req A signature request structure
  * @see eddsa_sign_request

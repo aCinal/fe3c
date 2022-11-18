@@ -23,14 +23,6 @@ typedef struct curve {
 
 extern const curve * curves[EDDSA_NUMBER_OF_SUPPORTED_CURVES];
 
-#if FE3C_SUPPORT_CURVE_ED25519
-void ed25519_init_curve(void);
-#endif /* FE3C_SUPPORT_CURVE_ED25519 */
-
-#if FE3C_SUPPORT_CURVE_ED448
-void ed448_init_curve(void);
-#endif /* FE3C_SUPPORT_CURVE_ED448 */
-
 #ifdef __cplusplus
 }
 #endif

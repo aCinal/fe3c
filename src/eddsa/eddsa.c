@@ -2,17 +2,6 @@
 #include <curves/curves.h>
 #include <utils/utils.h>
 
-void fe3c_init(void) {
-
-#if FE3C_SUPPORT_CURVE_ED25519
-    ed25519_init_curve();
-#endif /* FE3C_SUPPORT_CURVE_ED25519 */
-
-#if FE3C_SUPPORT_CURVE_ED448
-    ed448_init_curve();
-#endif /* FE3C_SUPPORT_CURVE_ED448 */
-}
-
 void eddsa_sign(const eddsa_sign_request * req) {
 
     FE3C_SANITY_CHECK(req);

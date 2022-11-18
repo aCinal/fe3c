@@ -4,10 +4,6 @@
 
 TEST_GROUP(EDDSA_RFC_VECTORS_ED448) {
 
-    TEST_SETUP() {
-
-        ed448_init_curve();
-    }
 };
 
 TEST(EDDSA_RFC_VECTORS_ED448, TestBlank_DerivePublicKey) {

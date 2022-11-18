@@ -6,25 +6,19 @@
 
 #if !FE3C_SUPPORT_CURVE_ED448
     #error "Build system inconsistency detected! curve_ed448.c in use despite FE3C_SUPPORT_CURVE_ED448 not being set"
-#endif
+#endif /* !FE3C_SUPPORT_CURVE_ED448 */
 
 static void prune_buffer(u8 * buffer);
 
-static curve s_ed448;
-
-void ed448_init_curve(void) {
-
-    s_ed448.hash_function = hash_shake256;
-    s_ed448.gops = &ed448_group_ops;
-    s_ed448.sops = &ed448_scalar_ops;
-    s_ed448.prune_buffer = prune_buffer;
-    s_ed448.b_in_bytes = 456 / 8;
-    s_ed448.dom_string = "SigEd448";
-    s_ed448.dom_string_length = 8;
-
-    /* Register the curve */
-    curves[EDDSA_CURVE_ED448] = &s_ed448;
-}
+curve ed448_curve = {
+    .hash_function = hash_shake256,
+    .gops = &ed448_group_ops,
+    .sops = &ed448_scalar_ops,
+    .prune_buffer = prune_buffer,
+    .b_in_bytes = 456 / 8,
+    .dom_string = "SigEd448",
+    .dom_string_length = 8
+};
 
 static void prune_buffer(u8 * buffer) {
 
