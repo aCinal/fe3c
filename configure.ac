@@ -81,17 +81,17 @@ AC_ARG_ENABLE([32bit],
 AM_CONDITIONAL([FE3C_32BIT], [test "x$optimize32" = "xyes"])
 AS_IF([test "x$optimize32" = "xyes"], AC_DEFINE([FE3C_32BIT]), AC_DEFINE([FE3C_64BIT]))
 
-enable_sanity_checks="no"
+sanity_checks="no"
 AC_ARG_ENABLE([sanity-checks],
               [AS_HELP_STRING([--enable-sanity-checks],
                               [Enable sanity-check assertions in the code])],
               [AS_IF([test "x$enableval" = "xyes"],
-                     [enable_sanity_checks="yes"],
+                     [sanity_checks="yes"],
 
                      [test "x$enableval" != "xno"],
                      [AC_MSG_ERROR([bad value ${enableval} for --enable-sanity-checks])])]
               [])
-AS_IF([test "x$enable_sanity_checks" = "xyes"], AC_DEFINE([FE3C_ENABLE_SANITY_CHECKS]), [])
+AS_IF([test "x$sanity_checks" = "xyes"], AC_DEFINE([FE3C_ENABLE_SANITY_CHECKS]), [])
 
 AC_CONFIG_FILES([Makefile src/Makefile])
 AC_OUTPUT
@@ -102,5 +102,5 @@ AC_MSG_RESULT([
     Curve Ed449 supported:               ${ed448}
 
     Optimized for 32-bit architectures:  ${optimize32}
-    Sanity checks enabled:               ${enable_sanity_checks}
+    Sanity checks enabled:               ${sanity_checks}
 ])
