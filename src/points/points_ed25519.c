@@ -150,9 +150,7 @@ static int ed25519_decode(point * p, const u8 * buf) {
     int success = 1;
     /* Recover the "sign" or "parity" of the x-coordinate */
     int parity = buf[31] >> 7;
-    fe_decode(&p->Y, buf);
-    /* Fail the decoding procedure if the decoded point is not canonical */
-    success &= fe_is_canonical(&p->Y);
+    success &= fe_decode(&p->Y, buf);
 
     /* We now need to recover the x-coordinate. Note that the curve equation
      * -x^2 + y^2 = 1 + d x^2 y^2 implies that x^2 = u / v, where u = y^2 - 1

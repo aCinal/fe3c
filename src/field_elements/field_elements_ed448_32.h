@@ -946,8 +946,10 @@ static inline void fe_encode(u8 * buffer, fe * a) {
  * @brief Decode a field element according to RFC 8032
  * @param[out] r Decoded field element
  * @param[out] buffer Encoding of the field element
+ * @return 1 if decoding succeeded, 0 otherwise
  */
-static inline void fe_decode(fe * r, const u8 * buffer) {
+__attribute__((warn_unused_result))
+static inline int fe_decode(fe * r, const u8 * buffer) {
 
     r->ed448[ 0] = ( _load_32(&buffer[ 0]) >>  0 ) & LOW_28_BITS_MASK;
     /* Offset by 28 bits, i.e. three full bytes and a shift of four bits */
@@ -969,6 +971,11 @@ static inline void fe_decode(fe * r, const u8 * buffer) {
     r->ed448[13] = ( _load_32(&buffer[45]) >>  4 ) & LOW_28_BITS_MASK;
     r->ed448[14] = ( _load_32(&buffer[49]) >>  0 ) & LOW_28_BITS_MASK;
     r->ed448[15] = ( _load_32(&buffer[52]) >>  4 ) & LOW_28_BITS_MASK;
+
+    /* Check that the last byte is cleared (except for possibly the highest bit)
+     * and that the rest of the bytes (which we have just parsed into limbs)
+     * encode a canonical integer (i.e. smaller than p) */
+    return fe_is_canonical(r) & ( (buffer[56] & 0x7F) == 0 );
 }
 
 /**

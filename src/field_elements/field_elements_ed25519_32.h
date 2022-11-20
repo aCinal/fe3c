@@ -732,8 +732,10 @@ static inline void fe_encode(u8 * buffer, fe * a) {
  * @brief Decode a field element according to RFC 8032
  * @param[out] r Decoded field element
  * @param[out] buffer Encoding of the field element
+ * @return 1 if decoding succeeded, 0 otherwise
  */
-static inline void fe_decode(fe * r, const u8 * buffer) {
+__attribute__((warn_unused_result))
+static inline int fe_decode(fe * r, const u8 * buffer) {
 
     r->ed25519[0] = ( _load_32(&buffer[ 0]) >> 0 ) & LOW_26_BITS_MASK;
     /* Do not offset by 8 now (another 32 bits) since we have dropped 6 bits from buffer[3]. Offset
@@ -750,6 +752,8 @@ static inline void fe_decode(fe * r, const u8 * buffer) {
     r->ed25519[8] = ( _load_32(&buffer[25]) >> 4 ) & LOW_26_BITS_MASK;
     /* Note that the last bit gets naturally ignored as required by RFC 8032 */
     r->ed25519[9] = ( _load_32(&buffer[28]) >> 6 ) & LOW_25_BITS_MASK;
+
+    return fe_is_canonical(r);
 }
 
 /**
