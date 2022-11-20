@@ -208,9 +208,7 @@ static void ed25519_scalar_reduce(u8 * s) {
     t3  -= t12 * GROUP_ORDER_LIMB_3;
     t4  -= t12 * GROUP_ORDER_LIMB_4;
     t5  -= t12 * GROUP_ORDER_LIMB_5;
-    /* Clear t12 - it has now been distributed among the lower limbs and shall now
-     * be used to store any overflow from t11 */
-    t12 = 0;
+
     t1  += t0  >> 21;  t0  &= LOW_21_BITS_MASK;
     t2  += t1  >> 21;  t1  &= LOW_21_BITS_MASK;
     t3  += t2  >> 21;  t2  &= LOW_21_BITS_MASK;
@@ -222,7 +220,8 @@ static void ed25519_scalar_reduce(u8 * s) {
     t9  += t8  >> 21;  t8  &= LOW_21_BITS_MASK;
     t10 += t9  >> 21;  t9  &= LOW_21_BITS_MASK;
     t11 += t10 >> 21;  t10 &= LOW_21_BITS_MASK;
-    t12 += t11 >> 21;  t11 &= LOW_21_BITS_MASK;
+    /* Use t12 to store the overflow of t11 */
+    t12  = t11 >> 21;  t11 &= LOW_21_BITS_MASK;
 
     /* Note that some overflow may have accumulated in t12 again. Reduce it the
      * same way again. */
@@ -247,7 +246,7 @@ static void ed25519_scalar_reduce(u8 * s) {
 
     s[0]  = ( t0 >> 0 );
     s[1]  = ( t0 >> 8 );
-    /* In the first limb we only have 5 bits for byte number 2,
+    /* In the first limb we only have 5 bits left for byte number 2,
      * the high 3 bits we must take from the next limb */
     s[2]  = ( t0 >> 16 ) | ( t1 << 5 );
     /* Low 3 bits from t1 we have already encoded into s[2] */

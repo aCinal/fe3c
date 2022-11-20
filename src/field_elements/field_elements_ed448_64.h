@@ -160,7 +160,7 @@ static inline void fe_conditional_move(fe * r, const fe * a, int move) {
     x7 &= mask;
 
     /* If move=0 then x0-x7 are all zero and so we write back the limbs of r into r.
-     * If move=1 then x0-x7 contain r^a and so by XORing back with the limbs of r we
+     * If move=1 then x0-x7 contain r XOR a and so by XORing back with the limbs of r we
      * write the limbs of a into r */
     r->ed448[0] = t0 ^ x0;
     r->ed448[1] = t1 ^ x1;
@@ -181,7 +181,7 @@ static inline void fe_conditional_move(fe * r, const fe * a, int move) {
 static inline void fe_weak_reduce(fe * r, const fe * a) {
 
     /* Do a "relaxed" reduction (to borrow terminology form Michael Scott's "Slothful reduction" paper)
-     * - this ensures the result is less than 2p (where p = 2^255 - 19) */
+     * - this ensures the result is less than 2p (where p = 2^448 - 2^224 - 1) */
 
     /* Use 128-bit-wide auxiliary variables */
     u128 t0 = a->ed448[0];
@@ -216,23 +216,23 @@ static inline void fe_weak_reduce(fe * r, const fe * a) {
     t6 += t5 >> 56;  t5 &= LOW_56_BITS_MASK;
     t7 += t6 >> 56;  t6 &= LOW_56_BITS_MASK;
 
-    /* At this point low 56 bits of t0-t7 hold the value of a modulo 2^448, i.e.
-     * x + vz, using the notation from above. Add vy and y to this result. Note
-     * that y is stored in the "overflow" of t7, i.e. bits starting from bit 56.
-     * Also note that adding vy is equivalent to adding y to the limbs starting
-     * from limb 4 (since v = 2^{224} = 2^{4*56}). */
+    /* At this point low 56 bits of each of limbs t0-t7 hold the value of a modulo
+     * 2^448, i.e. x + vz, using the notation from above. Add vy and y to this
+     * result. Note that y is stored in the "overflow" of t7, i.e. bits starting
+     * from bit 56. Also note that adding vy is equivalent to adding y to the limbs
+     * starting from limb 4 (since v = 2^{224} = 2^{4*56}). */
 
     /* Add y */
-    t0 += (t7 >> 56);
+    t0 += t7 >> 56;
     /* Add y 2^224 */
-    t4 += (t7 >> 56);
+    t4 += t7 >> 56;
     /* Clear the overflow in t7 */
     t7 &= LOW_56_BITS_MASK;
 
     /* Do this once more to ensure we correctly normalize
      * all integers possible to be represented in our system,
      * i.e. we don't get surprised by (t7 >> 56) leading
-     * to overflow in t0 */
+     * to overflow in t0 or t4 */
     t1 += t0 >> 56;  t0 &= LOW_56_BITS_MASK;
     t2 += t1 >> 56;  t1 &= LOW_56_BITS_MASK;
     t3 += t2 >> 56;  t2 &= LOW_56_BITS_MASK;
@@ -240,8 +240,8 @@ static inline void fe_weak_reduce(fe * r, const fe * a) {
     t5 += t4 >> 56;  t4 &= LOW_56_BITS_MASK;
     t6 += t5 >> 56;  t5 &= LOW_56_BITS_MASK;
     t7 += t6 >> 56;  t6 &= LOW_56_BITS_MASK;
-    t0 += (t7 >> 56);
-    t4 += (t7 >> 56);
+    t0 += t7 >> 56;
+    t4 += t7 >> 56;
     t7 &= LOW_56_BITS_MASK;
 
     r->ed448[0] = t0;
@@ -267,51 +267,34 @@ static inline void fe_strong_reduce(fe * r, const fe * a) {
 
     /* Compute r-p and conditionally use it as a result if r is larger than p */
     fe t;
-    u128 c = 1;
-    /* Store r + 1 in t (we will subtract 2^448 - 2^224 from it, resulting in
+    /* Store r + 2^224 + 1 in t (we will subtract 2^448 from it, resulting in
      * t = r - p)*/
-    c += r->ed448[0];
-    t.ed448[0] = c & LOW_56_BITS_MASK;
-    c >>= 56;
-
-    c += r->ed448[1];
-    t.ed448[1] = c & LOW_56_BITS_MASK;
-    c >>= 56;
-
-    c += r->ed448[2];
-    t.ed448[2] = c & LOW_56_BITS_MASK;
-    c >>= 56;
-
-    c += r->ed448[3];
-    t.ed448[3] = c & LOW_56_BITS_MASK;
-    c >>= 56;
-
+    t.ed448[0] = r->ed448[0] + 1;
+    t.ed448[1] = r->ed448[1];
+    t.ed448[2] = r->ed448[2];
+    t.ed448[3] = r->ed448[3];
     /* Add 2^224 to the mix */
-    c += r->ed448[4] + 1;
-    t.ed448[4] = c & LOW_56_BITS_MASK;
-    c >>= 56;
+    t.ed448[4] = r->ed448[4] + 1;
+    t.ed448[5] = r->ed448[5];
+    t.ed448[6] = r->ed448[6];
+    t.ed448[7] = r->ed448[7];
 
-    c += r->ed448[5];
-    t.ed448[5] = c & LOW_56_BITS_MASK;
-    c >>= 56;
+    t.ed448[1] += t.ed448[0] >> 56;  t.ed448[0] &= LOW_56_BITS_MASK;
+    t.ed448[2] += t.ed448[1] >> 56;  t.ed448[1] &= LOW_56_BITS_MASK;
+    t.ed448[3] += t.ed448[2] >> 56;  t.ed448[2] &= LOW_56_BITS_MASK;
+    t.ed448[4] += t.ed448[3] >> 56;  t.ed448[3] &= LOW_56_BITS_MASK;
+    t.ed448[5] += t.ed448[4] >> 56;  t.ed448[4] &= LOW_56_BITS_MASK;
+    t.ed448[6] += t.ed448[5] >> 56;  t.ed448[5] &= LOW_56_BITS_MASK;
+    t.ed448[7] += t.ed448[6] >> 56;  t.ed448[6] &= LOW_56_BITS_MASK;
 
-    c += r->ed448[6];
-    t.ed448[6] = c & LOW_56_BITS_MASK;
-    c >>= 56;
-
-    c += r->ed448[7];
-    /* At this point c contains the highest limb of r + 2^224 + 1 (extended to 128 bits).
-     * Try subtracting 2^448 - if we get an underflow this means that r < 2^448 - 2^224 - 1
-     * and so is the final result. Otherwise we must return r - p (note that this includes
-     * the case where r = p, as no underflow will occur then and c will be equal to zero). */
-    c -= (1ULL << 56);
-    /* If r >= p then we have just subtracted a factor of p = 2^448 - 2^224 - 1 and t is what
-     * we should return. */
-    t.ed448[7] = c & LOW_56_BITS_MASK;
-
-    /* Check the highest bit of c for underflow. If the highest bit is set then underflow
-     * occurred and so we return r, otherwise we set r ::= t and return that */
-    fe_conditional_move(r, &t, (c >> 127) ^ 1);
+    /* At this point t.ed448[7] contains the highest limb of r + 2^224 + 1. Try subtracting
+     * 2^448 - if we get an underflow this means that r < 2^448 - 2^224 - 1 and so r is the
+     * final result. Otherwise we must return r - p (note that this includes the case where
+     * r = p, as no underflow will occur then and t.ed448[4] will be equal to zero). */
+    t.ed448[7] -= (1ULL << 56);
+    /* Check the highest bit of t.ed448[7] for underflow. If the highest bit is set then
+     * underflow occurred and so we return r, otherwise we set r ::= t and return that */
+    fe_conditional_move(r, &t, (t.ed448[7] >> 63) ^ 1);
 }
 
 /**
@@ -413,7 +396,7 @@ static inline void fe_mul(fe * r, const fe * a, const fe * b) {
      *                    = (xu + zv) + (xv + zu + zv)S (mod p)
      *                    = (xu + zv) + ((x+z)(u+v) - xu)S (mod p)
      *
-     * since p = X^2 - X - 1. Note that in our representation the terms a and b (c and d)
+     * since p = X^2 - X - 1. Note that in our representation the terms x and z (u and v)
      * correspond to limbs 0-3 and 4-7, respectively.
      */
 
@@ -443,7 +426,6 @@ static inline void fe_mul(fe * r, const fe * a, const fe * b) {
      *
      * where mi, ki are all 56-digits for i=0,1,2,3. We shall compute simple
      * products and add them together column by column:
-     *
      *
      *                              m3     m2     m1     m0
      *                              k3     k2     k1     k0
@@ -478,9 +460,9 @@ static inline void fe_mul(fe * r, const fe * a, const fe * b) {
     u128 k2 = b2 + b6;
     u128 k3 = b3 + b7;
 
-    u128 r0 =         m1*k3 + m2*k2 + m3*k1;
-    u128 r1 =                 m2*k3 + m3*k2;
-    u128 r2 =                         m3*k3;
+    u128 r0 =             m1*k3 + m2*k2 + m3*k1;
+    u128 r1 =                     m2*k3 + m3*k2;
+    u128 r2 =                             m3*k3;
     u128 r3 = 0;
     /* Add at the 2^224 "level" the terms which exceeded 2^448 (e in the above identity),
      * which are currently held in r0-r3 */
@@ -681,9 +663,6 @@ static inline void fe_exp_p_minus_3_over_4(fe * r, const fe * a) {
  */
 static inline void fe_encode(u8 * buffer, fe * a) {
 
-    /* The field elements get encoded as little-endian byte strings according to RFC 8032 */
-    u64 t0, t1, t2, t3, t4, t5, t6;
-
     /* Canonicalize the element first */
     fe_strong_reduce(a, a);
 
@@ -691,25 +670,26 @@ static inline void fe_encode(u8 * buffer, fe * a) {
      * registers) to allow for greater instruction-level parallelism */
 
     /* Store the lowest limb + whatever can fit (8 bits) of the second lowest limb */
-    t0 = ( a->ed448[0] >>  0 ) | ( a->ed448[1] << 56 );
+    u64 t0 = ( a->ed448[0] >>  0 ) | ( a->ed448[1] << 56 );
     /* One byte of a->ed448[1] is in t0, store the rest (48 bits) here + whatever can fit
-     * (16 bits) of a->ed448[2]  */
-    t1 = ( a->ed448[1] >>  8 ) | ( a->ed448[2] << 48 );
+     * (16 bits) of a->ed448[2] */
+    u64 t1 = ( a->ed448[1] >>  8 ) | ( a->ed448[2] << 48 );
     /* 16 bits of a->ed448[2] are in t1, store the rest (40 bits) here + whatever can fit
      * (24 bits) of a->ed448[3] */
-    t2 = ( a->ed448[2] >> 16 ) | ( a->ed448[3] << 40 );
+    u64 t2 = ( a->ed448[2] >> 16 ) | ( a->ed448[3] << 40 );
     /* 24 bits of a->ed448[3] are in t2, store the rest (32 bits) here + whatever can fit
      * (32 bits) of a->ed448[4] */
-    t3 = ( a->ed448[3] >> 24 ) | ( a->ed448[4] << 32 );
+    u64 t3 = ( a->ed448[3] >> 24 ) | ( a->ed448[4] << 32 );
     /* 32 bits of a->ed448[4] are in t3, store the rest (24 bits) here + whatever can fit
      * (40 bits) of a->ed448[5] */
-    t4 = ( a->ed448[4] >> 32 ) | ( a->ed448[5] << 24 );
+    u64 t4 = ( a->ed448[4] >> 32 ) | ( a->ed448[5] << 24 );
     /* 40 bits of a->ed448[5] are in t4, store the rest (16 bits) here + whatever can fit
      * (48 bits) of a->ed448[6] */
-    t5 = ( a->ed448[5] >> 40 ) | ( a->ed448[6] << 16 );
+    u64 t5 = ( a->ed448[5] >> 40 ) | ( a->ed448[6] << 16 );
     /* Store the missing byte of a->ed448[6] and all of a->ed448[7] here */
-    t6 = ( a->ed448[6] >> 48 ) | ( a->ed448[7] << 8 );
+    u64 t6 = ( a->ed448[6] >> 48 ) | ( a->ed448[7] << 8 );
 
+    /* The field elements get encoded as little-endian byte strings according to RFC 8032 */
     _store_64(&buffer[0 * 8], t0);
     _store_64(&buffer[1 * 8], t1);
     _store_64(&buffer[2 * 8], t2);

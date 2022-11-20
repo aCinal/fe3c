@@ -7,11 +7,11 @@
 #include <field_elements/field_elements_ed25519_64.h>
 #endif
 
-static point ed25519_identity = {
-    .X = { .ed25519 = { 0 } },
-    .Y = { .ed25519 = { 1 } },
-    .Z = { .ed25519 = { 1 } },
-    .T = { .ed25519 = { 0 } },
+static const point ed25519_identity = {
+    .X = fe_zero,
+    .Y = fe_one,
+    .Z = fe_one,
+    .T = fe_zero,
 };
 
 #if FE3C_ENABLE_SANITY_CHECKS

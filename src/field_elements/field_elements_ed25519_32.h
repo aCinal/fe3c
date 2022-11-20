@@ -174,7 +174,7 @@ static inline void fe_conditional_move(fe * r, const fe * a, int move) {
     x9 &= mask;
 
     /* If move=0 then x0-x9 are all zero and so we write back the limbs of r into r.
-     * If move=1 then x0-x9 contain r^a and so by XORing back with the limbs of r we
+     * If move=1 then x0-x9 contain r XOR a and so by XORing back with the limbs of r we
      * write the limbs of a into r */
     r->ed25519[0] = t0 ^ x0;
     r->ed25519[1] = t1 ^ x1;
@@ -302,10 +302,11 @@ static inline void fe_strong_reduce(fe * r, const fe * a) {
     t.ed25519[8] += t.ed25519[7] >> 25;  t.ed25519[7] &= LOW_25_BITS_MASK;
     t.ed25519[9] += t.ed25519[8] >> 26;  t.ed25519[8] &= LOW_26_BITS_MASK;
 
-    /* At this point t.ed25519[9] contains the highest limb of r + 19 (extended to 128 bits). Try
-     * subtracting 2^255 - if we get an underflow this means that r < 2^255 - 19 and so r is the
-     * final result. Otherwise we must return r - p (note that this includes the case where r = p,
-     * as no underflow will occur then and t.ed25519[4] will be equal to zero). */
+    /* At this point t.ed25519[9] contains the highest limb of r + 19. Try subtracting
+     * 2^255 - if we get an underflow this means that r < 2^255 - 19 and so r is the
+     * final result. Otherwise we must return r - p (note that this includes the case
+     * where r = p, as no underflow will occur then and t.ed25519[9] will be equal to
+     * zero). */
     t.ed25519[9] -= (1ULL << 25);
 
     /* Check the highest bit of t.ed25519[4] for underflow. If the highest bit is set then
@@ -673,9 +674,6 @@ static inline void fe_exp_p_minus_5_over_8(fe * r, const fe * a) {
  */
 static inline void fe_encode(u8 * buffer, fe * a) {
 
-    /* The field elements get encoded as little-endian byte strings according to RFC 8032 */
-    u32 t0, t1, t2, t3, t4, t5, t6, t7;
-
     /* Canonicalize the element first */
     fe_strong_reduce(a, a);
 
@@ -697,36 +695,37 @@ static inline void fe_encode(u8 * buffer, fe * a) {
      */
 
     /* Store the lowest (26-bits wide) limb + whatever can fit (6 bits) of the second lowest limb */
-    t0 = a->ed25519[0] | (a->ed25519[1] << 26);
+    u32 t0 = a->ed25519[0] | (a->ed25519[1] << 26);
     /* 6 bits of a->ed25519[1] are in t0, store the rest (19 bits) here + whatever can fit
      * (13 bits) of a->ed25519[2] */
-    t1 = ( a->ed25519[1] >> 6 ) | ( a->ed25519[2] << 19 );
+    u32 t1 = ( a->ed25519[1] >> 6 ) | ( a->ed25519[2] << 19 );
     /* 13 bits of a->ed25519[2] are in t1, store the rest (13 bits) here + whatever can fit
      * (19 bits) of a->ed25519[3] */
-    t2 = ( a->ed25519[2] >> 13) | ( a->ed25519[3] << 13 );
+    u32 t2 = ( a->ed25519[2] >> 13) | ( a->ed25519[3] << 13 );
     /* 19 bits of a->ed25519[3] are in t2, store the rest (6 bits) here + all of a->ed25519[4]
      * (all 26 bits) */
-    t3 = ( a->ed25519[3] >> 19 ) | ( a->ed25519[4] << 6 );
+    u32 t3 = ( a->ed25519[3] >> 19 ) | ( a->ed25519[4] << 6 );
     /* Store a->ed25519[5] + whatever can fit (7 bits) of a->ed25519[6] in t4 */
-    t4 = a->ed25519[5] | (a->ed25519[6] << 25);
+    u32 t4 = a->ed25519[5] | (a->ed25519[6] << 25);
     /* 7 bits of a->ed25519[6] are in t0, store the rest (19 bits) here + whatever can fit
      * (13 bits) of a->ed25519[7] */
-    t5 = ( a->ed25519[6] >> 7 ) | ( a->ed25519[7] << 19 );
+    u32 t5 = ( a->ed25519[6] >> 7 ) | ( a->ed25519[7] << 19 );
     /* 13 bits of a->ed25519[7] are in t1, store the rest (12 bits) here + whatever can fit
      * (20 bits) of a->ed25519[8] */
-    t6 = ( a->ed25519[7] >> 13) | ( a->ed25519[8] << 12 );
+    u32 t6 = ( a->ed25519[7] >> 13) | ( a->ed25519[8] << 12 );
     /* 20 bits of a->ed25519[8] are in t2, store the rest (6 bits) here + all of a->ed25519[9]
      * (all 25 bits) */
-    t7 = ( a->ed25519[8] >> 20 ) | ( a->ed25519[9] << 6 );
+    u32 t7 = ( a->ed25519[8] >> 20 ) | ( a->ed25519[9] << 6 );
 
-    _store_32(&buffer[0], t0);
-    _store_32(&buffer[4], t1);
-    _store_32(&buffer[8], t2);
-    _store_32(&buffer[12], t3);
-    _store_32(&buffer[16], t4);
-    _store_32(&buffer[20], t5);
-    _store_32(&buffer[24], t6);
-    _store_32(&buffer[28], t7);
+    /* The field elements get encoded as little-endian byte strings according to RFC 8032 */
+    _store_32(&buffer[0 * 4], t0);
+    _store_32(&buffer[1 * 4], t1);
+    _store_32(&buffer[2 * 4], t2);
+    _store_32(&buffer[3 * 4], t3);
+    _store_32(&buffer[4 * 4], t4);
+    _store_32(&buffer[5 * 4], t5);
+    _store_32(&buffer[6 * 4], t6);
+    _store_32(&buffer[7 * 4], t7);
 }
 
 /**
@@ -736,16 +735,16 @@ static inline void fe_encode(u8 * buffer, fe * a) {
  */
 static inline void fe_decode(fe * r, const u8 * buffer) {
 
-    r->ed25519[0] = ( _load_32(&buffer[0]) ) & LOW_26_BITS_MASK;
+    r->ed25519[0] = ( _load_32(&buffer[ 0]) >> 0 ) & LOW_26_BITS_MASK;
     /* Do not offset by 8 now (another 32 bits) since we have dropped 6 bits from buffer[3]. Offset
      * by 26 bits, i.e. 3 bytes of offset + 2 bits of shift*/
-    r->ed25519[1] = ( _load_32(&buffer[3]) >> 2 ) & LOW_25_BITS_MASK;
+    r->ed25519[1] = ( _load_32(&buffer[ 3]) >> 2 ) & LOW_25_BITS_MASK;
     /* Offset by 25 bits this time (the odd-numbered limbs are 25-bits wide) */
-    r->ed25519[2] = ( _load_32(&buffer[6]) >> 3 ) & LOW_26_BITS_MASK;
-    r->ed25519[3] = ( _load_32(&buffer[9]) >> 5 ) & LOW_25_BITS_MASK;
+    r->ed25519[2] = ( _load_32(&buffer[ 6]) >> 3 ) & LOW_26_BITS_MASK;
+    r->ed25519[3] = ( _load_32(&buffer[ 9]) >> 5 ) & LOW_25_BITS_MASK;
     r->ed25519[4] = ( _load_32(&buffer[12]) >> 6 ) & LOW_26_BITS_MASK;
     /* At this point the shift bits have added up to a full byte */
-    r->ed25519[5] = ( _load_32(&buffer[16]) ) & LOW_25_BITS_MASK;
+    r->ed25519[5] = ( _load_32(&buffer[16]) >> 0 ) & LOW_25_BITS_MASK;
     r->ed25519[6] = ( _load_32(&buffer[19]) >> 1 ) & LOW_26_BITS_MASK;
     r->ed25519[7] = ( _load_32(&buffer[22]) >> 3 ) & LOW_25_BITS_MASK;
     r->ed25519[8] = ( _load_32(&buffer[25]) >> 4 ) & LOW_26_BITS_MASK;

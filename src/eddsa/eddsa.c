@@ -21,6 +21,11 @@ void eddsa_sign(const eddsa_sign_request * req) {
     /* Note that EdDSA with curve Ed448 always uses the dom string */
         use_dom_string |= (req->curve_id == EDDSA_CURVE_ED448);
 #endif
+    const u8 dom_bytes[] = {
+        req->phflag,
+        req->context_length
+    };
+
     /* Edwards curve to be used */
     const curve * curve = curves[req->curve_id];
     /* iovec buffer for hash function requests */
@@ -33,11 +38,6 @@ void eddsa_sign(const eddsa_sign_request * req) {
     /* Buffers for encoded elliptic curve points */
     u8 encoded_public_key[curve->b_in_bytes];
     u8 encoded_commitment[curve->b_in_bytes];
-    /* Buffer for the context variant of EdDSA */
-    const u8 dom_bytes[] = {
-        req->phflag,
-        req->context_length
-    };
 
     /* Recover pointers to the virtual method tables for the group and the
      * scalars of that group (allow polymorphism) */
@@ -125,17 +125,17 @@ int eddsa_verify(const eddsa_verify_request * req) {
     /* Note that EdDSA with curve Ed448 always uses the dom string */
         use_dom_string |= (req->curve_id == EDDSA_CURVE_ED448);
 #endif
+    const u8 dom_bytes[] = {
+        req->phflag,
+        req->context_length
+    };
+
     /* Edwards curve to be used */
     const curve * curve = curves[req->curve_id];
     /* iovec buffer for hash function requests */
     struct iovec iov[6];
     /* Intermediate buffer for hash function output */
     u8 digest[2 * curve->b_in_bytes];
-    /* Buffer for the context variant of EdDSA */
-    const u8 dom_bytes[] = {
-        req->phflag,
-        req->context_length
-    };
 
     /* Recover pointers to the virtual method tables for the group and the
      * scalars of that group (allow polymorphism) */

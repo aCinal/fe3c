@@ -222,7 +222,7 @@ static void validate_arguments(const fe3c_params * args) {
         break;
 
     case KEYGEN:
-        FAIL_IF(args->secret_key_path == NULL,                            "Secret key is required to derive the public key, specify --secret_key=<path>");
+        FAIL_IF(args->secret_key_path == NULL,                       "Secret key is required to derive the public key, specify --secret_key=<path>");
         break;
 
     default:

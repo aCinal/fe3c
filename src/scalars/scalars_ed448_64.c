@@ -111,9 +111,9 @@ static void ed448_scalar_reduce(u8 * s) {
      *
      *           x + y 2^446 = x + (2^446 - c) y + c y = x + c y (mod L)
      *
-     * Note that the 2^446 boundary is in the middle of the t7 limb. Top two bits
-     * of t7 are already above 2^446. For this reason limbs t8-t16 should actually
-     * have larger weights. To compensate this we multiply them by four as we go.
+     * Note that the 2^446 boundary is in the middle of limb t7. Top two bits of t7
+     * are already above 2^446. For this reason limbs t8-t16 should actually have
+     * larger weights. To compensate this we multiply them by four as we go.
      */
 
     t4  += t12 * 4 * GROUP_ORDER_SUB_LIMB_0;
@@ -225,10 +225,10 @@ static void ed448_scalar_reduce(u8 * s) {
      * [0, 2*L). Compute s-L and conditionally use it as a result if s is still
      * larger than or equal to L. Start by computing s+c, where c = 2^446 - L.
      * To limit stack usage, reuse the t8-t15 limbs. */
-    t8  = GROUP_ORDER_SUB_LIMB_0 + t0;
-    t9  = GROUP_ORDER_SUB_LIMB_1 + t1;
-    t10 = GROUP_ORDER_SUB_LIMB_2 + t2;
-    t11 = GROUP_ORDER_SUB_LIMB_3 + t3;
+    t8  = t0 + GROUP_ORDER_SUB_LIMB_0;
+    t9  = t1 + GROUP_ORDER_SUB_LIMB_1;
+    t10 = t2 + GROUP_ORDER_SUB_LIMB_2;
+    t11 = t3 + GROUP_ORDER_SUB_LIMB_3;
     t12 = t4;
     t13 = t5;
     t14 = t6;
@@ -243,8 +243,8 @@ static void ed448_scalar_reduce(u8 * s) {
     t14 += t13 >> 56;  t13 &= LOW_56_BITS_MASK;
     t15 += t14 >> 56;  t14 &= LOW_56_BITS_MASK;
     /* At this point t15 contains the highest limb of s + c (extended to 128 bits).
-     * Try subtracting 2^446 */
-    t15 -= (1ULL << 54);
+     * Try subtracting 2^446. */
+    t15 -= 1ULL << 54;
     /* Check if the subtraction resulted in an underflow and use the result to create
      * a mask for a conditional move. */
     u64 mask = (u64)( -(i64)( (t15 >> 127) ^ 1 ) );
@@ -302,7 +302,7 @@ static int ed448_scalar_is_canonical(const u8 * s) {
     u128 s6 = load_64(&s[6 * 8]);
 
     /* Let L[0]-L[6] denote the seven words of L and let
-     * S[0]-S[7] denote the four words of the scalar s
+     * S[0]-S[7] denote the seven words of the scalar s
      * (both in little-endian order). If the following
      * subtraction underflows and s[56] = 0x00, then
      * S < L. */
@@ -357,18 +357,18 @@ static void ed448_scalars_muladd(u8 * r, const u8 * a, const u8 * b, const u8 * 
     /* Do the naive schoolbook multiplication - note that a*b takes 15 (16 with carry) limbs
      * (columns in the multplication algorithm). Offset the first 8 limbs by the limbs of c
      *
-     *                                                      a7     a6     a5     a4     a3     a2     a1     a0
-     *                                                      b7     b6     b5     b4     b3     b2     b1     b0
+     *                                                     a7     a6     a5     a4     a3     a2     a1     a0
+     *                                                     b7     b6     b5     b4     b3     b2     b1     b0
      * ---------------------------------------------------------------------------------------------------------
-     *                                                     a0b7   a0b6   a0b5   a0b4   a0b3   a0b2   a0b1   a0b0
-     *                                              a1b7   a1b6   a1b5   a1b4   a1b3   a1b2   a1b1   a1b0
-     *                                       a2b7   a2b6   a2b5   a2b4   a2b3   a2b2   a2b1   a2b0
-     *                                a3b7   a3b6   a3b5   a3b4   a3b3   a3b2   a3b1   a3b0
-     *                         a4b7   a4b6   a4b5   a4b4   a4b3   a4b2   a4b1   a4b0
-     *                  a5b7   a5b6   a5b5   a5b4   a5b3   a5b2   a5b1   a5b0
-     *            a6b7  a6b6   a6b5   a6b4   a6b3   a6b2   a6b1   a6b0
-     *      a7b7  a7b6  a7b5   a7b4   a7b3   a7b2   a7b1   a7b0
-     *                                                      c7     c6     c5     c4     c3     c2     c1     c0
+     *                                                    a0b7   a0b6   a0b5   a0b4   a0b3   a0b2   a0b1   a0b0
+     *                                             a1b7   a1b6   a1b5   a1b4   a1b3   a1b2   a1b1   a1b0
+     *                                      a2b7   a2b6   a2b5   a2b4   a2b3   a2b2   a2b1   a2b0
+     *                               a3b7   a3b6   a3b5   a3b4   a3b3   a3b2   a3b1   a3b0
+     *                        a4b7   a4b6   a4b5   a4b4   a4b3   a4b2   a4b1   a4b0
+     *                 a5b7   a5b6   a5b5   a5b4   a5b3   a5b2   a5b1   a5b0
+     *          a6b7   a6b6   a6b5   a6b4   a6b3   a6b2   a6b1   a6b0
+     *   a7b7   a7b6   a7b5   a7b4   a7b3   a7b2   a7b1   a7b0
+     *                                                     c7     c6     c5     c4     c3     c2     c1     c0
      */
 
     u128 t0  = c0 + a0*b0;
@@ -444,6 +444,8 @@ static void ed448_scalars_muladd(u8 * r, const u8 * a, const u8 * b, const u8 * 
     t9  += t8  >> 56;  t8  &= LOW_56_BITS_MASK;
     t10 += t9  >> 56;  t9  &= LOW_56_BITS_MASK;
     t11 += t10 >> 56;  t10 &= LOW_56_BITS_MASK;
+    /* Use t12 to store the overflow of t11 */
+    t12  = t11 >> 56;  t11 &= LOW_56_BITS_MASK;
 
     t0  += t8  * 4 * GROUP_ORDER_SUB_LIMB_0;
     t1  += t8  * 4 * GROUP_ORDER_SUB_LIMB_1;
@@ -464,6 +466,11 @@ static void ed448_scalars_muladd(u8 * r, const u8 * a, const u8 * b, const u8 * 
     t4  += t11 * 4 * GROUP_ORDER_SUB_LIMB_1;
     t5  += t11 * 4 * GROUP_ORDER_SUB_LIMB_2;
     t6  += t11 * 4 * GROUP_ORDER_SUB_LIMB_3;
+
+    t4  += t12 * 4 * GROUP_ORDER_SUB_LIMB_0;
+    t5  += t12 * 4 * GROUP_ORDER_SUB_LIMB_1;
+    t6  += t12 * 4 * GROUP_ORDER_SUB_LIMB_2;
+    t7  += t12 * 4 * GROUP_ORDER_SUB_LIMB_3;
 
     t1  += t0  >> 56;  t0  &= LOW_56_BITS_MASK;
     t2  += t1  >> 56;  t1  &= LOW_56_BITS_MASK;

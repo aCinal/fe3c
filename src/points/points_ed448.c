@@ -8,9 +8,9 @@
 #endif
 
 static const point ed448_identity = {
-    .X = { .ed448 = { 0 } },
-    .Y = { .ed448 = { 1 } },
-    .Z = { .ed448 = { 1 } }
+    .X = fe_zero,
+    .Y = fe_one,
+    .Z = fe_one
 };
 
 #if FE3C_ENABLE_SANITY_CHECKS
@@ -285,7 +285,15 @@ static void ed448_multiply_basepoint(point * r, const u8 * s) {
         .Z = fe_one
     };
 #else
-    static const point basepoint = { /* TODO: Set me to the correct value */ };
+    static const point basepoint = {
+        .X = { .ed448 = {
+            0x70cc05e, 0x26a82bc, 0x938e26, 0x80e18b0, 0x511433b, 0xf72ab66, 0x412ae1a, 0xa3d3a46,
+            0xa6de324, 0xf1767e, 0x4657047, 0x36da9e1, 0x5a622bf, 0xed221d1, 0x66bed0d, 0x4f1970c } },
+        .Y = { .ed448 = {
+            0x230fa14, 0x8795bf, 0x7c8ad98, 0x132c4ed, 0x9c4fdbd, 0x1ce67c3, 0x73ad3ff, 0x5a0c2d,
+            0x7789c1e, 0xa398408, 0xa73736c, 0xc7624be, 0x3756c9, 0x2488762, 0x16eb6bc, 0x693f467 } },
+        .Z = fe_one
+    };
 #endif
 
     ed448_scalar_multiply(r, &basepoint, s);

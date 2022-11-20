@@ -147,7 +147,7 @@ static inline void fe_conditional_move(fe * r, const fe * a, int move) {
     x4 &= mask;
 
     /* If move=0 then x0-x4 are all zero and so we write back the limbs of r into r.
-     * If move=1 then x0-x4 contain r^a and so by XORing back with the limbs of r we
+     * If move=1 then x0-x4 contain r XOR a and so by XORing back with the limbs of r we
      * write the limbs of a into r */
     r->ed25519[0] = t0 ^ x0;
     r->ed25519[1] = t1 ^ x1;
@@ -239,10 +239,12 @@ static inline void fe_strong_reduce(fe * r, const fe * a) {
     t.ed25519[2] += t.ed25519[1] >> 51;  t.ed25519[1] &= LOW_51_BITS_MASK;
     t.ed25519[3] += t.ed25519[2] >> 51;  t.ed25519[2] &= LOW_51_BITS_MASK;
     t.ed25519[4] += t.ed25519[3] >> 51;  t.ed25519[3] &= LOW_51_BITS_MASK;
-    /* At this point t.ed25519[4] contains the highest limb of r + 19 (extended to 128 bits). Try
-     * subtracting 2^255 - if we get an underflow this means that r < 2^255 - 19 and so r is the
-     * final result. Otherwise we must return r - p (note that this includes the case where r = p,
-     * as no underflow will occur then and t.ed25519[4] will be equal to zero). */
+
+    /* At this point t.ed25519[4] contains the highest limb of r + 19. Try subtracting
+     * 2^255 - if we get an underflow this means that r < 2^255 - 19 and so r is the
+     * final result. Otherwise we must return r - p (note that this includes the case
+     * where r = p, as no underflow will occur then and t.ed25519[4] will be equal to
+     * zero). */
     t.ed25519[4] -= (1ULL << 51);
 
     /* Check the highest bit of t.ed25519[4] for underflow. If the highest bit is set then
@@ -518,9 +520,6 @@ static inline void fe_exp_p_minus_5_over_8(fe * r, const fe * a) {
  */
 static inline void fe_encode(u8 * buffer, fe * a) {
 
-    /* The field elements get encoded as little-endian byte strings according to RFC 8032 */
-    u64 t0, t1, t2, t3;
-
     /* Canonicalize the element first */
     fe_strong_reduce(a, a);
 
@@ -528,16 +527,17 @@ static inline void fe_encode(u8 * buffer, fe * a) {
      * registers) to allow for greater instruction-level parallelism */
 
     /* Store the lowest limb + whatever can fit (13 bits) of the second lowest limb */
-    t0 = ( a->ed25519[0] >>  0 ) | ( a->ed25519[1] << 51 );
+    u64 t0 = ( a->ed25519[0] >>  0 ) | ( a->ed25519[1] << 51 );
     /* 13 bits of a->ed25519[1] are in t0, store the rest (38 bits) here + whatever can fit
      * (26 bits) of a->ed25519[2] */
-    t1 = ( a->ed25519[1] >> 13 ) | ( a->ed25519[2] << 38 );
+    u64 t1 = ( a->ed25519[1] >> 13 ) | ( a->ed25519[2] << 38 );
     /* 26 bits of a->ed25519[2] are in t1, store the rest (25 bits) here + whatever can fit
      * (39 bits) of a->ed25519[3] */
-    t2 = ( a->ed25519[2] >> 26 ) | ( a->ed25519[3] << 25 );
+    u64 t2 = ( a->ed25519[2] >> 26 ) | ( a->ed25519[3] << 25 );
     /* Store the top 51-39=12 bits of a->ed25519[3] and all of a->ed25519[4] */
-    t3 = ( a->ed25519[3] >> 39 ) | ( a->ed25519[4] << 12 );
+    u64 t3 = ( a->ed25519[3] >> 39 ) | ( a->ed25519[4] << 12 );
 
+    /* The field elements get encoded as little-endian byte strings according to RFC 8032 */
     _store_64(&buffer[0 * 8], t0);
     _store_64(&buffer[1 * 8], t1);
     _store_64(&buffer[2 * 8], t2);
@@ -551,11 +551,11 @@ static inline void fe_encode(u8 * buffer, fe * a) {
  */
 static inline void fe_decode(fe * r, const u8 * buffer) {
 
-    r->ed25519[0] = ( _load_64(&buffer[0]) ) & LOW_51_BITS_MASK;
+    r->ed25519[0] = ( _load_64(&buffer[ 0]) >> 0 ) & LOW_51_BITS_MASK;
     /* Do not offset by 8 now since we have dropped the top byte
      * and a few more bits from the first word by masking. Offset
      * by 51 bits (6 bytes + 3 bits of shift): */
-    r->ed25519[1] = ( _load_64(&buffer[6]) >> 3 ) & LOW_51_BITS_MASK;
+    r->ed25519[1] = ( _load_64(&buffer[ 6]) >> 3 ) & LOW_51_BITS_MASK;
     /* Same spiel - offset by another 51 bits */
     r->ed25519[2] = ( _load_64(&buffer[12]) >> 6 ) & LOW_51_BITS_MASK;
     /* Now the "shift" bits have added up to over a byte, and so

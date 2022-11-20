@@ -257,8 +257,8 @@ TEST(FIELD_ELEMENTS_ED25519_64, Sub_OneMinusTwo_CongruentToModulusMinusOne) {
 
 TEST(FIELD_ELEMENTS_ED25519_64, Mul_ModulusPlusOneTimesTwo_CongruentToTwo) {
 
-    fe input1 = { 2, 0, 0, 0, 0 };
-    fe input2 = { 0x7ffffffffffedULL + 1, 0x7ffffffffffffULL, 0x7ffffffffffffULL, 0x7ffffffffffffULL, 0x7ffffffffffffULL };
+    fe input1 = { 0x7ffffffffffedULL + 1, 0x7ffffffffffffULL, 0x7ffffffffffffULL, 0x7ffffffffffffULL, 0x7ffffffffffffULL };
+    fe input2 = { 2, 0, 0, 0, 0 };
     fe canonical = { 2, 0, 0, 0, 0 };
     fe output;
     /* Expect multiplication to result in a non-canonical form */

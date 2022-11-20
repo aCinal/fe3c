@@ -167,17 +167,16 @@ TEST(POINTS_ED448, Add_AddPointOfOrder2ToItself_ResultInIdentity) {
         .X = { .ed448 = { 0 } },
 #if FE3C_64BIT
         .Y = { .ed448 = {
-            0xffffffffffffffULL - 1,
-            0xffffffffffffffULL,
-            0xffffffffffffffULL,
-            0xffffffffffffffULL,
-            0xfffffffffffffeULL,
-            0xffffffffffffffULL,
-            0xffffffffffffffULL,
-            0xffffffffffffffULL
+            0xffffffffffffffULL - 1, 0xffffffffffffffULL, 0xffffffffffffffULL, 0xffffffffffffffULL,
+            0xfffffffffffffeULL,     0xffffffffffffffULL, 0xffffffffffffffULL, 0xffffffffffffffULL
         } },
 #else
-        .Y = { /* TODO: Set me to the correct value */ },
+        .Y = { .ed448 = {
+            0xfffffff - 1, 0xfffffff, 0xfffffff, 0xfffffff,
+            0xfffffff,     0xfffffff, 0xfffffff, 0xfffffff,
+            0xffffffe,     0xfffffff, 0xfffffff, 0xfffffff,
+            0xfffffff,     0xfffffff, 0xfffffff, 0xfffffff
+        } },
 #endif
         .Z = { .ed448 = { 1 } }
     };
@@ -198,11 +197,7 @@ TEST(POINTS_ED448, Add_AddPointOfOrder4ToItself_TestForIdentityAtEachStep) {
 
     point input = {
         .X = { .ed448 = { 1 } },
-#if FE3C_64BIT
         .Y = { .ed448 = { 0 } },
-#else
-        .Y = { /* TODO: Set me to the correct value */ },
-#endif
         .Z = { .ed448 = { 1 } }
     };
 
