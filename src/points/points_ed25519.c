@@ -233,21 +233,10 @@ static int ed25519_decode(point * p, const u8 * buf) {
 
     /* Set Z to one (normalized projective representation) */
     p->Z = fe_one;
-    /* Check that we have a valid point, note that the extended coordinate T has not yet been set
-     * but it is not needed for the following validation */
-    /* NOTE: the above claim is only true if we use a specialized routine for doubling or check
-     * the points against a predefined list in ed25519_is_ok_order*/
-    success &= ed25519_is_ok_order(p);
-
-    /* If decoding failed we must still set the point to something, set it to the identity (0, 1) */
-    /* TODO: Check if we need to do this or can this be skipped (do we run a risk of setting Z=0
-     * if we leave the contents of (X, Y) inconsistent, i.e. not corresponding to a point on the
-     * curve - if not, we should be ok to leave p as is) */
-    fe_conditional_move(&p->X, &fe_zero, 1 - success);
-    fe_conditional_move(&p->Y, &fe_one, 1 - success);
-
     /* Set the extended coordinate T to the correct value */
     fe_mul(&p->T, &p->X, &p->Y);
+    /* Check that we have a valid point */
+    success &= ed25519_is_ok_order(p);
 
     return success;
 }

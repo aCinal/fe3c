@@ -146,10 +146,10 @@ int eddsa_verify(const eddsa_verify_request * req) {
     hash h = curve->hash_function;
 
     /* Note that point decoding may fail - we will still however continue with the verification to the end */
-    /* TODO: Check if decode needs to set the points to something valid (e.g. the neutral element) so as to
-     * not risk any undefined behaviour/fpe during the dummy computations that follow */
     point public_key;
     verified &= gops->decode(&public_key, req->public_key);
+    /* We also explicitly check for low order points when decoding and so we skip multiplying by
+     * the cofactor later when verifying the group equation */
     point commitment;
     verified &= gops->decode(&commitment, req->signature);
 
@@ -175,8 +175,6 @@ int eddsa_verify(const eddsa_verify_request * req) {
     /* Reduce the digest output as a scalar */
     sops->reduce(digest);
 
-    /* TODO: Study when is it ok to skip multiplication by the cofactor (as mentioned by RFC 8032) */
-
     /* TODO: Study WolfSSL's implementation of S*B - h*A concurrent multplication */
     gops->scalar_multiply(&public_key, &public_key, digest);
     gops->points_add(&commitment, &commitment, &public_key);
@@ -184,7 +182,7 @@ int eddsa_verify(const eddsa_verify_request * req) {
     /* Compute S B */
     point response_point;
     gops->multiply_basepoint(&response_point, &req->signature[curve->b_in_bytes]);
-    /* Check if 2^c S B == 2^c R + h A */
+    /* Check if S B == R + h A */
     verified &= gops->points_equal(&response_point, &commitment);
 
     return verified;

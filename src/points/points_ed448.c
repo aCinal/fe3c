@@ -193,13 +193,6 @@ static int ed448_decode(point * p, const u8 * buf) {
     /* Check that we have a valid point */
     success &= ed448_is_ok_order(p);
 
-    /* If decoding failed we must still set the point to something, set it to the identity (0, 1) */
-    /* TODO: Check if we need to do this or can this be skipped (do we run a risk of setting Z=0
-     * if we leave the contents of (X, Y) inconsistent, i.e. not corresponding to a point on the
-     * curve - if not, we should be ok to leave p as is) */
-    fe_conditional_move(&p->X, &fe_zero, 1 - success);
-    fe_conditional_move(&p->Y, &fe_one, 1 - success);
-
     return success;
 }
 
