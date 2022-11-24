@@ -236,7 +236,7 @@ static void sign(const fe3c_params * args) {
 
     void * secret_key = reliably_map_file(args->secret_key_path, eddsa_get_secret_key_length(args->curve_id));
     void * message = reliably_map_file(args->message_path, 0);
-    void * context = args->context_path ? reliably_map_file(args->context_path, 255) : NULL;
+    void * context = args->context_path ? reliably_map_file(args->context_path, 0) : NULL;
 
     size_t message_length = get_filesize(args->message_path);
     size_t context_length = args->context_path ? get_filesize(args->context_path) : 0;
@@ -266,7 +266,7 @@ static void verify(const fe3c_params * args) {
     void * public_key = reliably_map_file(args->public_key_path, eddsa_get_public_key_length(args->curve_id));
     void * message = reliably_map_file(args->message_path, 0);
     void * signature = reliably_map_file(args->signature_path, eddsa_get_signature_length(args->curve_id));
-    void * context = args->context_path ? reliably_map_file(args->context_path, 255) : NULL;
+    void * context = args->context_path ? reliably_map_file(args->context_path, 0) : NULL;
 
     size_t message_length = get_filesize(args->message_path);
     size_t context_length = args->context_path ? get_filesize(args->context_path) : 0;
