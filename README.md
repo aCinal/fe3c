@@ -22,5 +22,5 @@ Link against the installed library by passing the flag `-lcementite` to the link
 To get a list of supported elliptic (Edwards) curves run:
 
 ```bash
-    ./configure --help
+./configure --help
 ```
