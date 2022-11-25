@@ -6,7 +6,7 @@
 extern "C" {
 #endif
 
-#include <fe3c/global_defs.h>
+#include <global_defs.h>
 #include <string.h>  /* Include memcpy() from libc via this header to allow overriding it if need be */
 
 /* Provide constant-time and otherwise secure implementations of common libc functions */

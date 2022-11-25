@@ -2,7 +2,7 @@
 #ifndef __FE3C_SCALARS_SCALARS_H
 #define __FE3C_SCALARS_SCALARS_H
 
-#include <fe3c/global_defs.h>
+#include <global_defs.h>
 
 typedef struct scalar_ops {
 

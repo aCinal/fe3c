@@ -2,7 +2,7 @@
 #ifndef __FE3C_HASH_FUNCTIONS_HASH_FUNCTION_SHAKE256_H
 #define __FE3C_HASH_FUNCTIONS_HASH_FUNCTION_SHAKE256_H
 
-#include <fe3c/global_defs.h>
+#include <global_defs.h>
 #include <utils/utils.h>
 
 #define SHAKE256_CAPACITY_BITS      512

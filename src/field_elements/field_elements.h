@@ -6,7 +6,7 @@
 extern "C" {
 #endif
 
-#include <fe3c/global_defs.h>
+#include <global_defs.h>
 
 /* Represent big integers as arrays of "limbs" with each limb corresponding to a machine word. To reduce the number
  * of carries and allow greater instruction-level parallelism use an "unsaturated" representation, i.e. leave unused

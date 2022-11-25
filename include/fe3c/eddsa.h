@@ -6,7 +6,10 @@
 extern "C" {
 #endif
 
-#include <fe3c/global_defs.h>
+#include <stddef.h>
+#include <stdint.h>
+
+typedef uint8_t u8;  /**< Byte-sized type */
 
 /**
  * @brief Enumeration of different supported curves

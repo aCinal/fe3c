@@ -2,7 +2,7 @@
 #ifndef __FE3C_HASH_FUNCTIONS_HASH_FUNCTION_SHA512_H
 #define __FE3C_HASH_FUNCTIONS_HASH_FUNCTION_SHA512_H
 
-#include <fe3c/global_defs.h>
+#include <global_defs.h>
 #include <utils/utils.h>
 
 #define SHA512_MESSAGE_SCHEDULE_WORD_COUNT  ( 80 )           /**< The number of words in the message schedule */

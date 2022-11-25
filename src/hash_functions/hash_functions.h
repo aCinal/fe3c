@@ -6,7 +6,7 @@
 extern "C" {
 #endif
 
-#include <fe3c/global_defs.h>
+#include <global_defs.h>
 
 typedef void (* hash)(u8 * output, const struct iovec * iov, int iovcnt);
 

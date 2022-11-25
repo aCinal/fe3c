@@ -5,8 +5,7 @@ AM_CPPFLAGS += -I$(top_srcdir)/src
 lib_LIBRARIES = libcementite.a
 cementiteincludedir = $(includedir)/fe3c
 cementiteinclude_HEADERS = \
-    $(top_srcdir)/include/fe3c/eddsa.h \
-    $(top_srcdir)/include/fe3c/global_defs.h
+    $(top_srcdir)/include/fe3c/eddsa.h
 
 libcementite_a_SOURCES = \
     eddsa/eddsa.c \
