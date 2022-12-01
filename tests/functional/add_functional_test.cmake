@@ -22,11 +22,12 @@ function(add_functional_test)
             "UT_SOURCE='${ftest_UT_SOURCE}'")
     endif()
 
+    set(FUNCTIONAL_TESTS_SOURCE_DIR ${CMAKE_SOURCE_DIR}/functional)
     # Build the test group
     add_executable(
         ${ftest_NAME}
         # Always include the common main
-        ${CMAKE_SOURCE_DIR}/Main.cpp
+        ${FUNCTIONAL_TESTS_SOURCE_DIR}/Main.cpp
         # Include the unit-test code
         ${ftest_UT_SOURCE}
         # Include the sources under test

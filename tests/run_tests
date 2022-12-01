@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-function execute_tests {
+function execute_functional_tests {
     for subdirectory in $(ls functional); do
         # Only consider directories and ignore the CMakeFiles directory
         if [[ -d functional/${subdirectory} && ${subdirectory} != "CMakeFiles" ]]; then
@@ -16,6 +16,16 @@ function execute_tests {
     done
 }
 
+function execute_benchmark_tests {
+    for artifact in $(ls benchmarks); do
+        executable_path=benchmarks/${artifact}
+        # Only consider regular executable files (note that directories are also executable, i.e. searchable)
+        if [[ -f ${executable_path} && -x ${executable_path} ]]; then
+            ./${executable_path} || { echo "Failure in test: ${executable_path}!" && exit 1; }
+        fi
+    done
+}
+
 cmake -S . -B build &&
 cd build &&
-make && execute_tests
+make && execute_functional_tests && execute_benchmark_tests

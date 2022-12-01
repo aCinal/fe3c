@@ -16,7 +16,5 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(CppUTest)
 
-include(cmake/utils.cmake)
-
 add_subdirectory(functional)
 add_subdirectory(benchmarks)
