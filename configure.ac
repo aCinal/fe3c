@@ -68,6 +68,23 @@ AM_CONDITIONAL([FE3C_SUPPORT_CURVE_ED448], [test "x$ed448" = "xyes"])
 AS_IF([test "x$ed448" = "xyes"], AC_DEFINE([FE3C_SUPPORT_CURVE_ED448]), [])
 # -------------------------------------------------------------------------------------------
 
+# ----------------------------- Optional features/optimizations -----------------------------
+optimization_fast_squaring="yes"
+AC_ARG_ENABLE([fast-squaring],
+              [AS_HELP_STRING([--disable-fast-squaring],
+                              [Disable optimization of squaring in the field and reuse multiplication routine,
+                               which should reduce code footprint but may decrease performance])],
+              [AS_IF([test "x$enableval" = "xno"],
+                     [optimization_fast_squaring="no"],
+
+                     [test "x$enableval" != "xyes"],
+                     [AC_MSG_ERROR([bad value ${enableval} for --enable-fast-squaring])])],
+              [])
+AM_CONDITIONAL([FE3C_OPTIMIZATION_FAST_SQUARING], [test "x$optimization_fast_squaring" = "xyes"])
+AS_IF([test "x$optimization_fast_squaring" = "xyes"], AC_DEFINE([FE3C_OPTIMIZATION_FAST_SQUARING]), [])
+# -------------------------------------------------------------------------------------------
+
+# --------------------------------- Architecture intrinsics ---------------------------------
 optimize32="no"
 AC_ARG_ENABLE([32bit],
               [AS_HELP_STRING([--enable-32bit],
@@ -80,7 +97,9 @@ AC_ARG_ENABLE([32bit],
               [])
 AM_CONDITIONAL([FE3C_32BIT], [test "x$optimize32" = "xyes"])
 AS_IF([test "x$optimize32" = "xyes"], AC_DEFINE([FE3C_32BIT]), AC_DEFINE([FE3C_64BIT]))
+# -------------------------------------------------------------------------------------------
 
+# -------------------------------------- Debug options --------------------------------------
 sanity_checks="no"
 AC_ARG_ENABLE([sanity-checks],
               [AS_HELP_STRING([--enable-sanity-checks],
@@ -92,6 +111,7 @@ AC_ARG_ENABLE([sanity-checks],
                      [AC_MSG_ERROR([bad value ${enableval} for --enable-sanity-checks])])]
               [])
 AS_IF([test "x$sanity_checks" = "xyes"], AC_DEFINE([FE3C_ENABLE_SANITY_CHECKS]), [])
+# -------------------------------------------------------------------------------------------
 
 AC_CONFIG_FILES([Makefile src/Makefile])
 AC_OUTPUT
@@ -103,4 +123,6 @@ AC_MSG_RESULT([
 
     Optimized for 32-bit architectures:  ${optimize32}
     Sanity checks enabled:               ${sanity_checks}
+
+    Optimized field element squaring:    ${optimization_fast_squaring}
 ])

@@ -411,8 +411,56 @@ static inline void fe_mul(fe * r, const fe * a, const fe * b) {
  */
 static inline void fe_square(fe * r, const fe * a) {
 
-    /* TODO: Provide an optimized implementation of squaring if possible */
+#if !FE3C_OPTIMIZATION_FAST_SQUARING
     fe_mul(r, a, a);
+#else
+    u128 r0, r1, r2, r3, r4;
+
+    u128 a0 = a->ed25519[0];
+    u128 a1 = a->ed25519[1];
+    u128 a2 = a->ed25519[2];
+    u128 a3 = a->ed25519[3];
+    u128 a4 = a->ed25519[4];
+    /* Do the naive schoolbook multiplication but allow the compiler to group together
+     * like terms. Partial single-precision products in the schoolbook multiplication
+     * are of the form aibj for different i and j. When squaring the term aibj is
+     * equivalent to ajbi which we can levarage to halve the number of single-precision
+     * multiplications. */
+
+    r0 = a0*a0 + 19 * ( a1*a4 + a2*a3 + a3*a2 + a4*a1 );
+
+    /* Store overflow in r1 and mask it out in r0 */
+    r1 = r0 >> 51;  r0 &= LOW_51_BITS_MASK;
+    /* Add the current partial products */
+    r1 += a0*a1 + a1*a0 + 19 * ( a2*a4 + a3*a3 + a4*a2 );
+
+    /* Rinse and repeat */
+    r2 = r1 >> 51;  r1 &= LOW_51_BITS_MASK;
+    r2 += a0*a2 + a1*a1 + a2*a0 + 19 * ( a3*a4 + a4*a3 );
+
+    r3 = r2 >> 51;  r2 &= LOW_51_BITS_MASK;
+    r3 += a0*a3 + a1*a2 + a2*a1 + a3*a0 + 19 * ( a4*a4 );
+
+    r4 = r3 >> 51;  r3 &= LOW_51_BITS_MASK;
+    r4 += a0*a4 + a1*a3 + a2*a2 + a3*a1 + a4*a0;
+    /* The result may have exceeded 2^255, do another round just as in
+     * fe_weak_reduce() */
+    r0 += 19 * (r4 >> 51);
+    r4 &= LOW_51_BITS_MASK;
+
+    r1 += r0 >> 51;  r0 &= LOW_51_BITS_MASK;
+    r2 += r1 >> 51;  r1 &= LOW_51_BITS_MASK;
+    r3 += r2 >> 51;  r2 &= LOW_51_BITS_MASK;
+    r4 += r3 >> 51;  r3 &= LOW_51_BITS_MASK;
+    r0 += 19 * (r4 >> 51);
+    r4 &= LOW_51_BITS_MASK;
+
+    r->ed25519[0] = r0;
+    r->ed25519[1] = r1;
+    r->ed25519[2] = r2;
+    r->ed25519[3] = r3;
+    r->ed25519[4] = r4;
+#endif /* FE3C_OPTIMIZATION_FAST_SQUARING */
 }
 
 /**

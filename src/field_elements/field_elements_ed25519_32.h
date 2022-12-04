@@ -565,8 +565,97 @@ static inline void fe_mul(fe * r, const fe * a, const fe * b) {
  */
 static inline void fe_square(fe * r, const fe * a) {
 
-    /* TODO: Provide an optimized implementation of squaring if possible */
+#if !FE3C_OPTIMIZATION_FAST_SQUARING
     fe_mul(r, a, a);
+#else
+    u64 r0, r1, r2, r3, r4, r5, r6, r7, r8, r9;
+
+    u64 a0 = a->ed25519[0];
+    u64 a1 = a->ed25519[1];
+    u64 a2 = a->ed25519[2];
+    u64 a3 = a->ed25519[3];
+    u64 a4 = a->ed25519[4];
+    u64 a5 = a->ed25519[5];
+    u64 a6 = a->ed25519[6];
+    u64 a7 = a->ed25519[7];
+    u64 a8 = a->ed25519[8];
+    u64 a9 = a->ed25519[9];
+    /* Do the naive schoolbook multiplication but allow the compiler to group together
+     * like terms. Partial single-precision products in the schoolbook multiplication
+     * are of the form aibj for different i and j. When squaring the term aibj is
+     * equivalent to ajbi which we can levarage to halve the number of single-precision
+     * multiplications. */
+
+    /* Start with the lowest-weight terms */
+    r0 = a0*a0;
+    /* Bring down the overflow from above the 2^255 cutoff point. Note that terms which are products of two odd-numbered limbs
+     * are multiplied by two - see comments in fe_mul() for a detailed explanation of this. */
+    r0 += 19 * ( 2*a1*a9 + a2*a8 + 2*a3*a7 + a4*a6 + 2*a5*a5 + a6*a4 + 2*a7*a3 + a8*a2 + 2*a9*a1 );
+    /* Any overflow in r0 put in r1 and clear it in r0 */
+    r1 = r0 >> 26;  r0 &= LOW_26_BITS_MASK;
+
+    r1 += a0*a1 + a1*a0;
+    /* Bring down the overflow from above the 2^255 cutoff point */
+    r1 += 19 * ( a2*a9 + a3*a8 + a4*a7 + a5*a6 + a6*a5 + a7*a4 + a8*a3 + a9*a2 );
+    /* Rinse and repeat */
+    r2 = r1 >> 25;  r1 &= LOW_25_BITS_MASK;
+
+    r2 += a0*a2 + 2*a1*a1 + a2*a0;
+    r2 += 19 * (2*a3*a9 + a4*a8 + 2*a5*a7 + a6*a6 + 2*a7*a5 + a8*a4 + 2*a9*a3);
+    r3 = r2 >> 26;  r2 &= LOW_26_BITS_MASK;
+
+    r3 += a0*a3 + a1*a2 + a2*a1 + a3*a0;
+    r3 += 19 * ( a4*a9 + a5*a8 + a6*a7 + a7*a6 + a8*a5 + a9*a4 );
+    r4 = r3 >> 25;  r3 &= LOW_25_BITS_MASK;
+
+    r4 += a0*a4 + 2*a1*a3 + a2*a2 + 2*a3*a1 + a4*a0;
+    r4 += 19 * ( 2*a5*a9 + a6*a8 + 2*a7*a7 + a8*a6 + 2*a9*a5 );
+    r5 = r4 >> 26;  r4 &= LOW_26_BITS_MASK;
+
+    r5 += a0*a5 + a1*a4 + a2*a3 + a3*a2 + a4*a1 + a5*a0;
+    r5 += 19 * ( a6*a9 + a7*a8 + a8*a7 + a9*a6 );
+    r6 = r5 >> 25;  r5 &= LOW_25_BITS_MASK;
+
+    r6 += a0*a6 + 2*a1*a5 + a2*a4 + 2*a3*a3 + a4*a2 + 2*a5*a1 + a6*a0;
+    r6 += 19 * ( 2*a7*a9 + a8*a8 + 2*a9*a7 );
+    r7 = r6 >> 26;  r6 &= LOW_26_BITS_MASK;
+
+    r7 += a0*a7 + a1*a6 + a2*a5 + a3*a4 + a4*a3 + a5*a2 + a6*a1 + a7*a0;
+    r7 += 19 * ( a8*a9 + a9*a8);
+    r8 = r7 >> 25;  r7 &= LOW_25_BITS_MASK;
+
+    r8 += a0*a8 + 2*a1*a7 + a2*a6 + 2*a3*a5 + a4*a4 + 2*a5*a3 + a6*a2 + 2*a7*a1 + a8*a0;
+    r8 += 19 * ( 2*a9*a9 );
+    r9 = r8 >> 26;  r8 &= LOW_26_BITS_MASK;
+
+    r9 += a0*a9 + a1*a8 + a2*a7 + a3*a6 + a4*a5 + a5*a4 + a6*a3 + a7*a2 + a8*a1 + a9*a0;
+    /* The result may have exceeded 2^255, do another round just as in
+     * fe_weak_reduce() */
+    r0 += 19 * (r9 >> 25);
+    r9 &= LOW_25_BITS_MASK;
+    r1 += r0 >> 26;  r0 &= LOW_26_BITS_MASK;
+    r2 += r1 >> 25;  r1 &= LOW_25_BITS_MASK;
+    r3 += r2 >> 26;  r2 &= LOW_26_BITS_MASK;
+    r4 += r3 >> 25;  r3 &= LOW_25_BITS_MASK;
+    r5 += r4 >> 26;  r4 &= LOW_26_BITS_MASK;
+    r6 += r5 >> 25;  r5 &= LOW_25_BITS_MASK;
+    r7 += r6 >> 26;  r6 &= LOW_26_BITS_MASK;
+    r8 += r7 >> 25;  r7 &= LOW_25_BITS_MASK;
+    r9 += r8 >> 26;  r8 &= LOW_26_BITS_MASK;
+    r0 += 19 * (r9 >> 25);
+    r9 &= LOW_25_BITS_MASK;
+
+    r->ed25519[0] = r0;
+    r->ed25519[1] = r1;
+    r->ed25519[2] = r2;
+    r->ed25519[3] = r3;
+    r->ed25519[4] = r4;
+    r->ed25519[5] = r5;
+    r->ed25519[6] = r6;
+    r->ed25519[7] = r7;
+    r->ed25519[8] = r8;
+    r->ed25519[9] = r9;
+#endif /* !FE3C_OPTIMIZATION_FAST_SQUARING */
 }
 
 /**

@@ -533,7 +533,7 @@ static inline void fe_mul(fe * r, const fe * a, const fe * b) {
      *                    = (xu + zv) + (xv + zu + zv)S (mod p)
      *                    = (xu + zv) + ((x+z)(u+v) - xu)S (mod p)
      *
-     * since p = X^2 - X - 1. Note that in our representation the terms x and z (u and v)
+     * since p = S^2 - S - 1. Note that in our representation the terms x and z (u and v)
      * correspond to limbs 0-7 and 8-15, respectively.
      */
 
@@ -773,8 +773,196 @@ static inline void fe_mul(fe * r, const fe * a, const fe * b) {
  */
 static inline void fe_square(fe * r, const fe * a) {
 
-    /* TODO: Provide an optimized implementation of squaring if possible */
+#if !FE3C_OPTIMIZATION_FAST_SQUARING
     fe_mul(r, a, a);
+#else
+    u64 a0  = a->ed448[ 0];
+    u64 a1  = a->ed448[ 1];
+    u64 a2  = a->ed448[ 2];
+    u64 a3  = a->ed448[ 3];
+    u64 a4  = a->ed448[ 4];
+    u64 a5  = a->ed448[ 5];
+    u64 a6  = a->ed448[ 6];
+    u64 a7  = a->ed448[ 7];
+    u64 a8  = a->ed448[ 8];
+    u64 a9  = a->ed448[ 9];
+    u64 a10 = a->ed448[10];
+    u64 a11 = a->ed448[11];
+    u64 a12 = a->ed448[12];
+    u64 a13 = a->ed448[13];
+    u64 a14 = a->ed448[14];
+    u64 a15 = a->ed448[15];
+
+    /* Do the Karatsuba algorithm leveraging the form of the Goldilocks prime, but
+     * let the compiler group together like terms whenever possible. Partial single-
+     * precision products aibj are equivalent to ajbi when a=b, i.e. when squaring.
+     * Leverage this to halve the number of single-precision multiplications.
+     *
+     * Let S = 2^224. Then:
+     *
+     *   (x + zS)^2 = x^2 + 2xzS + z^2S^2
+     *              = x^2 + z^2 + (2xz + z^2)S (mod p)
+     *              = x^2 + z^2 + ((x+z)^2 - x^2)S (mod p)
+     *
+     * since p = S^2 - S - 1. Note that in our representation the terms x and z
+     * correspond to limbs 0-7 and 8-15, respectively. Also note that the reason we gain
+     * anything by using Karatsuba's trick in the last line of the above identity is
+     * that squaring can be optimized by grouping like terms.
+     */
+
+    u64 m0 = a0 + a8;
+    u64 m1 = a1 + a9;
+    u64 m2 = a2 + a10;
+    u64 m3 = a3 + a11;
+    u64 m4 = a4 + a12;
+    u64 m5 = a5 + a13;
+    u64 m6 = a6 + a14;
+    u64 m7 = a7 + a15;
+
+    /* Use the simple schoolbook multiplication algorithm to square (x+z) */
+    u64 r0  =         m1*m7 + m2*m6 + m3*m5 + m4*m4 + m5*m3 + m6*m2 + m7*m1;
+    u64 r1  =                 m2*m7 + m3*m6 + m4*m5 + m5*m4 + m6*m3 + m7*m2;
+    u64 r2  =                         m3*m7 + m4*m6 + m5*m5 + m6*m4 + m7*m3;
+    u64 r3  =                                 m4*m7 + m5*m6 + m6*m5 + m7*m4;
+    u64 r4  =                                         m5*m7 + m6*m6 + m7*m5;
+    u64 r5  =                                                 m6*m7 + m7*m6;
+    u64 r6  =                                                         m7*m7;
+    u64 r7  = 0;
+    /* Add at the 2^224 "level" the terms which exceeded 2^448 which are currently held in r0-r3.
+     * See comments in fe_mul() for a more detailed explanation. */
+    u64 r8  = r0 + m0*m0;
+    u64 r9  = r1 + m0*m1 + m1*m0;
+    u64 r10 = r2 + m0*m2 + m1*m1 + m2*m0;
+    u64 r11 = r3 + m0*m3 + m1*m2 + m2*m1 + m3*m0;
+    u64 r12 = r4 + m0*m4 + m1*m3 + m2*m2 + m3*m1 + m4*m0;
+    u64 r13 = r5 + m0*m5 + m1*m4 + m2*m3 + m3*m2 + m4*m1 + m5*m0;
+    u64 r14 = r6 + m0*m6 + m1*m5 + m2*m4 + m3*m3 + m4*m2 + m5*m1 + m6*m0;
+    u64 r15 =      m0*m7 + m1*m6 + m2*m5 + m3*m4 + m4*m3 + m5*m2 + m6*m1 + m7*m0;
+
+    /* Use schoolbook multiplication to square x and z as well, this time without risk of
+     * exceeding 2^448 since all inputs are bound by 2^224. */
+    u64 xx0  = a0*a0;
+    u64 xx1  = a0*a1 + a1*a0;
+    u64 xx2  = a0*a2 + a1*a1 + a2*a0;
+    u64 xx3  = a0*a3 + a1*a2 + a2*a1 + a3*a0;
+    u64 xx4  = a0*a4 + a1*a3 + a2*a2 + a3*a1 + a4*a0;
+    u64 xx5  = a0*a5 + a1*a4 + a2*a3 + a3*a2 + a4*a1 + a5*a0;
+    u64 xx6  = a0*a6 + a1*a5 + a2*a4 + a3*a3 + a4*a2 + a5*a1 + a6*a0;
+    u64 xx7  = a0*a7 + a1*a6 + a2*a5 + a3*a4 + a4*a3 + a5*a2 + a6*a1 + a7*a0;
+    u64 xx8  =         a1*a7 + a2*a6 + a3*a5 + a4*a4 + a5*a3 + a6*a2 + a7*a1;
+    u64 xx9  =                 a2*a7 + a3*a6 + a4*a5 + a5*a4 + a6*a3 + a7*a2;
+    u64 xx10 =                         a3*a7 + a4*a6 + a5*a5 + a6*a4 + a7*a3;
+    u64 xx11 =                                 a4*a7 + a5*a6 + a6*a5 + a7*a4;
+    u64 xx12 =                                         a5*a7 + a6*a6 + a7*a5;
+    u64 xx13 =                                                 a6*a7 + a7*a6;
+    u64 xx14 =                                                         a7*a7;
+
+    u64 zz0  = a8*a8;
+    u64 zz1  = a8*a9  + a9*a8;
+    u64 zz2  = a8*a10 + a9*a9 +  a10*a8;
+    u64 zz3  = a8*a11 + a9*a10 + a10*a9  + a11*a8;
+    u64 zz4  = a8*a12 + a9*a11 + a10*a10 + a11*a9  + a12*a8;
+    u64 zz5  = a8*a13 + a9*a12 + a10*a11 + a11*a10 + a12*a9  + a13*a8;
+    u64 zz6  = a8*a14 + a9*a13 + a10*a12 + a11*a11 + a12*a10 + a13*a9  + a14*a8;
+    u64 zz7  = a8*a15 + a9*a14 + a10*a13 + a11*a12 + a12*a11 + a13*a10 + a14*a9  + a15*a8;
+    u64 zz8  =          a9*a15 + a10*a14 + a11*a13 + a12*a12 + a13*a11 + a14*a10 + a15*a9;
+    u64 zz9  =                   a10*a15 + a11*a14 + a12*a13 + a13*a12 + a14*a11 + a15*a10;
+    u64 zz10 =                             a11*a15 + a12*a14 + a13*a13 + a14*a12 + a15*a11;
+    u64 zz11 =                                       a12*a15 + a13*a14 + a14*a13 + a15*a12;
+    u64 zz12 =                                                 a13*a15 + a14*a14 + a15*a13;
+    u64 zz13 =                                                           a14*a15 + a15*a14;
+    u64 zz14 =                                                                     a15*a15;
+
+    /* Subtract x^2 2^224 */
+    r0  -= xx8;
+    r1  -= xx9;
+    r2  -= xx10;
+    r3  -= xx11;
+    r4  -= xx12;
+    r5  -= xx13;
+    r6  -= xx14;
+    r7  -= 0;
+    r8  -= xx0 + xx8;
+    r9  -= xx1 + xx9;
+    r10 -= xx2 + xx10;
+    r11 -= xx3 + xx11;
+    r12 -= xx4 + xx12;
+    r13 -= xx5 + xx13;
+    r14 -= xx6 + xx14;
+    r15 -= xx7;
+
+    r1  += r0  >> 28;  r0  &= LOW_28_BITS_MASK;
+    r2  += r1  >> 28;  r1  &= LOW_28_BITS_MASK;
+    r3  += r2  >> 28;  r2  &= LOW_28_BITS_MASK;
+    r4  += r3  >> 28;  r3  &= LOW_28_BITS_MASK;
+    r5  += r4  >> 28;  r4  &= LOW_28_BITS_MASK;
+    r6  += r5  >> 28;  r5  &= LOW_28_BITS_MASK;
+    r7  += r6  >> 28;  r6  &= LOW_28_BITS_MASK;
+    r8  += r7  >> 28;  r7  &= LOW_28_BITS_MASK;
+    r9  += r8  >> 28;  r8  &= LOW_28_BITS_MASK;
+    r10 += r9  >> 28;  r9  &= LOW_28_BITS_MASK;
+    r11 += r10 >> 28;  r10 &= LOW_28_BITS_MASK;
+    r12 += r11 >> 28;  r11 &= LOW_28_BITS_MASK;
+    r13 += r12 >> 28;  r12 &= LOW_28_BITS_MASK;
+    r14 += r13 >> 28;  r13 &= LOW_28_BITS_MASK;
+    r15 += r14 >> 28;  r14 &= LOW_28_BITS_MASK;
+    r0  += r15 >> 28;
+    r8  += r15 >> 28;
+    r15 &= LOW_28_BITS_MASK;
+
+    /* Add (x^2 + z^2) */
+    r0  +=  xx0 + zz0;
+    r1  +=  xx1 + zz1;
+    r2  +=  xx2 + zz2;
+    r3  +=  xx3 + zz3;
+    r4  +=  xx4 + zz4;
+    r5  +=  xx5 + zz5;
+    r6  +=  xx6 + zz6;
+    r7  +=  xx7 + zz7;
+    r8  +=  xx8 + zz8;
+    r9  +=  xx9 + zz9;
+    r10 += xx10 + zz10;
+    r11 += xx11 + zz11;
+    r12 += xx12 + zz12;
+    r13 += xx13 + zz13;
+    r14 += xx14 + zz14;
+
+    r1  += r0  >> 28;  r0  &= LOW_28_BITS_MASK;
+    r2  += r1  >> 28;  r1  &= LOW_28_BITS_MASK;
+    r3  += r2  >> 28;  r2  &= LOW_28_BITS_MASK;
+    r4  += r3  >> 28;  r3  &= LOW_28_BITS_MASK;
+    r5  += r4  >> 28;  r4  &= LOW_28_BITS_MASK;
+    r6  += r5  >> 28;  r5  &= LOW_28_BITS_MASK;
+    r7  += r6  >> 28;  r6  &= LOW_28_BITS_MASK;
+    r8  += r7  >> 28;  r7  &= LOW_28_BITS_MASK;
+    r9  += r8  >> 28;  r8  &= LOW_28_BITS_MASK;
+    r10 += r9  >> 28;  r9  &= LOW_28_BITS_MASK;
+    r11 += r10 >> 28;  r10 &= LOW_28_BITS_MASK;
+    r12 += r11 >> 28;  r11 &= LOW_28_BITS_MASK;
+    r13 += r12 >> 28;  r12 &= LOW_28_BITS_MASK;
+    r14 += r13 >> 28;  r13 &= LOW_28_BITS_MASK;
+    r15 += r14 >> 28;  r14 &= LOW_28_BITS_MASK;
+    r0  += r15 >> 28;
+    r8  += r15 >> 28;
+    r15 &= LOW_28_BITS_MASK;
+
+    r->ed448[ 0] = r0;
+    r->ed448[ 1] = r1;
+    r->ed448[ 2] = r2;
+    r->ed448[ 3] = r3;
+    r->ed448[ 4] = r4;
+    r->ed448[ 5] = r5;
+    r->ed448[ 6] = r6;
+    r->ed448[ 7] = r7;
+    r->ed448[ 8] = r8;
+    r->ed448[ 9] = r9;
+    r->ed448[10] = r10;
+    r->ed448[11] = r11;
+    r->ed448[12] = r12;
+    r->ed448[13] = r13;
+    r->ed448[14] = r14;
+    r->ed448[15] = r15;
+#endif /* !FE3C_OPTIMIZATION_FAST_SQUARING */
 }
 
 /**

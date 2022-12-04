@@ -215,7 +215,7 @@ static inline void store_64(u8 * dst, const u64 * src, size_t wordcount) {
         dst[8 * i + 6] = (u8) (src[i] >> 8);
         dst[8 * i + 7] = (u8) (src[i]);
     }
-#endif
+#endif /* FE3C_BIGENDIAN_TARGET */
 }
 
 static inline void load_64(u64 * dst, const u8 * src, size_t wordcount) {
@@ -236,5 +236,5 @@ static inline void load_64(u64 * dst, const u8 * src, size_t wordcount) {
         dst[i] |= (u64) src[8 * i + 1] << 48;
         dst[i] |= (u64) src[8 * i + 0] << 56;
     }
-#endif
+#endif /* FE3C_BIGENDIAN_TARGET */
 }

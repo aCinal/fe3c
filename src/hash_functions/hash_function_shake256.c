@@ -198,7 +198,7 @@ static inline u64 load_64(const u8 src[8]) {
     dst |= (u64) src[5] << 40;
     dst |= (u64) src[6] << 48;
     dst |= (u64) src[7] << 56;
-#endif
+#endif /* FE3C_LILENDIAN_TARGET */
     return dst;
 }
 
@@ -222,7 +222,7 @@ static inline void store_64(u8 * dst, const u64 * src, int bytecount) {
         dst[8 * i + 6] = (u8) (src[i] >> 6 * 8);
         dst[8 * i + 7] = (u8) (src[i] >> 7 * 8);
     }
-#endif
+#endif /* FE3C_LILENDIAN_TARGET */
     /* Set the trailer manually for either endianness to not risk reading
      * uninitialized stack later */
     for (size_t j = 0; j < trailer; j++) {

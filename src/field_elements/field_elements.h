@@ -29,7 +29,7 @@ extern "C" {
     typedef u64 fe_limb_type;
 #else
     #error "Architecture not defined. Set exactly one of FE3C_32BIT or FE3C_64BIT"
-#endif
+#endif /* FE3C_32BIT && FE3C_64BIT */
 
 typedef union fe {
 
