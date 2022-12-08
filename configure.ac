@@ -82,6 +82,21 @@ AC_ARG_ENABLE([fast-squaring],
               [])
 AM_CONDITIONAL([FE3C_OPTIMIZATION_FAST_SQUARING], [test "x$optimization_fast_squaring" = "xyes"])
 AS_IF([test "x$optimization_fast_squaring" = "xyes"], AC_DEFINE([FE3C_OPTIMIZATION_FAST_SQUARING]), [])
+
+optimization_comb_method="yes"
+AC_ARG_ENABLE([comb-method],
+              [AS_HELP_STRING([--disable-comb-method],
+                              [Disable comb method of scalar multiplication, which may reduce data footprint,
+                               but will definitely decrease performance])],
+              [AS_IF([test "x$enableval" = "xno"],
+                     [optimization_comb_method="no"],
+
+                     [test "x$enableval" != "xyes"],
+                     [AC_MSG_ERROR([bad value ${enableval} for --enable-fast-squaring])])],
+              [])
+AM_CONDITIONAL([FE3C_OPTIMIZATION_COMB_METHOD], [test "x$optimization_comb_method" = "xyes"])
+AS_IF([test "x$optimization_comb_method" = "xyes"], AC_DEFINE([FE3C_OPTIMIZATION_COMB_METHOD]), [])
+
 # -------------------------------------------------------------------------------------------
 
 # --------------------------------- Architecture intrinsics ---------------------------------
@@ -118,11 +133,12 @@ AC_OUTPUT
 AC_MSG_RESULT([
     $PACKAGE $VERSION
 
-    Curve Ed25519 supported:             ${ed25519}
-    Curve Ed448 supported:               ${ed448}
+    Curve Ed25519 supported:                ${ed25519}
+    Curve Ed448 supported:                  ${ed448}
 
-    Optimized for 32-bit architectures:  ${optimize32}
-    Sanity checks enabled:               ${sanity_checks}
+    Optimized for 32-bit architectures:     ${optimize32}
+    Sanity checks enabled:                  ${sanity_checks}
 
-    Optimized field element squaring:    ${optimization_fast_squaring}
+    Optimized field element squaring:       ${optimization_fast_squaring}
+    Comb method for scalar multiplication:  ${optimization_comb_method}
 ])

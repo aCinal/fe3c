@@ -2,10 +2,13 @@
 #include <curves/curves.h>
 #include <field_elements/field_elements.h>
 #if FE3C_32BIT
-#include <field_elements/field_elements_ed25519_32.h>
+    #include <field_elements/field_elements_ed25519_32.h>
 #else
-#include <field_elements/field_elements_ed25519_64.h>
-#endif
+    #include <field_elements/field_elements_ed25519_64.h>
+#endif /* FE3C_32BIT */
+#if FE3C_OPTIMIZATION_COMB_METHOD
+    #include <points/points_ed25519_comb_method.h>
+#endif /* FE3C_OPTIMIZATION_COMB_METHOD */
 
 static const point ed25519_identity = {
     .X = fe_zero,
@@ -312,24 +315,94 @@ static void ed25519_scalar_multiply(point * r, const point * p, const u8 * s) {
 
 static void ed25519_multiply_basepoint(point * r, const u8 * s) {
 
-    /* TODO: Use precomputation (comb method) */
-#if FE3C_64BIT
+#if !FE3C_OPTIMIZATION_COMB_METHOD
+    #if FE3C_64BIT
     static const point basepoint = {
         .X = { .ed25519 = { 0x62d608f25d51a, 0x412a4b4f6592a, 0x75b7171a4b31d, 0x1ff60527118fe, 0x216936d3cd6e5 } },
         .Y = { .ed25519 = { 0x6666666666658, 0x4cccccccccccc, 0x1999999999999, 0x3333333333333, 0x6666666666666 } },
         .Z = fe_one,
         .T = { .ed25519 = { 0x68ab3a5b7dda3, 0xeea2a5eadbb, 0x2af8df483c27e, 0x332b375274732, 0x67875f0fd78b7 } }
     };
-#else
+    #else
     static const point basepoint = {
         .X = { .ed25519 = { 0x325d51a, 0x18b5823, 0xf6592a, 0x104a92d, 0x1a4b31d, 0x1d6dc5c, 0x27118fe, 0x7fd814, 0x13cd6e5, 0x85a4db } },
         .Y = { .ed25519 = { 0x2666658, 0x1999999, 0xcccccc, 0x1333333, 0x1999999, 0x666666, 0x3333333, 0xcccccc, 0x2666666, 0x1999999 } },
         .Z = fe_one,
         .T = { .ed25519 = { 0x1b7dda3, 0x1a2ace9, 0x25eadbb, 0x3ba8a, 0x83c27e, 0xabe37d, 0x1274732, 0xccacdd, 0xfd78b7, 0x19e1d7c } }
     };
-#endif
-
+    #endif /* FE3C_64BIT */
     ed25519_scalar_multiply(r, &basepoint, s);
+#else
+    /* Represent the scalar s as a matrix s = [ s[i][j] ] where 0 <= i < h and
+     * 0 <= j < v, where s[i][j] are b bits long. Let log(s) denote the bit length
+     * of s and a := ceil(log(s) / h), b := ceil(a / v). Then the point sP can be
+     * written as:
+     *
+     *                             h-1 v-1
+     *                             ___ ___
+     *                             \   \    ia  jb
+     *                      sP =   /__ /__ 2   2   s[i][j] P
+     *                             i=0 j=0
+     *
+     * Let P_i denote 2^{ia} P and let e[i][jb+k] for 0 < k <= b-1 be the binary
+     * representation of s[i][j]. Then:
+     *
+     *                           b-1    v-1     h-1
+     *                           ___    ___     ___
+     *                           \    k \    jb \
+     *                      sP = /__ 2  /__ 2   /__  e[i][jb+k] P_i
+     *                           k=0    j=0     i=0
+     *
+     * We have precomputed:
+     *
+     *   G[0][u - 1] = v[h-1] P_{h-1} + v[h-2] P_{h-2} + ... + v[1] P_1 + v[0] + P_0
+     *
+     * where v[i] for 0 <= i < h is a binary representation of u, for all possible
+     * values of u (with the exception of the trivial case u=0), as well as:
+     *
+     *                                        jb
+     *                         G[j][u - 1] = 2   G[0][u - 1]
+     *
+     * for 0 <= j < v. Note that G[0][u - 1] corresponds to the summation over i in the
+     * above expression for sP. There we sum the bits e[i][jb+k] iterating over i, i.e.
+     * iterating down a column of bits in the s matrix. When we know the exponent, we shall
+     * recode it into the [ s[i][j] ] matrix and parse its columns as integers u that we
+     * shall use to index the precomputation table. Let Ijk be the integer whose binary
+     * representation is the column (jb + k) of the scalar matrix [ s[i][j] ]. Then:
+     *
+     *                                 b-1    v-1
+     *                                 ___    ___
+     *                                 \    k \
+     *                            sP = /__ 2  /__ G[j][Ijk - 1]
+     *                                 k=0    j=0
+     *
+     * Note that when Ijk = 0 we shall skip the corresponding element of G (the corresponding
+     * element would be the group identity element which we do not even bother storing).
+     */
+
+    /* TODO: Choose the comb method parameters in an optimal way */
+    /* TODO: Optimize the comb method to make use of fast inversion of group elements (see mbedtls for a good reference) */
+
+    /* Recode the scalar to facilitate accessing the precomputation table */
+    DECLARE_SCALAR_RECODING(ijk);
+    ed25519_comb_recode_scalar(ijk, s);
+
+    *r = ed25519_identity;
+    point p;
+    for (int k = ED25519_COMB_B - 1; k >= 0; k--) {
+
+        ed25519_point_double(r, r);
+
+        for (int j = ED25519_COMB_V - 1; j >= 0; j--) {
+
+            ed25519_comb_read_precomp(&p, j, ijk[j][k]);
+            ed25519_points_add(r, r, &p);
+        }
+    }
+
+    /* Clear the recoding of the secret scalar from the stack */
+    purge_secrets(ijk, sizeof(ijk));
+#endif /* !FE3C_OPTIMIZATION_COMB_METHOD */
 }
 
 group_ops ed25519_group_ops = {
