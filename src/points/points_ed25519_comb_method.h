@@ -2,11 +2,7 @@
 #ifndef __FE3C_POINTS_POINTS_ED25519_COMB_METHOD_H
 #define __FE3C_POINTS_POINTS_ED25519_COMB_METHOD_H
 
-#if FE3C_32BIT
-    #include <field_elements/field_elements_ed25519_32.h>
-#else
-    #include <field_elements/field_elements_ed25519_64.h>
-#endif /* FE3C_32BIT */
+#include <field_elements/field_elements_ed25519.h>
 
 /* Define the number of blocks (nomenclature from "More Flexible Exponentiation with Precomputation"
  * by Lim & Lee) - this corresponds to the h in the algorithm description in points_ed25519.c */
@@ -20,10 +16,10 @@
 
 /* Store affine coordinates X,Y and the extended coordinate T=XY in the precomputation table */
 typedef struct point_precomp {
-    fe X;
-    fe Y;
+    fe25519 X;
+    fe25519 Y;
     /* TODO: Consider storing only X and Y and recomputing T each time (performance-storage tradeoff)*/
-    fe T;
+    fe25519 T;
 } point_precomp;
 
 /* Define the precomputation table, for readability it is kept in a separate file */
@@ -81,9 +77,9 @@ static inline void ed25519_comb_recode_scalar(DECLARE_SCALAR_RECODING(recoding),
 
 #define point_conditional_move(p, ijk, k) ({ \
     u8 __move = equal((ijk), k); \
-    fe_conditional_move(&p->X, &ed25519_comb_precomp[j][k - 1].X, __move); \
-    fe_conditional_move(&p->Y, &ed25519_comb_precomp[j][k - 1].Y, __move); \
-    fe_conditional_move(&p->T, &ed25519_comb_precomp[j][k - 1].T, __move); \
+    fe_conditional_move(&p->X, (fe *) &ed25519_comb_precomp[j][k - 1].X, __move); \
+    fe_conditional_move(&p->Y, (fe *) &ed25519_comb_precomp[j][k - 1].Y, __move); \
+    fe_conditional_move(&p->T, (fe *) &ed25519_comb_precomp[j][k - 1].T, __move); \
 })
 
 static inline void ed25519_comb_read_precomp(point * r, u8 j, u8 ijk) {

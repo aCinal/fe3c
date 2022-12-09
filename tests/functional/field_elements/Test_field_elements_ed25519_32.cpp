@@ -1,6 +1,5 @@
 #include <CppUTest/TestHarness.h>
-#include <field_elements/field_elements.h>
-#include <field_elements/field_elements_ed25519_32.h>
+#include <field_elements/field_elements_ed25519.h>
 
 TEST_GROUP(FIELD_ELEMENTS_ED25519_32) {
 

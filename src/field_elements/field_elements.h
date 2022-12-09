@@ -31,14 +31,17 @@ extern "C" {
     #error "Architecture not defined. Set exactly one of FE3C_32BIT or FE3C_64BIT"
 #endif /* FE3C_32BIT && FE3C_64BIT */
 
+typedef fe_limb_type fe25519[ED25519_FE_LIMB_COUNT];
+typedef fe_limb_type fe448[ED448_FE_LIMB_COUNT];
+
 typedef union fe {
 
 #if FE3C_SUPPORT_CURVE_ED25519
-    fe_limb_type ed25519[ED25519_FE_LIMB_COUNT];
+    fe25519 ed25519;
 #endif /* FE3C_SUPPORT_CURVE_ED25519 */
 
 #if FE3C_SUPPORT_CURVE_ED448
-    fe_limb_type ed448[ED448_FE_LIMB_COUNT];
+    fe448 ed448;
 #endif /* FE3C_SUPPORT_CURVE_ED448 */
 
 } fe;

@@ -2,11 +2,7 @@
 #ifndef __FE3C_POINTS_POINTS_ED448_COMB_METHOD_H
 #define __FE3C_POINTS_POINTS_ED448_COMB_METHOD_H
 
-#if FE3C_32BIT
-    #include <field_elements/field_elements_ed448_32.h>
-#else
-    #include <field_elements/field_elements_ed448_64.h>
-#endif /* FE3C_32BIT */
+#include <field_elements/field_elements_ed448.h>
 
 /* Define the number of blocks (nomenclature from "More Flexible Exponentiation with Precomputation"
  * by Lim & Lee) - this corresponds to the h in the algorithm description in points_ed448.c */
@@ -20,8 +16,8 @@
 
 /* Store only affine representations in the precomputation table */
 typedef struct point_precomp {
-    fe X;
-    fe Y;
+    fe448 X;
+    fe448 Y;
 } point_precomp;
 
 /* Define the precomputation table, for readability it is kept in a separate file */
@@ -79,8 +75,8 @@ static inline void ed448_comb_recode_scalar(DECLARE_SCALAR_RECODING(recoding), c
 
 #define point_conditional_move(p, ijk, k) ({ \
     u8 __move = equal((ijk), k); \
-    fe_conditional_move(&p->X, &ed448_comb_precomp[j][k - 1].X, __move); \
-    fe_conditional_move(&p->Y, &ed448_comb_precomp[j][k - 1].Y, __move); \
+    fe_conditional_move(&p->X, (fe *) &ed448_comb_precomp[j][k - 1].X, __move); \
+    fe_conditional_move(&p->Y, (fe *) &ed448_comb_precomp[j][k - 1].Y, __move); \
 })
 
 static inline void ed448_comb_read_precomp(point * r, u8 j, u8 ijk) {

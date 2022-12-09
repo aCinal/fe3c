@@ -1,11 +1,6 @@
 #include <points/points.h>
 #include <curves/curves.h>
-#include <field_elements/field_elements.h>
-#if FE3C_32BIT
-    #include <field_elements/field_elements_ed25519_32.h>
-#else
-    #include <field_elements/field_elements_ed25519_64.h>
-#endif /* FE3C_32BIT */
+#include <field_elements/field_elements_ed25519.h>
 #if FE3C_OPTIMIZATION_COMB_METHOD
     #include <points/points_ed25519_comb_method.h>
 #endif /* FE3C_OPTIMIZATION_COMB_METHOD */
