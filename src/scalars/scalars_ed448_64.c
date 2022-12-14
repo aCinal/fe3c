@@ -81,6 +81,38 @@ static inline void store_56(u8 dst[7], u64 src) {
 #endif
 }
 
+static int ed448_scalar_is_canonical(const u8 * s) {
+
+    /* Load the scalar into seven 64-bit words (extended to 128 bits) */
+    u128 s0 = load_64(&s[0 * 8]);
+    u128 s1 = load_64(&s[1 * 8]);
+    u128 s2 = load_64(&s[2 * 8]);
+    u128 s3 = load_64(&s[3 * 8]);
+    u128 s4 = load_64(&s[4 * 8]);
+    u128 s5 = load_64(&s[5 * 8]);
+    u128 s6 = load_64(&s[6 * 8]);
+
+    /* Let L[0]-L[6] denote the seven words of L and let
+     * S[0]-S[7] denote the seven words of the scalar s
+     * (both in little-endian order). If the following
+     * subtraction underflows and s[56] = 0x00, then
+     * S < L. */
+    s0 -= GROUP_ORDER_WORD_0;
+    /* Include the underflow in the next subtraction */
+    s1 -= GROUP_ORDER_WORD_1 + (s0 >> 127);
+    s2 -= GROUP_ORDER_WORD_2 + (s1 >> 127);
+    s3 -= GROUP_ORDER_WORD_3 + (s2 >> 127);
+    s4 -= GROUP_ORDER_WORD_4 + (s3 >> 127);
+    s5 -= GROUP_ORDER_WORD_5 + (s4 >> 127);
+    s6 -= GROUP_ORDER_WORD_6 + (s5 >> 127);
+
+    /* We separately check if the "borrow" made it all
+     * the way to the top and that the last byte of the
+     * scalar is cleared (both need to be the case for
+     * the scalar to be canonical). */
+    return (s6 >> 127) & (s[56] == 0);
+}
+
 static void ed448_scalar_reduce(u8 * s) {
 
     /* Ed448 reduction inputs can be 114 bytes long. Use intermediate 56-bit reduced-radix
@@ -288,38 +320,6 @@ static void ed448_scalar_reduce(u8 * s) {
     store_56(&s[7 * 7], t7);
     /* Set the last byte to 0 */
     s[56] = 0;
-}
-
-static int ed448_scalar_is_canonical(const u8 * s) {
-
-    /* Load the scalar into seven 64-bit words (extended to 128 bits) */
-    u128 s0 = load_64(&s[0 * 8]);
-    u128 s1 = load_64(&s[1 * 8]);
-    u128 s2 = load_64(&s[2 * 8]);
-    u128 s3 = load_64(&s[3 * 8]);
-    u128 s4 = load_64(&s[4 * 8]);
-    u128 s5 = load_64(&s[5 * 8]);
-    u128 s6 = load_64(&s[6 * 8]);
-
-    /* Let L[0]-L[6] denote the seven words of L and let
-     * S[0]-S[7] denote the seven words of the scalar s
-     * (both in little-endian order). If the following
-     * subtraction underflows and s[56] = 0x00, then
-     * S < L. */
-    s0 -= GROUP_ORDER_WORD_0;
-    /* Include the underflow in the next subtraction */
-    s1 -= GROUP_ORDER_WORD_1 + (s0 >> 127);
-    s2 -= GROUP_ORDER_WORD_2 + (s1 >> 127);
-    s3 -= GROUP_ORDER_WORD_3 + (s2 >> 127);
-    s4 -= GROUP_ORDER_WORD_4 + (s3 >> 127);
-    s5 -= GROUP_ORDER_WORD_5 + (s4 >> 127);
-    s6 -= GROUP_ORDER_WORD_6 + (s5 >> 127);
-
-    /* We separately check if the "borrow" made it all
-     * the way to the top and that the last byte of the
-     * scalar is cleared (both need to be the case for
-     * the scalar to be canonical). */
-    return (s6 >> 127) & (s[56] == 0);
 }
 
 static void ed448_scalars_muladd(u8 * r, const u8 * a, const u8 * b, const u8 * c) {
@@ -569,7 +569,7 @@ static void ed448_scalars_muladd(u8 * r, const u8 * a, const u8 * b, const u8 * 
 }
 
 scalar_ops ed448_scalar_ops = {
-    .reduce = ed448_scalar_reduce,
     .is_canonical = ed448_scalar_is_canonical,
+    .reduce = ed448_scalar_reduce,
     .muladd = ed448_scalars_muladd
 };

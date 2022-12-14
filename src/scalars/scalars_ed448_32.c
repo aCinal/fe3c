@@ -50,6 +50,52 @@ static inline u32 load_32(const u8 src[8]) {
     return dst;
 }
 
+static int ed448_scalar_is_canonical(const u8 * s) {
+
+    /* Load the scalar into fourteen 32-bit words (extended to 64 bits) */
+    u64 s0  = load_32(&s[ 0 * 4]);
+    u64 s1  = load_32(&s[ 1 * 4]);
+    u64 s2  = load_32(&s[ 2 * 4]);
+    u64 s3  = load_32(&s[ 3 * 4]);
+    u64 s4  = load_32(&s[ 4 * 4]);
+    u64 s5  = load_32(&s[ 5 * 4]);
+    u64 s6  = load_32(&s[ 6 * 4]);
+    u64 s7  = load_32(&s[ 7 * 4]);
+    u64 s8  = load_32(&s[ 8 * 4]);
+    u64 s9  = load_32(&s[ 9 * 4]);
+    u64 s10 = load_32(&s[10 * 4]);
+    u64 s11 = load_32(&s[11 * 4]);
+    u64 s12 = load_32(&s[12 * 4]);
+    u64 s13 = load_32(&s[13 * 4]);
+
+    /* Let L[0]-L[13] denote the fourteen words of L and let
+     * S[0]-S[13] denote the fourteen words of the scalar s
+     * (both in little-endian order). If the following
+     * subtraction underflows and s[56] = 0x00, then
+     * S < L. */
+    s0  -= GROUP_ORDER_WORD_0;
+    /* Include the underflow in the next subtraction */
+    s1  -= GROUP_ORDER_WORD_1  + (s0  >> 63);
+    s2  -= GROUP_ORDER_WORD_2  + (s1  >> 63);
+    s3  -= GROUP_ORDER_WORD_3  + (s2  >> 63);
+    s4  -= GROUP_ORDER_WORD_4  + (s3  >> 63);
+    s5  -= GROUP_ORDER_WORD_5  + (s4  >> 63);
+    s6  -= GROUP_ORDER_WORD_6  + (s5  >> 63);
+    s7  -= GROUP_ORDER_WORD_7  + (s6  >> 63);
+    s8  -= GROUP_ORDER_WORD_8  + (s7  >> 63);
+    s9  -= GROUP_ORDER_WORD_9  + (s8  >> 63);
+    s10 -= GROUP_ORDER_WORD_10 + (s9  >> 63);
+    s11 -= GROUP_ORDER_WORD_11 + (s10 >> 63);
+    s12 -= GROUP_ORDER_WORD_12 + (s11 >> 63);
+    s13 -= GROUP_ORDER_WORD_13 + (s12 >> 63);
+
+    /* We separately check if the "borrow" made it all
+     * the way to the top and that the last byte of the
+     * scalar is cleared (both need to be the case for
+     * the scalar to be canonical). */
+    return (s13 >> 63) & (s[56] == 0);
+}
+
 static void ed448_scalar_reduce(u8 * s) {
 
     /* Ed448 reduction inputs can be 114 bytes long. Use intermediate 28-bit reduced-radix
@@ -526,52 +572,6 @@ static void ed448_scalar_reduce(u8 * s) {
 
     /* Set the last byte to 0 */
     s[56] = 0;
-}
-
-static int ed448_scalar_is_canonical(const u8 * s) {
-
-    /* Load the scalar into fourteen 32-bit words (extended to 64 bits) */
-    u64 s0  = load_32(&s[ 0 * 4]);
-    u64 s1  = load_32(&s[ 1 * 4]);
-    u64 s2  = load_32(&s[ 2 * 4]);
-    u64 s3  = load_32(&s[ 3 * 4]);
-    u64 s4  = load_32(&s[ 4 * 4]);
-    u64 s5  = load_32(&s[ 5 * 4]);
-    u64 s6  = load_32(&s[ 6 * 4]);
-    u64 s7  = load_32(&s[ 7 * 4]);
-    u64 s8  = load_32(&s[ 8 * 4]);
-    u64 s9  = load_32(&s[ 9 * 4]);
-    u64 s10 = load_32(&s[10 * 4]);
-    u64 s11 = load_32(&s[11 * 4]);
-    u64 s12 = load_32(&s[12 * 4]);
-    u64 s13 = load_32(&s[13 * 4]);
-
-    /* Let L[0]-L[13] denote the fourteen words of L and let
-     * S[0]-S[13] denote the fourteen words of the scalar s
-     * (both in little-endian order). If the following
-     * subtraction underflows and s[56] = 0x00, then
-     * S < L. */
-    s0  -= GROUP_ORDER_WORD_0;
-    /* Include the underflow in the next subtraction */
-    s1  -= GROUP_ORDER_WORD_1  + (s0  >> 63);
-    s2  -= GROUP_ORDER_WORD_2  + (s1  >> 63);
-    s3  -= GROUP_ORDER_WORD_3  + (s2  >> 63);
-    s4  -= GROUP_ORDER_WORD_4  + (s3  >> 63);
-    s5  -= GROUP_ORDER_WORD_5  + (s4  >> 63);
-    s6  -= GROUP_ORDER_WORD_6  + (s5  >> 63);
-    s7  -= GROUP_ORDER_WORD_7  + (s6  >> 63);
-    s8  -= GROUP_ORDER_WORD_8  + (s7  >> 63);
-    s9  -= GROUP_ORDER_WORD_9  + (s8  >> 63);
-    s10 -= GROUP_ORDER_WORD_10 + (s9  >> 63);
-    s11 -= GROUP_ORDER_WORD_11 + (s10 >> 63);
-    s12 -= GROUP_ORDER_WORD_12 + (s11 >> 63);
-    s13 -= GROUP_ORDER_WORD_13 + (s12 >> 63);
-
-    /* We separately check if the "borrow" made it all
-     * the way to the top and that the last byte of the
-     * scalar is cleared (both need to be the case for
-     * the scalar to be canonical). */
-    return (s13 >> 63) & (s[56] == 0);
 }
 
 static void ed448_scalars_muladd(u8 * r, const u8 * a, const u8 * b, const u8 * c) {
@@ -1127,8 +1127,9 @@ static void ed448_scalars_muladd(u8 * r, const u8 * a, const u8 * b, const u8 * 
     r[56] = 0;
 }
 
+
 scalar_ops ed448_scalar_ops = {
-    .reduce = ed448_scalar_reduce,
     .is_canonical = ed448_scalar_is_canonical,
+    .reduce = ed448_scalar_reduce,
     .muladd = ed448_scalars_muladd
 };

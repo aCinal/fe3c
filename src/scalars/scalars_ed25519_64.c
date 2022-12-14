@@ -79,6 +79,29 @@ static inline u64 load_56(const u8 src[7]) {
     return dst;
 }
 
+static int ed25519_scalar_is_canonical(const u8 * s) {
+
+    /* Load the scalar into four 64-bit words (extended to 128 bits) */
+    u128 s0 = load_64(&s[0 * 8]);
+    u128 s1 = load_64(&s[1 * 8]);
+    u128 s2 = load_64(&s[2 * 8]);
+    u128 s3 = load_64(&s[3 * 8]);
+
+    /* Let L[0]-L[3] denote the four words of L and let
+     * S[0]-S[3] denote the four words of the scalar s
+     * (both in little-endian order). If the following
+     * subtraction underflows, then S < L. */
+    s0 -= GROUP_ORDER_WORD_0;
+    /* Include the underflow in the next subtraction */
+    s1 -= GROUP_ORDER_WORD_1 + (s0 >> 127);
+    s2 -= GROUP_ORDER_WORD_2 + (s1 >> 127);
+    s3 -= GROUP_ORDER_WORD_3 + (s2 >> 127);
+
+    /* If the "borrow" made it all the way to the top,
+     * then s is smaller than L and so is canonical. */
+    return (s3 >> 127);
+}
+
 static void ed25519_scalar_reduce(u8 * s) {
 
     /* Ed25519 reduction inputs can be 64 bytes long (outputs from SHA-512). Use intermediate
@@ -210,29 +233,6 @@ static void ed25519_scalar_reduce(u8 * s) {
     s[29] = ( t5 >> 22 );
     s[30] = ( t5 >> 30 );
     s[31] = ( t5 >> 38 );
-}
-
-static int ed25519_scalar_is_canonical(const u8 * s) {
-
-    /* Load the scalar into four 64-bit words (extended to 128 bits) */
-    u128 s0 = load_64(&s[0 * 8]);
-    u128 s1 = load_64(&s[1 * 8]);
-    u128 s2 = load_64(&s[2 * 8]);
-    u128 s3 = load_64(&s[3 * 8]);
-
-    /* Let L[0]-L[3] denote the four words of L and let
-     * S[0]-S[3] denote the four words of the scalar s
-     * (both in little-endian order). If the following
-     * subtraction underflows, then S < L. */
-    s0 -= GROUP_ORDER_WORD_0;
-    /* Include the underflow in the next subtraction */
-    s1 -= GROUP_ORDER_WORD_1 + (s0 >> 127);
-    s2 -= GROUP_ORDER_WORD_2 + (s1 >> 127);
-    s3 -= GROUP_ORDER_WORD_3 + (s2 >> 127);
-
-    /* If the "borrow" made it all the way to the top,
-     * then s is smaller than L and so is canonical. */
-    return (s3 >> 127);
 }
 
 static void ed25519_scalars_muladd(u8 * r, const u8 * a, const u8 * b, const u8 * c) {
@@ -407,7 +407,7 @@ static void ed25519_scalars_muladd(u8 * r, const u8 * a, const u8 * b, const u8 
 }
 
 scalar_ops ed25519_scalar_ops = {
-    .reduce = ed25519_scalar_reduce,
     .is_canonical = ed25519_scalar_is_canonical,
+    .reduce = ed25519_scalar_reduce,
     .muladd = ed25519_scalars_muladd
 };

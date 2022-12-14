@@ -58,6 +58,37 @@ static inline u32 load_24(const u8 src[3]) {
     return dst;
 }
 
+static int ed25519_scalar_is_canonical(const u8 * s) {
+
+    /* Load the scalar into eight 32-bit words (extended to 64 bits) */
+    u64 s0 = load_32(&s[0 * 4]);
+    u64 s1 = load_32(&s[1 * 4]);
+    u64 s2 = load_32(&s[2 * 4]);
+    u64 s3 = load_32(&s[3 * 4]);
+    u64 s4 = load_32(&s[4 * 4]);
+    u64 s5 = load_32(&s[5 * 4]);
+    u64 s6 = load_32(&s[6 * 4]);
+    u64 s7 = load_32(&s[7 * 4]);
+
+    /* Let L[0]-L[7] denote the eight words of L and let
+     * S[0]-S[7] denote the eight words of the scalar s
+     * (both in little-endian order). If the following
+     * subtraction underflows, then S < L. */
+    s0 -= GROUP_ORDER_WORD_0;
+    /* Include the underflow in the next subtraction */
+    s1 -= GROUP_ORDER_WORD_1 + (s0 >> 63);
+    s2 -= GROUP_ORDER_WORD_2 + (s1 >> 63);
+    s3 -= GROUP_ORDER_WORD_3 + (s2 >> 63);
+    s4 -= GROUP_ORDER_WORD_4 + (s3 >> 63);
+    s5 -= GROUP_ORDER_WORD_5 + (s4 >> 63);
+    s6 -= GROUP_ORDER_WORD_6 + (s5 >> 63);
+    s7 -= GROUP_ORDER_WORD_7 + (s6 >> 63);
+
+    /* If the "borrow" made it all the way to the top,
+     * then s is smaller than L and so is canonical. */
+    return (s7 >> 63);
+}
+
 static void ed25519_scalar_reduce(u8 * s) {
 
     /* Ed25519 reduction inputs can be 64 bytes long (outputs from SHA-512). Use intermediate
@@ -284,37 +315,6 @@ static void ed25519_scalar_reduce(u8 * s) {
     s[29] = ( t11 >> 1 );
     s[30] = ( t11 >> 9 );
     s[31] = ( t11 >> 17 );
-}
-
-static int ed25519_scalar_is_canonical(const u8 * s) {
-
-    /* Load the scalar into eight 32-bit words (extended to 64 bits) */
-    u64 s0 = load_32(&s[0 * 4]);
-    u64 s1 = load_32(&s[1 * 4]);
-    u64 s2 = load_32(&s[2 * 4]);
-    u64 s3 = load_32(&s[3 * 4]);
-    u64 s4 = load_32(&s[4 * 4]);
-    u64 s5 = load_32(&s[5 * 4]);
-    u64 s6 = load_32(&s[6 * 4]);
-    u64 s7 = load_32(&s[7 * 4]);
-
-    /* Let L[0]-L[7] denote the eight words of L and let
-     * S[0]-S[7] denote the eight words of the scalar s
-     * (both in little-endian order). If the following
-     * subtraction underflows, then S < L. */
-    s0 -= GROUP_ORDER_WORD_0;
-    /* Include the underflow in the next subtraction */
-    s1 -= GROUP_ORDER_WORD_1 + (s0 >> 63);
-    s2 -= GROUP_ORDER_WORD_2 + (s1 >> 63);
-    s3 -= GROUP_ORDER_WORD_3 + (s2 >> 63);
-    s4 -= GROUP_ORDER_WORD_4 + (s3 >> 63);
-    s5 -= GROUP_ORDER_WORD_5 + (s4 >> 63);
-    s6 -= GROUP_ORDER_WORD_6 + (s5 >> 63);
-    s7 -= GROUP_ORDER_WORD_7 + (s6 >> 63);
-
-    /* If the "borrow" made it all the way to the top,
-     * then s is smaller than L and so is canonical. */
-    return (s7 >> 63);
 }
 
 static void ed25519_scalars_muladd(u8 * r, const u8 * a, const u8 * b, const u8 * c) {
@@ -620,7 +620,7 @@ static void ed25519_scalars_muladd(u8 * r, const u8 * a, const u8 * b, const u8 
 }
 
 scalar_ops ed25519_scalar_ops = {
-    .reduce = ed25519_scalar_reduce,
     .is_canonical = ed25519_scalar_is_canonical,
+    .reduce = ed25519_scalar_reduce,
     .muladd = ed25519_scalars_muladd
 };

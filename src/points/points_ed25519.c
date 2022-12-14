@@ -1,5 +1,5 @@
 #include <points/points.h>
-#include <curves/curves.h>
+#include <scalars/scalars.h>
 #include <field_elements/field_elements_ed25519.h>
 #if FE3C_OPTIMIZATION_COMB_METHOD
     #include <points/points_ed25519_comb_method.h>
@@ -328,75 +328,124 @@ static void ed25519_multiply_basepoint(point * r, const u8 * s) {
     #endif /* FE3C_64BIT */
     ed25519_scalar_multiply(r, &basepoint, s);
 #else
-    /* Represent the scalar s as a matrix s = [ s[i][j] ] where 0 <= i < h and
-     * 0 <= j < v, where s[i][j] are b bits long. Let log(s) denote the bit length
-     * of s and a := ceil(log(s) / h), b := ceil(a / v). Then the point sP can be
-     * written as:
+    /* Implement the improved comb method from "Improved Fixed-base Comb Method for Fast
+     * Scalar Multiplication" by Mohamed et. al. Start by recoding the scalar into an array
+     * of a columns S[d] each being an integer represented in non-adjacent form (NAF) of length w
+     * (width-w NAF), i.e. let:
      *
-     *                             h-1 v-1
-     *                             ___ ___
-     *                             \   \    ia  jb
-     *                      sP =   /__ /__ 2   2   s[i][j] P
-     *                             i=0 j=0
+     *                                                  a-1
+     *                                                  ___
+     *                                                  \         dw
+     *                    s = S[a-1]S[a-2]...S[1]S[0] = /__ S[d] 2        (sum of columns)
+     *                                                  d=0
      *
-     * Let P_i denote 2^{ia} P and let e[i][jb+k] for 0 < k <= b-1 be the binary
-     * representation of s[i][j]. Then:
+     * Note that the exponent array (to borrow nomenclature from "Handbook of Applied Cryptography")
+     * is organized top-to-bottom and then right-to-left as opposed to the traditional Lim/Lee
+     * comb method, where it is the top row of the array that corresponds to a least significant bits
+     * of the scalar. Here the rightmost column corresponds to w least significant bits of s.
      *
-     *                           b-1    v-1     h-1
-     *                           ___    ___     ___
-     *                           \    k \    jb \
-     *                      sP = /__ 2  /__ 2   /__  e[i][jb+k] P_i
-     *                           k=0    j=0     i=0
+     * From right to left we divide the w x a blocks into w x v blocks, each of size b = ceil(a/v),
+     * and obtain:
      *
-     * We have precomputed:
+     *       a-1              v-1 b-1                          v-1     b-1
+     *       ___              ___ ___                          ___     ___
+     *       \         dw     \   \              (jb + t)w     \    tw \              jbw
+     *  sP = /__ S[d] 2   P = /__ /__ S[jb + t] 2          P = /__ 2   /__ S[jb + t] 2    P
+     *       d=0              j=0 t=0                          j=0     t=0
      *
-     *   G[0][u - 1] = v[h-1] P_{h-1} + v[h-2] P_{h-2} + ... + v[1] P_1 + v[0] + P_0
+     * where S[jb + t] is width-w NAF representation (note that iterating over a columns is the same
+     * as iterating over v vertical subblocks and within each subblock iterating over the b columns).
      *
-     * where v[i] for 0 <= i < h is a binary representation of u, for all possible
-     * values of u (with the exception of the trivial case u=0), as well as:
+     * We have precomputed the values:
      *
-     *                                        jb
-     *                         G[j][u - 1] = 2   G[0][u - 1]
+     *                                      w-1            w-2
+     *                   G[0][kd] = e[w-1] 2   P + e[w-2] 2   P + ... + e[0] P = kdP
      *
-     * for 0 <= j < v. Note that G[0][u - 1] corresponds to the summation over i in the
-     * above expression for sP. There we sum the bits e[i][jb+k] iterating over i, i.e.
-     * iterating down a column of bits in the s matrix. When we know the exponent, we shall
-     * recode it into the [ s[i][j] ] matrix and parse its columns as integers u that we
-     * shall use to index the precomputation table. Let Ijk be the integer whose binary
-     * representation is the column (jb + k) of the scalar matrix [ s[i][j] ]. Then:
+     *                                           jwb            jwb
+     *                               G[j][kd] = 2   G[0][kd] = 2    kdP
      *
-     *                                 b-1    v-1
-     *                                 ___    ___
-     *                                 \    k \
-     *                            sP = /__ 2  /__ G[j][Ijk - 1]
-     *                                 k=0    j=0
+     * where the index kd is equal to the decimal value of (e[w-1]...e[1]e[0]). Then sP can be written
+     * as:
      *
-     * Note that when Ijk = 0 we shall skip the corresponding element of G (the corresponding
-     * element would be the group identity element which we do not even bother storing).
+     *                                        b-1     v-1
+     *                                        ___     ___
+     *                                        \    tw \
+     *                                   sP = /__ 2   /__ G[j][S[jb + t]]
+     *                                        t=0     j=0
+     *
+     * Note that the element for S[jb + t] = 0 is the group identity which we do not bother storing
+     * in the precomputation table and so we offset the table by one (note that for Edwards curves
+     * we are protected against any side-channel attacks here since the formula for adding the identity
+     * is the same as for adding any other point). Also note that G[j][i] = -G[j][-i] (since we use NAF
+     * encoding) and since negating elliptic curve points is almost free, we can store only the points
+     * corresponding to positive indices S[jb + t].
      */
 
-    /* TODO: Choose the comb method parameters in an optimal way */
-    /* TODO: Optimize the comb method to make use of fast inversion of group elements (see mbedtls for a good reference) */
+    /* Use w = 4 (width-4 NAF) and v = 32. For scalars of length 256 (actually less than that, but
+     * a power of two is easier to work with) we get a = 64 and b = 2. */
+    i8 naf[64];
+    i8 carry;
 
-    /* Recode the scalar to facilitate accessing the precomputation table */
-    DECLARE_SCALAR_RECODING(ijk);
-    ed25519_comb_recode_scalar(ijk, s);
+    carry = 0;
+    for (int i = 0; i < 32; i++) {
+
+        /* From each byte of the scalar extract the two 4-bit digits - note that the exponent array
+         * is ordered down columns first (column index changes more slowly) which allows for simpler
+         * recoding of the scalar than in Lim/Lee method (where each entry of the recoding table has
+         * to be a sum over bits distant by a). */
+        naf[2 * i + 0] = ( (s[i] >> 0) & 0xF ) + carry;
+        /* Check if naf[2 * i + 0] is larger than 2^{w-1} = 8 and if so make naf[2 * i + 0] negative
+         * (subtract 2^w = 16) and propagate the carry to the next digit */
+        carry = naf[2 * i + 0] + 0x8;
+        /* Note that carry can only be 0 or 1 at this point */
+        carry >>= 4;
+        naf[2 * i + 0] -= carry << 4;
+
+        naf[2 * i + 1] = ( (s[i] >> 4) & 0xF ) + carry;
+        carry = naf[2 * i + 1] + 0x8;
+        carry >>= 4;
+        naf[2 * i + 1] -= carry << 4;
+    }
+    FE3C_SANITY_CHECK(carry == 0);
 
     *r = ed25519_identity;
     point p;
-    for (int k = ED25519_COMB_B - 1; k >= 0; k--) {
+    /* Since we have b=2 we only have two iterations of the outermost loop of the algorithm
+     * (Algorithm 3 in "Improved Fixed-base Comb Method for Fast Scalar Multiplication") which
+     * implements the double summation at the end of the above description. Also for the second
+     * iteration we have t=0 so we can skip the 2^{tw} = 2^0. Note that iterating from j=0 to v-1
+     * over G[j][S[jb+t]] for t=1 corresponds to only accessing the elements of G (precomp table)
+     * indexed by odd positions of the recoding above (jb+t = 1, 3, 5, ...), since b=2. Similarly,
+     * when t=0 (second iteration) we shall only access the elements of G indexed by even-index
+     * entries of the recoding. */
+    for (int i = 1; i < 64; i += 2) {
 
-        ed25519_point_double(r, r);
-
-        for (int j = ED25519_COMB_V - 1; j >= 0; j--) {
-
-            ed25519_comb_read_precomp(&p, j, ijk[j][k]);
-            ed25519_points_add(r, r, &p);
-        }
+        /* We let the loop index run twice as fast and skip every other entry of naf,
+         * but correct for it in the j index (j = i / 2) */
+        ed25519_comb_read_precomp(&p, i >> 1, naf[i]);
+        ed25519_points_add(r, r, &p);
     }
 
+    /* Compute 2^{tw} Q = 2^4 Q */
+    ed25519_point_double(r, r);
+    ed25519_point_double(r, r);
+    ed25519_point_double(r, r);
+    ed25519_point_double(r, r);
+
+    /* Do the second iteration of the outermost loop, i.e. iterate over even indices of the recoding
+     * (see explanation above). */
+    for (int i = 0; i < 64; i += 2) {
+
+        /* We let the loop index run twice as fast and skip every other entry of naf,
+         * but correct for it in the j index (j = i / 2) */
+        ed25519_comb_read_precomp(&p, i >> 1, naf[i]);
+        ed25519_points_add(r, r, &p);
+    }
+
+    /* At this point Q := 2^{tw} Q is a no-op since 2^{tw} Q = 2^0 Q */
+
     /* Clear the recoding of the secret scalar from the stack */
-    purge_secrets(ijk, sizeof(ijk));
+    purge_secrets(naf, sizeof(naf));
 #endif /* !FE3C_OPTIMIZATION_COMB_METHOD */
 }
 
