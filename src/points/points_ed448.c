@@ -227,7 +227,7 @@ static void ed448_points_add(point * r, const point * p, const point * q) {
 
     /* X3 ::= A*F*(H-C-D) */
     /* Note that we use Karatsuba's trick to obtain
-     * X1*Y2+X2*Y2 as H-C-D. */
+     * X1*Y1+X2*Y2 as H-C-D. */
     fe_sub(&r->X, &H, &C);
     fe_sub(&r->X, &r->X, &D);
     fe_mul(&r->X, &r->X, &A);

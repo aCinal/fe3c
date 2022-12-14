@@ -19,6 +19,21 @@ static const point_precomp ed448_comb_precomp[56][8] = {
 #endif /* FE3C_32BIT */
 };
 
+
+static inline void ed448_point_precomp_conditional_move(volatile point *r, const point_precomp *p, int move) {
+
+    fe_conditional_move((fe *) &r->X, (fe *) &p->X, move);
+    fe_conditional_move((fe *) &r->Y, (fe *) &p->Y, move);
+}
+
+static inline void ed448_point_conditional_neg_in_place(volatile point * p, int negate) {
+
+    /* Negate the X coordinate conditionally */
+    fe mX;
+    fe_neg(&mX, &p->X);
+    fe_conditional_move(&p->X, &mX, negate);
+}
+
 #define equal(x, y)  ({ \
     u8 __aux = (x ^ y); \
     __aux |= (__aux >> 4); \
@@ -27,21 +42,7 @@ static const point_precomp ed448_comb_precomp[56][8] = {
     1 & (__aux ^ 1); \
 })
 
-#define point_conditional_move(p, ijt, k) ({ \
-    u8 __move = equal((ijt), k); \
-    fe_conditional_move(&p->X, (fe *) &ed448_comb_precomp[j][k - 1].X, __move); \
-    fe_conditional_move(&p->Y, (fe *) &ed448_comb_precomp[j][k - 1].Y, __move); \
-})
-
-static inline void ed448_point_conditional_neg_in_place(point * p, int negate) {
-
-    /* Negate the X coordinate conditionally */
-    fe mX;
-    fe_neg(&mX, &p->X);
-    fe_conditional_move(&p->X, &mX, negate);
-}
-
-static inline void ed448_comb_read_precomp(point * r, u8 j, i8 ijt) {
+static inline void ed448_comb_read_precomp(volatile point * r, u8 j, i8 ijt) {
 
     FE3C_SANITY_CHECK( j < sizeof(ed448_comb_precomp) );
 
@@ -60,14 +61,14 @@ static inline void ed448_comb_read_precomp(point * r, u8 j, i8 ijt) {
     /* Choose one entry of the precomputation table in a branchless manner
      * - an added advantage is that we access all elements in a given row
      * (for a given subblock j) thus preventing cache-based timing attacks. */
-    point_conditional_move(r, ijtabs, 1);
-    point_conditional_move(r, ijtabs, 2);
-    point_conditional_move(r, ijtabs, 3);
-    point_conditional_move(r, ijtabs, 4);
-    point_conditional_move(r, ijtabs, 5);
-    point_conditional_move(r, ijtabs, 6);
-    point_conditional_move(r, ijtabs, 7);
-    point_conditional_move(r, ijtabs, 8);
+    ed448_point_precomp_conditional_move(r, &ed448_comb_precomp[j][0], equal(ijtabs, 1));
+    ed448_point_precomp_conditional_move(r, &ed448_comb_precomp[j][1], equal(ijtabs, 2));
+    ed448_point_precomp_conditional_move(r, &ed448_comb_precomp[j][2], equal(ijtabs, 3));
+    ed448_point_precomp_conditional_move(r, &ed448_comb_precomp[j][3], equal(ijtabs, 4));
+    ed448_point_precomp_conditional_move(r, &ed448_comb_precomp[j][4], equal(ijtabs, 5));
+    ed448_point_precomp_conditional_move(r, &ed448_comb_precomp[j][5], equal(ijtabs, 6));
+    ed448_point_precomp_conditional_move(r, &ed448_comb_precomp[j][6], equal(ijtabs, 7));
+    ed448_point_precomp_conditional_move(r, &ed448_comb_precomp[j][7], equal(ijtabs, 8));
 
     /* Negate the point if necessary */
     ed448_point_conditional_neg_in_place(r, negate);

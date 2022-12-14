@@ -1127,7 +1127,6 @@ static void ed448_scalars_muladd(u8 * r, const u8 * a, const u8 * b, const u8 * 
     r[56] = 0;
 }
 
-
 scalar_ops ed448_scalar_ops = {
     .is_canonical = ed448_scalar_is_canonical,
     .reduce = ed448_scalar_reduce,

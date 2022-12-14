@@ -122,7 +122,7 @@ static inline int fe_equal(const fe * a, const fe * b) {
  * @param[in] move Flag deciding on the branch, if set to 0, r ::= r, and if set to 1, r ::= a
  * @note If move is set to anything other than 0 or 1, the results are undefined
  */
-static inline void fe_conditional_move(fe * r, const fe * a, int move) {
+static inline void fe_conditional_move(volatile fe * r, const fe * a, int move) {
 
     /* Set the mask to 0x0000000000000000 if move is 0 or to 0xFFFFFFFFFFFFFFFF if it is 1 */
     const fe_limb_type mask = (fe_limb_type)( -(i64) move );

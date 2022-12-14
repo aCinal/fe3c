@@ -4,12 +4,11 @@
 
 #include <field_elements/field_elements_ed25519.h>
 
-/* Store affine coordinates X,Y and the extended coordinate T=XY in the precomputation table */
+/* Store intermediate results needed for addition in the precomputation table */
 typedef struct point_precomp {
-    fe25519 X;
-    fe25519 Y;
-    /* TODO: Consider storing only X and Y and recomputing T each time (performance-storage tradeoff) */
-    fe25519 T;
+    fe25519 YplusX;
+    fe25519 YminusX;
+    fe25519 T2d;
 } point_precomp;
 
 /* Define the precomputation table, for readability it is kept in a separate file */
@@ -21,6 +20,29 @@ static const point_precomp ed25519_comb_precomp[32][8] = {
 #endif /* FE3C_32BIT */
 };
 
+static inline void ed25519_point_precomp_conditional_move(volatile point_precomp *r, const point_precomp *p, int move) {
+
+    fe_conditional_move((fe *) &r->YplusX, (fe *) &p->YplusX, move);
+    fe_conditional_move((fe *) &r->YminusX, (fe *) &p->YminusX, move);
+    fe_conditional_move((fe *) &r->T2d, (fe *) &p->T2d, move);
+}
+
+static inline void ed25519_point_precomp_conditional_neg_in_place(volatile point_precomp * p, int negate) {
+
+    /* Negate the X and T coordinates conditionally, which amounts to swapping
+     * YminusX with YplusX and negating T2d */
+    fe25519 YminusX, minusT2d;
+
+    /* Conditionally swap YminusX with YplusX */
+    (void) memcpy(&YminusX, (void *) &p->YminusX, sizeof(YminusX));
+    fe_neg((fe *) &minusT2d, (fe *) &p->T2d);
+    fe_conditional_move((fe *) &p->YminusX, (fe *) &p->YplusX, negate);
+    fe_conditional_move((fe *) &p->YplusX, (fe *) &YminusX, negate);
+
+    /* Conditinally negate T2d */
+    fe_conditional_move((fe *) &p->T2d, (fe *) &minusT2d, negate);
+}
+
 #define equal(x, y)  ({ \
     u8 __aux = (x ^ y); \
     __aux |= (__aux >> 4); \
@@ -29,24 +51,7 @@ static const point_precomp ed25519_comb_precomp[32][8] = {
     1 & (__aux ^ 1); \
 })
 
-#define point_conditional_move(p, ijt, k) ({ \
-    u8 __move = equal((ijt), k); \
-    fe_conditional_move(&p->X, (fe *) &ed25519_comb_precomp[j][k - 1].X, __move); \
-    fe_conditional_move(&p->Y, (fe *) &ed25519_comb_precomp[j][k - 1].Y, __move); \
-    fe_conditional_move(&p->T, (fe *) &ed25519_comb_precomp[j][k - 1].T, __move); \
-})
-
-static inline void ed25519_point_conditional_neg_in_place(point * p, int negate) {
-
-    /* Negate the X and T coordinates conditionally */
-    fe mX, mT;
-    fe_neg(&mX, &p->X);
-    fe_neg(&mT, &p->T);
-    fe_conditional_move(&p->X, &mX, negate);
-    fe_conditional_move(&p->T, &mT, negate);
-}
-
-static inline void ed25519_comb_read_precomp(point * r, u8 j, i8 ijt) {
+static inline void ed25519_comb_read_precomp(volatile point_precomp * r, u8 j, i8 ijt) {
 
     FE3C_SANITY_CHECK( j < sizeof(ed25519_comb_precomp) );
 
@@ -57,26 +62,63 @@ static inline void ed25519_comb_read_precomp(point * r, u8 j, i8 ijt) {
     FE3C_SANITY_CHECK( ijtabs <= sizeof(ed25519_comb_precomp[0]) );
 
     /* Start with the identity - if ijt is 0 then we leave the result as the identity */
-    r->X = fe_zero;
-    r->Y = fe_one;
-    r->T = fe_zero;
-    /* Set the Z coordinate to one for good */
-    r->Z = fe_one;
+    (void) memset((void *) r, 0, sizeof(*r));
+    r->YplusX[0] = 1;
+    r->YminusX[0] = 1;
+    r->T2d[0] = 0;
 
     /* Choose one entry of the precomputation table in a branchless manner
      * - an added advantage is that we access all elements in a given row
      * (for a given subblock j) thus preventing cache-based timing attacks. */
-    point_conditional_move(r, ijtabs, 1);
-    point_conditional_move(r, ijtabs, 2);
-    point_conditional_move(r, ijtabs, 3);
-    point_conditional_move(r, ijtabs, 4);
-    point_conditional_move(r, ijtabs, 5);
-    point_conditional_move(r, ijtabs, 6);
-    point_conditional_move(r, ijtabs, 7);
-    point_conditional_move(r, ijtabs, 8);
+    ed25519_point_precomp_conditional_move(r, &ed25519_comb_precomp[j][0], equal(ijtabs, 1));
+    ed25519_point_precomp_conditional_move(r, &ed25519_comb_precomp[j][1], equal(ijtabs, 2));
+    ed25519_point_precomp_conditional_move(r, &ed25519_comb_precomp[j][2], equal(ijtabs, 3));
+    ed25519_point_precomp_conditional_move(r, &ed25519_comb_precomp[j][3], equal(ijtabs, 4));
+    ed25519_point_precomp_conditional_move(r, &ed25519_comb_precomp[j][4], equal(ijtabs, 5));
+    ed25519_point_precomp_conditional_move(r, &ed25519_comb_precomp[j][5], equal(ijtabs, 6));
+    ed25519_point_precomp_conditional_move(r, &ed25519_comb_precomp[j][6], equal(ijtabs, 7));
+    ed25519_point_precomp_conditional_move(r, &ed25519_comb_precomp[j][7], equal(ijtabs, 8));
 
     /* Negate the point if necessary */
-    ed25519_point_conditional_neg_in_place(r, negate);
+    ed25519_point_precomp_conditional_neg_in_place(r, negate);
+}
+
+static inline void ed25519_points_add_precomp(point * r, const point * p, const point_precomp * q) {
+
+    /* TODO: Reuse some old variables to reduce stack usage */
+    fe A, B, C, D, E, F, G, H;
+
+    /* A ::= (Y1-X1)*(Y2-X2) */
+    fe_sub(&E, &p->Y, &p->X);
+    fe_mul(&A, &E, (fe *) &q->YminusX);
+
+    /* B ::= (Y1+X1)*(Y2+X2) */
+    fe_add(&G, &p->Y, &p->X);
+    fe_mul(&B, &G, (fe *) &q->YplusX);
+
+    /* C ::= T1*2*d*T2 */
+    fe_mul(&C, &p->T, (fe *) &q->T2d);
+
+    /* D ::= Z1*2*Z2, but we know Z2=1 for precomputed points */
+    fe_double(&D, &p->Z);
+
+    /* E ::= B-A */
+    fe_sub(&E, &B, &A);
+    /* F ::= D-C */
+    fe_sub(&F, &D, &C);
+    /* G ::= D+C */
+    fe_add(&G, &D, &C);
+    /* H ::= B+A */
+    fe_add(&H, &B, &A);
+
+    /* X3 ::= E*F */
+    fe_mul(&r->X, &E, &F);
+    /* Y3 ::= G*H */
+    fe_mul(&r->Y, &G, &H);
+    /* T3 ::= E*H */
+    fe_mul(&r->T, &E, &H);
+    /* Z3 ::= F*G */
+    fe_mul(&r->Z, &F, &G);
 }
 
 #endif /* __FE3C_POINTS_POINTS_ED25519_COMB_METHOD_H */

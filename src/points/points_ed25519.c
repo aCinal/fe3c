@@ -409,7 +409,7 @@ static void ed25519_multiply_basepoint(point * r, const u8 * s) {
     FE3C_SANITY_CHECK(carry == 0);
 
     *r = ed25519_identity;
-    point p;
+    point_precomp p;
     /* Since we have b=2 we only have two iterations of the outermost loop of the algorithm
      * (Algorithm 3 in "Improved Fixed-base Comb Method for Fast Scalar Multiplication") which
      * implements the double summation at the end of the above description. Also for the second
@@ -423,7 +423,7 @@ static void ed25519_multiply_basepoint(point * r, const u8 * s) {
         /* We let the loop index run twice as fast and skip every other entry of naf,
          * but correct for it in the j index (j = i / 2) */
         ed25519_comb_read_precomp(&p, i >> 1, naf[i]);
-        ed25519_points_add(r, r, &p);
+        ed25519_points_add_precomp(r, r, &p);
     }
 
     /* Compute 2^{tw} Q = 2^4 Q */
@@ -439,7 +439,7 @@ static void ed25519_multiply_basepoint(point * r, const u8 * s) {
         /* We let the loop index run twice as fast and skip every other entry of naf,
          * but correct for it in the j index (j = i / 2) */
         ed25519_comb_read_precomp(&p, i >> 1, naf[i]);
-        ed25519_points_add(r, r, &p);
+        ed25519_points_add_precomp(r, r, &p);
     }
 
     /* At this point Q := 2^{tw} Q is a no-op since 2^{tw} Q = 2^0 Q */
