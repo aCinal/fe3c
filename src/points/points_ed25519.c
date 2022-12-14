@@ -103,7 +103,7 @@ static void ed25519_point_double(point * r, const point * p) {
 
     /* C ::= 2*Z1^2 */
     fe_square(&C, &p->Z);
-    fe_double(&C, &C);
+    fe_add(&C, &C, &C);
 
     /* H ::= A+B */
     fe_add(&H, &A, &B);
@@ -260,11 +260,11 @@ static void ed25519_points_add(point * r, const point * p, const point * q) {
     /* C ::= T1*2*d*T2 */
     fe_mul(&C, &p->T, &q->T);
     fe_mul(&C, &C, &ed25519_d);
-    fe_double(&C, &C);
+    fe_add(&C, &C, &C);
 
     /* D ::= Z1*2*Z2 */
     fe_mul(&D, &p->Z, &q->Z);
-    fe_double(&D, &D);
+    fe_add(&D, &D, &D);
 
     /* E ::= B-A */
     fe_sub(&E, &B, &A);

@@ -30,7 +30,7 @@ static inline void ed448_point_conditional_neg_in_place(volatile point * p, int 
 
     /* Negate the X coordinate conditionally */
     fe mX;
-    fe_neg(&mX, &p->X);
+    fe_neg(&mX, (fe *) &p->X);
     fe_conditional_move(&p->X, &mX, negate);
 }
 

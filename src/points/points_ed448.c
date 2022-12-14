@@ -99,7 +99,7 @@ static void ed448_point_double(point * r, const point * p) {
     /* H ::= Z1^2 */
     fe_square(&H, &p->Z);
     /* J ::= E-2*H */
-    fe_double(&J, &H);
+    fe_add(&J, &H, &H);
     fe_sub(&J, &E, &J);
 
     /* X3 ::= (B-E)*J */

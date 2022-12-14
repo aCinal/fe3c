@@ -389,26 +389,6 @@ static inline void fe_sub(fe * r, const fe * a, const fe * b) {
      * an intermediate fe variable to support aliasing */
 }
 
-
-/**
- * @brief Do a quick doubling of a point by shifting the bits
- * @param[out] r Result of the doubling, i.e. 2a
- * @param[in] a The element to double
- */
-static inline void fe_double(fe * r, const fe * a) {
-
-    r->ed25519[0] = a->ed25519[0] << 1;
-    r->ed25519[1] = a->ed25519[1] << 1;
-    r->ed25519[2] = a->ed25519[2] << 1;
-    r->ed25519[3] = a->ed25519[3] << 1;
-    r->ed25519[4] = a->ed25519[4] << 1;
-    r->ed25519[5] = a->ed25519[5] << 1;
-    r->ed25519[6] = a->ed25519[6] << 1;
-    r->ed25519[7] = a->ed25519[7] << 1;
-    r->ed25519[8] = a->ed25519[8] << 1;
-    r->ed25519[9] = a->ed25519[9] << 1;
-}
-
 /**
  * @brief Multiply two field elements
  * @param[out] r Result of the multiplication, i.e. the product r = a b

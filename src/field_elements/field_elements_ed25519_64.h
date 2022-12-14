@@ -308,20 +308,6 @@ static inline void fe_sub(fe * r, const fe * a, const fe * b) {
 }
 
 /**
- * @brief Do a quick doubling of a point by shifting the bits
- * @param[out] r Result of the doubling, i.e. 2a
- * @param[in] a The element to double
- */
-static inline void fe_double(fe * r, const fe * a) {
-
-    r->ed25519[0] = a->ed25519[0] << 1;
-    r->ed25519[1] = a->ed25519[1] << 1;
-    r->ed25519[2] = a->ed25519[2] << 1;
-    r->ed25519[3] = a->ed25519[3] << 1;
-    r->ed25519[4] = a->ed25519[4] << 1;
-}
-
-/**
  * @brief Multiply two field elements
  * @param[out] r Result of the multiplication, i.e. the product r = a b
  * @param[in] a Operand

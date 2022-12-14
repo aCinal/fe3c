@@ -100,7 +100,7 @@ static inline void ed25519_points_add_precomp(point * r, const point * p, const 
     fe_mul(&C, &p->T, (fe *) &q->T2d);
 
     /* D ::= Z1*2*Z2, but we know Z2=1 for precomputed points */
-    fe_double(&D, &p->Z);
+    fe_add(&D, &p->Z, &p->Z);
 
     /* E ::= B-A */
     fe_sub(&E, &B, &A);
