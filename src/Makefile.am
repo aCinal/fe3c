@@ -9,8 +9,7 @@ cementiteinclude_HEADERS = \
 
 libcementite_a_SOURCES = \
     eddsa/eddsa.c \
-    curves/curves.c \
-    utils/utils.c
+    curves/curves.c
 
 if FE3C_SUPPORT_CURVE_ED448
 libcementite_a_SOURCES += \

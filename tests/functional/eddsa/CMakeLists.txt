@@ -7,7 +7,6 @@ add_functional_test(
                               ${FE3C_SOURCE_DIR}/points/points_ed25519.c
                               ${FE3C_SOURCE_DIR}/scalars/scalars_ed25519_64.c
                               ${FE3C_SOURCE_DIR}/hash_functions/hash_function_sha512.c
-                              ${FE3C_SOURCE_DIR}/utils/utils.c
     PREPROCESSOR_DEFINITIONS  FE3C_64BIT FE3C_SUPPORT_CURVE_ED25519
 )
 
@@ -20,7 +19,6 @@ add_functional_test(
                               ${FE3C_SOURCE_DIR}/points/points_ed25519.c
                               ${FE3C_SOURCE_DIR}/scalars/scalars_ed25519_64.c
                               ${FE3C_SOURCE_DIR}/hash_functions/hash_function_sha512.c
-                              ${FE3C_SOURCE_DIR}/utils/utils.c
     PREPROCESSOR_DEFINITIONS  FE3C_64BIT FE3C_SUPPORT_CURVE_ED25519
 )
 
@@ -33,7 +31,6 @@ add_functional_test(
                               ${FE3C_SOURCE_DIR}/points/points_ed25519.c
                               ${FE3C_SOURCE_DIR}/scalars/scalars_ed25519_32.c
                               ${FE3C_SOURCE_DIR}/hash_functions/hash_function_sha512.c
-                              ${FE3C_SOURCE_DIR}/utils/utils.c
     PREPROCESSOR_DEFINITIONS  FE3C_32BIT FE3C_SUPPORT_CURVE_ED25519
 )
 
@@ -46,7 +43,6 @@ add_functional_test(
                               ${FE3C_SOURCE_DIR}/points/points_ed25519.c
                               ${FE3C_SOURCE_DIR}/scalars/scalars_ed25519_32.c
                               ${FE3C_SOURCE_DIR}/hash_functions/hash_function_sha512.c
-                              ${FE3C_SOURCE_DIR}/utils/utils.c
     PREPROCESSOR_DEFINITIONS  FE3C_32BIT FE3C_SUPPORT_CURVE_ED25519
 )
 
@@ -59,7 +55,6 @@ add_functional_test(
                               ${FE3C_SOURCE_DIR}/points/points_ed448.c
                               ${FE3C_SOURCE_DIR}/scalars/scalars_ed448_64.c
                               ${FE3C_SOURCE_DIR}/hash_functions/hash_function_shake256.c
-                              ${FE3C_SOURCE_DIR}/utils/utils.c
     PREPROCESSOR_DEFINITIONS  FE3C_64BIT FE3C_SUPPORT_CURVE_ED448
 )
 
@@ -72,7 +67,6 @@ add_functional_test(
                               ${FE3C_SOURCE_DIR}/points/points_ed448.c
                               ${FE3C_SOURCE_DIR}/scalars/scalars_ed448_64.c
                               ${FE3C_SOURCE_DIR}/hash_functions/hash_function_shake256.c
-                              ${FE3C_SOURCE_DIR}/utils/utils.c
     PREPROCESSOR_DEFINITIONS  FE3C_64BIT FE3C_SUPPORT_CURVE_ED448
 )
 
@@ -85,7 +79,6 @@ add_functional_test(
                               ${FE3C_SOURCE_DIR}/points/points_ed448.c
                               ${FE3C_SOURCE_DIR}/scalars/scalars_ed448_32.c
                               ${FE3C_SOURCE_DIR}/hash_functions/hash_function_shake256.c
-                              ${FE3C_SOURCE_DIR}/utils/utils.c
     PREPROCESSOR_DEFINITIONS  FE3C_32BIT FE3C_SUPPORT_CURVE_ED448
 )
 
@@ -98,6 +91,5 @@ add_functional_test(
                               ${FE3C_SOURCE_DIR}/points/points_ed448.c
                               ${FE3C_SOURCE_DIR}/scalars/scalars_ed448_32.c
                               ${FE3C_SOURCE_DIR}/hash_functions/hash_function_shake256.c
-                              ${FE3C_SOURCE_DIR}/utils/utils.c
     PREPROCESSOR_DEFINITIONS  FE3C_32BIT FE3C_SUPPORT_CURVE_ED448
 )

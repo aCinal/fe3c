@@ -12,20 +12,18 @@ extern "C" {
 /* Provide constant-time and otherwise secure implementations of common libc functions */
 
 /**
- * @brief Do constant-time check if two memory buffers contain the same data
- * @param b1 First buffer
- * @param b2 Second buffer
- * @param n Extent of the check (typically size of the buffers)
- * @return Nonzero value if the buffers are identical, zero otherwise
- */
-int memidentical(const void * b1, const void * b2, size_t n);
-
-/**
  * @brief Clear secret data in memory so that erroneous accesses to the same stack space later do not reveal anything
  * @param secrets Buffer to be cleared
  * @param size Size of the buffer
  */
-void purge_secrets(void * secrets, size_t size);
+static inline void purge_secrets(void * secrets, size_t size) {
+
+    /* TODO: Use memset_s when available (when using C11) */
+    volatile u8 * p = (volatile u8 *) secrets;
+    while (size -- > 0) {
+        *p++ = 0;
+    }
+}
 
 #if FE3C_ENABLE_SANITY_CHECKS
     #include <stdio.h>

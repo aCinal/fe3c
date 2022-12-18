@@ -30,7 +30,6 @@ function(add_benchmark_test)
         ${FE3C_SOURCE_DIR}/hash_functions/hash_function_shake256.c
         ${FE3C_SOURCE_DIR}/points/points_ed448.c
         ${FE3C_SOURCE_DIR}/points/points_ed25519.c
-        ${FE3C_SOURCE_DIR}/utils/utils.c
     )
 
     list(FIND btest_PREPROCESSOR_DEFINITIONS FE3C_32BIT FE3C_32BIT)
