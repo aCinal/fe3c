@@ -369,8 +369,9 @@ static void ed448_multiply_basepoint(point * rgen, const u8 * s) {
      */
 
     /* Use w = 4 (width-4 NAF) and v = 56. For scalars of length 448 (actually less than that, but
-     * 448 is nicely divisible by four) we get a = 112 and b = 2. */
-    i8 naf[112];
+     * 448 is nicely divisible by four) we get a = 112 and b = 2. Note that we must allocate one
+     * extra byte for possible overflow (NAF representation may require an additional digit) */
+    i8 naf[113];
     i8 carry;
 
     carry = 0;
@@ -393,7 +394,7 @@ static void ed448_multiply_basepoint(point * rgen, const u8 * s) {
         carry >>= 4;
         naf[2 * i + 1] -= carry << 4;
     }
-    FE3C_SANITY_CHECK(carry == 0, NULL);
+    naf[112] = carry;
 
     ed448_identity(r);
     point_ed448 p;
@@ -405,7 +406,7 @@ static void ed448_multiply_basepoint(point * rgen, const u8 * s) {
      * indexed by odd positions of the recoding above (jb+t = 1, 3, 5, ...), since b=2. Similarly,
      * when t=0 (second iteration) we shall only access the elements of G indexed by even-index
      * entries of the recoding. */
-    for (int i = 1; i < 112; i += 2) {
+    for (int i = 1; i < 113; i += 2) {
 
         /* We let the loop index run twice as fast and skip every other entry of naf,
          * but correct for it in the j index (j = i / 2) */
@@ -421,7 +422,7 @@ static void ed448_multiply_basepoint(point * rgen, const u8 * s) {
 
     /* Do the second iteration of the outermost loop, i.e. iterate over even indices of the recoding
      * (see explanation above). */
-    for (int i = 0; i < 112; i += 2) {
+    for (int i = 0; i < 113; i += 2) {
 
         /* We let the loop index run twice as fast and skip every other entry of naf,
          * but correct for it in the j index (j = i / 2) */

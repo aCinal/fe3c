@@ -11,14 +11,13 @@ typedef struct point_precomp {
 } point_precomp;
 
 /* Define the precomputation table, for readability it is kept in a separate file */
-static const point_precomp ed448_comb_precomp[56][8] = {
+static const point_precomp ed448_comb_precomp[57][8] = {
 #if FE3C_32BIT
     #include <points/precomputation/precomputation_ed448_32.h>
 #else
     #include <points/precomputation/precomputation_ed448_64.h>
 #endif /* FE3C_32BIT */
 };
-
 
 static inline void ed448_point_precomp_conditional_move(point_ed448 *r, const point_precomp *p, int move) {
 

@@ -1901,4 +1901,38 @@
             .X = { 0x8a0485459502d3, 0xcab27eee269a7b, 0x41793074875ada, 0x179e685e2405f9, 0xd7b6987b28963, 0x80c9db8422a43e, 0xf5ff318a0f43ee, 0x7a928054ba7aa7 },
             .Y = { 0xa5c79fe0c0834e, 0x837ca0d1f849ec, 0xfe0d7fa628ab7b, 0x94bcb956edd19a, 0xa18bc932226fbf, 0x2795379aad54a3, 0xceeacf8371129e, 0x65ca57fa588be5 }
         },
+    },
+    {
+        {
+            .X = { 0x7a578b52caa330, 0x7c21944d8ca34a, 0x6c0fbbb6447282, 0xa8a9957f90b2e5, 0xbbe10666586b71, 0x716a90249138a2, 0x2fa6034e7ed66d, 0x56f77ed2b9916a },
+            .Y = { 0x69f1e26bddefb3, 0xa4978098c08420, 0xc3377eb09bc184, 0x796ce0cbe6dade, 0x3be0625d103bbb, 0x1be27c992685c, 0xc0e25597755f9f, 0x165c40d1c0dbfa }
+        },
+        {
+            .X = { 0xc63a397659c761, 0x10a0e5b630fbad, 0xf21e8a6655ac56, 0xe8580fac1181e2, 0xbfc2d9c0a84b5c, 0x2cdbaff7afd5d1, 0x95f1182f61e85a, 0x1173e96719eaf4 },
+            .Y = { 0xc06d55ec6de8b9, 0x1b4c8ebafcbcaa, 0x52af5cbbc2bbcd, 0x564fab877bcd10, 0xfd53a18ae85a6e, 0x225785994c712f, 0x29b11d71352121, 0xab1cb76c40491a }
+        },
+        {
+            .X = { 0xb4e8ca8ce32eb4, 0x7e484acb250b49, 0x62c6f7a3e31a2, 0x497fd83625d1fc, 0x98f821c362dda7, 0xcae1f8f6be3111, 0x9077e955d4fa42, 0xa589971a65855a },
+            .Y = { 0xda6321d28832a9, 0xf9ef5dc3936e9e, 0xa37f117c9797ef, 0xeb3c80db581be, 0x207c5c4baa0002, 0xc0401b5f38faa0, 0xceee523d0f1e6e, 0x8d27a5fd1f0045 }
+        },
+        {
+            .X = { 0x9411063cf0af29, 0x304385789a6693, 0x9a9fb8f640145e, 0x7d82fe954832eb, 0xf2789e1898c520, 0x448b402f948dc0, 0xeca8fdf68996dd, 0x22227e9a149b2f },
+            .Y = { 0x63509ff8e62d6a, 0xe98d81c8c9c57f, 0xd3874071fe3bed, 0xf1db013539538f, 0xb04092e48418ce, 0xbbf8e76d6d9d4d, 0x2ea9cda2cec5ae, 0x8414b3e5078fa9 }
+        },
+        {
+            .X = { 0x5ad1cdbd68a073, 0xd4cedafc18b591, 0x78267078e4c1c9, 0x9b8d9209ca302a, 0x3101bd2326115b, 0x6f154b54c2717a, 0x618c31b263e84b, 0x12c4138bbd6942 },
+            .Y = { 0xf9ead2580da426, 0xe748e9947d9680, 0x9b396a38a4210e, 0xfaf03ddf4b8f72, 0xbd94a5266159e7, 0x5e730491d4c7cb, 0x31d1f9a7910f38, 0x4fd10ca08d6dd1 }
+        },
+        {
+            .X = { 0x4f510ac9f2331e, 0xee872dc7e3dcc2, 0x4a11a32a0a0c73, 0x27e5803aa5a630, 0xe5ae5037af4a8a, 0x2dcdeba9fffeb0, 0x8c27748719d91f, 0xd3b5b62b9cc61c },
+            .Y = { 0x998ac90cca7939, 0xc22b59864514e5, 0x950aaa1b35738a, 0x4b208bbdab0264, 0x6677931a557d2e, 0x2c696d8f7c17d3, 0x1672d4a3e15c51, 0x95fab663db0e82 }
+        },
+        {
+            .X = { 0x3d427346ff205e, 0x7f187d90ea9fbe, 0xbd9367f466b2af, 0x188e53203daf2f, 0xefe132927b54d8, 0x14faf85ef70435, 0xa5061281ec95c4, 0xad01705c22cba7 },
+            .Y = { 0x7d2dfa66197333, 0xedd7f078b4f6ed, 0xe0cb68575df105, 0x47c9ddb80f76bc, 0x49ab5319073c54, 0x845255ae607f44, 0xb4ed9fcc74b7c, 0xcfb52d50f5c3a6 }
+        },
+        {
+            .X = { 0x545c7c6c278776, 0x92a39ae98c30f0, 0x8aa8c01d2f4680, 0xa5409ed6b7f840, 0xc450acdcb24e7, 0x5da6fb2c5770d9, 0x5b8e8be8658333, 0xb26bf4a67ea4ad },
+            .Y = { 0x2e30c81c7d91fa, 0x6e50a490eeb69f, 0x9458c2bee4bc26, 0x419acf233be250, 0x79d6f8187881ab, 0x694565d403b1be, 0x34b3990234fe1d, 0x60997d72132b38 }
+        },
     }

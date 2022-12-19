@@ -406,31 +406,36 @@ static void ed25519_multiply_basepoint(point * rgen, const u8 * s) {
      */
 
     /* Use w = 4 (width-4 NAF) and v = 32. For scalars of length 256 (actually less than that, but
-     * a power of two is easier to work with) we get a = 64 and b = 2. */
+     * a power of two is easier to work with plus with NAF we may get an additional 4-bit digit) we
+     * get a = 64 and b = 2. */
     i8 naf[64];
     i8 carry;
 
-    carry = 0;
+    /* Split the scalar into base-16 unsigned representation */
     for (int i = 0; i < 32; i++) {
 
         /* From each byte of the scalar extract the two 4-bit digits - note that the exponent array
          * is ordered down columns first (column index changes more slowly) which allows for simpler
          * recoding of the scalar than in Lim/Lee method (where each entry of the recoding table has
          * to be a sum over bits distant by a). */
-        naf[2 * i + 0] = ( (s[i] >> 0) & 0xF ) + carry;
-        /* Check if naf[2 * i + 0] is larger than 2^{w-1} = 8 and if so make naf[2 * i + 0] negative
+        naf[2 * i + 0] = ( (s[i] >> 0) & 0xF );
+        naf[2 * i + 1] = ( (s[i] >> 4) & 0xF );
+    }
+
+    /* Recode the scalar into NAF representation */
+    carry = 0;
+    for (int i = 0; i < 63; i++) {
+
+        naf[i] += carry;
+        /* Check if naf[i] is larger than 2^{w-1} = 8 and if so make naf[i] negative
          * (subtract 2^w = 16) and propagate the carry to the next digit */
-        carry = naf[2 * i + 0] + 0x8;
+        carry = naf[i] + 0x8;
         /* Note that carry can only be 0 or 1 at this point */
         carry >>= 4;
-        naf[2 * i + 0] -= carry << 4;
-
-        naf[2 * i + 1] = ( (s[i] >> 4) & 0xF ) + carry;
-        carry = naf[2 * i + 1] + 0x8;
-        carry >>= 4;
-        naf[2 * i + 1] -= carry << 4;
+        naf[i] -= carry << 4;
     }
-    FE3C_SANITY_CHECK(carry == 0, NULL);
+    /* Propagate the carry to the overflow digit (top 4 bits) */
+    naf[63] += carry;
 
     ed25519_identity(r);
     point_precomp p;
