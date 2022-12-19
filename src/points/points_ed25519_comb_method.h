@@ -20,27 +20,27 @@ static const point_precomp ed25519_comb_precomp[32][8] = {
 #endif /* FE3C_32BIT */
 };
 
-static inline void ed25519_point_precomp_conditional_move(volatile point_precomp *r, const point_precomp *p, int move) {
+static inline void ed25519_point_precomp_conditional_move(point_precomp *r, const point_precomp *p, int move) {
 
-    fe_conditional_move((fe *) &r->YplusX, (fe *) &p->YplusX, move);
-    fe_conditional_move((fe *) &r->YminusX, (fe *) &p->YminusX, move);
-    fe_conditional_move((fe *) &r->T2d, (fe *) &p->T2d, move);
+    fe_conditional_move(r->YplusX, p->YplusX, move);
+    fe_conditional_move(r->YminusX, p->YminusX, move);
+    fe_conditional_move(r->T2d, p->T2d, move);
 }
 
-static inline void ed25519_point_precomp_conditional_neg_in_place(volatile point_precomp * p, int negate) {
+static inline void ed25519_point_precomp_conditional_neg_in_place(point_precomp * p, int negate) {
 
     /* Negate the X and T coordinates conditionally, which amounts to swapping
      * YminusX with YplusX and negating T2d */
     fe25519 YminusX, minusT2d;
 
     /* Conditionally swap YminusX with YplusX */
-    (void) memcpy(&YminusX, (void *) &p->YminusX, sizeof(YminusX));
-    fe_neg((fe *) &minusT2d, (fe *) &p->T2d);
-    fe_conditional_move((fe *) &p->YminusX, (fe *) &p->YplusX, negate);
-    fe_conditional_move((fe *) &p->YplusX, (fe *) &YminusX, negate);
+    fe_copy(YminusX, p->YminusX);
+    fe_neg(minusT2d, p->T2d);
+    fe_conditional_move(p->YminusX, p->YplusX, negate);
+    fe_conditional_move(p->YplusX, YminusX, negate);
 
-    /* Conditinally negate T2d */
-    fe_conditional_move((fe *) &p->T2d, (fe *) &minusT2d, negate);
+    /* Conditionally negate T2d */
+    fe_conditional_move(p->T2d, minusT2d, negate);
 }
 
 #define equal(x, y)  ({ \
@@ -51,7 +51,7 @@ static inline void ed25519_point_precomp_conditional_neg_in_place(volatile point
     1 & (__aux ^ 1); \
 })
 
-static inline void ed25519_comb_read_precomp(volatile point_precomp * r, u8 j, i8 ijt) {
+static inline void ed25519_comb_read_precomp(point_precomp * r, u8 j, i8 ijt) {
 
     FE3C_SANITY_CHECK( j < sizeof(ed25519_comb_precomp) );
 
@@ -62,10 +62,9 @@ static inline void ed25519_comb_read_precomp(volatile point_precomp * r, u8 j, i
     FE3C_SANITY_CHECK( ijtabs <= sizeof(ed25519_comb_precomp[0]) );
 
     /* Start with the identity - if ijt is 0 then we leave the result as the identity */
-    (void) memset((void *) r, 0, sizeof(*r));
-    r->YplusX[0] = 1;
-    r->YminusX[0] = 1;
-    r->T2d[0] = 0;
+    fe_copy(r->YplusX, fe_one);
+    fe_copy(r->YminusX, fe_one);
+    fe_copy(r->T2d, fe_zero);
 
     /* Choose one entry of the precomputation table in a branchless manner
      * - an added advantage is that we access all elements in a given row
@@ -83,42 +82,42 @@ static inline void ed25519_comb_read_precomp(volatile point_precomp * r, u8 j, i
     ed25519_point_precomp_conditional_neg_in_place(r, negate);
 }
 
-static inline void ed25519_points_add_precomp(point * r, const point * p, const point_precomp * q) {
+static inline void ed25519_points_add_precomp(point_ed25519 * r, const point_ed25519 * p, const point_precomp * q) {
 
     /* TODO: Reuse some old variables to reduce stack usage */
-    fe A, B, C, D, E, F, G, H;
+    fe25519 A, B, C, D, E, F, G, H;
 
     /* A ::= (Y1-X1)*(Y2-X2) */
-    fe_sub(&E, &p->Y, &p->X);
-    fe_mul(&A, &E, (fe *) &q->YminusX);
+    fe_sub(E, p->Y, p->X);
+    fe_mul(A, E, q->YminusX);
 
     /* B ::= (Y1+X1)*(Y2+X2) */
-    fe_add(&G, &p->Y, &p->X);
-    fe_mul(&B, &G, (fe *) &q->YplusX);
+    fe_add(G, p->Y, p->X);
+    fe_mul(B, G, q->YplusX);
 
     /* C ::= T1*2*d*T2 */
-    fe_mul(&C, &p->T, (fe *) &q->T2d);
+    fe_mul(C, p->T, q->T2d);
 
     /* D ::= Z1*2*Z2, but we know Z2=1 for precomputed points */
-    fe_add(&D, &p->Z, &p->Z);
+    fe_add(D, p->Z, p->Z);
 
     /* E ::= B-A */
-    fe_sub(&E, &B, &A);
+    fe_sub(E, B, A);
     /* F ::= D-C */
-    fe_sub(&F, &D, &C);
+    fe_sub(F, D, C);
     /* G ::= D+C */
-    fe_add(&G, &D, &C);
+    fe_add(G, D, C);
     /* H ::= B+A */
-    fe_add(&H, &B, &A);
+    fe_add(H, B, A);
 
     /* X3 ::= E*F */
-    fe_mul(&r->X, &E, &F);
+    fe_mul(r->X, E, F);
     /* Y3 ::= G*H */
-    fe_mul(&r->Y, &G, &H);
+    fe_mul(r->Y, G, H);
     /* T3 ::= E*H */
-    fe_mul(&r->T, &E, &H);
+    fe_mul(r->T, E, H);
     /* Z3 ::= F*G */
-    fe_mul(&r->Z, &F, &G);
+    fe_mul(r->Z, F, G);
 }
 
 #endif /* __FE3C_POINTS_POINTS_ED25519_COMB_METHOD_H */

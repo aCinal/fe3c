@@ -20,18 +20,18 @@ static const point_precomp ed448_comb_precomp[56][8] = {
 };
 
 
-static inline void ed448_point_precomp_conditional_move(volatile point *r, const point_precomp *p, int move) {
+static inline void ed448_point_precomp_conditional_move(point_ed448 *r, const point_precomp *p, int move) {
 
-    fe_conditional_move((fe *) &r->X, (fe *) &p->X, move);
-    fe_conditional_move((fe *) &r->Y, (fe *) &p->Y, move);
+    fe_conditional_move(r->X, p->X, move);
+    fe_conditional_move(r->Y, p->Y, move);
 }
 
-static inline void ed448_point_conditional_neg_in_place(volatile point * p, int negate) {
+static inline void ed448_point_conditional_neg_in_place(point_ed448 * p, int negate) {
 
     /* Negate the X coordinate conditionally */
-    fe mX;
-    fe_neg(&mX, (fe *) &p->X);
-    fe_conditional_move(&p->X, &mX, negate);
+    fe448 mX;
+    fe_neg(mX, p->X);
+    fe_conditional_move(p->X, mX, negate);
 }
 
 #define equal(x, y)  ({ \
@@ -42,7 +42,7 @@ static inline void ed448_point_conditional_neg_in_place(volatile point * p, int 
     1 & (__aux ^ 1); \
 })
 
-static inline void ed448_comb_read_precomp(volatile point * r, u8 j, i8 ijt) {
+static inline void ed448_comb_read_precomp(point_ed448 * r, u8 j, i8 ijt) {
 
     FE3C_SANITY_CHECK( j < sizeof(ed448_comb_precomp) );
 
@@ -53,10 +53,10 @@ static inline void ed448_comb_read_precomp(volatile point * r, u8 j, i8 ijt) {
     FE3C_SANITY_CHECK( ijtabs <= sizeof(ed448_comb_precomp[0]) );
 
     /* Start with the identity - if ijt is 0 then we leave the result as the identity */
-    r->X = fe_zero;
-    r->Y = fe_one;
+    fe_copy(r->X, fe_zero);
+    fe_copy(r->Y, fe_one);
     /* Set the Z coordinate to one for good */
-    r->Z = fe_one;
+    fe_copy(r->Z, fe_one);
 
     /* Choose one entry of the precomputation table in a branchless manner
      * - an added advantage is that we access all elements in a given row

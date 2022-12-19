@@ -4,9 +4,11 @@
 TEST_GROUP(POINTS_ED448) {
 
     const point identity = {
-        .X = { .ed448 = { 0 } },
-        .Y = { .ed448 = { 1 } },
-        .Z = { .ed448 = { 1 } }
+        .ed448 = {
+            .X = { 0 },
+            .Y = { 1 },
+            .Z = { 1 }
+        }
     };
 };
 
@@ -164,21 +166,23 @@ TEST(POINTS_ED448, Add_AddReciprocalsOfEachOther_ResultInIdentity) {
 TEST(POINTS_ED448, Add_AddPointOfOrder2ToItself_ResultInIdentity) {
 
     point input = {
-        .X = { .ed448 = { 0 } },
+        .ed448 = {
+            .X = { 0 },
 #if FE3C_64BIT
-        .Y = { .ed448 = {
-            0xffffffffffffffULL - 1, 0xffffffffffffffULL, 0xffffffffffffffULL, 0xffffffffffffffULL,
-            0xfffffffffffffeULL,     0xffffffffffffffULL, 0xffffffffffffffULL, 0xffffffffffffffULL
-        } },
+            .Y = {
+                0xffffffffffffffULL - 1, 0xffffffffffffffULL, 0xffffffffffffffULL, 0xffffffffffffffULL,
+                0xfffffffffffffeULL,     0xffffffffffffffULL, 0xffffffffffffffULL, 0xffffffffffffffULL
+            },
 #else
-        .Y = { .ed448 = {
-            0xfffffff - 1, 0xfffffff, 0xfffffff, 0xfffffff,
-            0xfffffff,     0xfffffff, 0xfffffff, 0xfffffff,
-            0xffffffe,     0xfffffff, 0xfffffff, 0xfffffff,
-            0xfffffff,     0xfffffff, 0xfffffff, 0xfffffff
-        } },
+            .Y = {
+                0xfffffff - 1, 0xfffffff, 0xfffffff, 0xfffffff,
+                0xfffffff,     0xfffffff, 0xfffffff, 0xfffffff,
+                0xffffffe,     0xfffffff, 0xfffffff, 0xfffffff,
+                0xfffffff,     0xfffffff, 0xfffffff, 0xfffffff
+            },
 #endif
-        .Z = { .ed448 = { 1 } }
+            .Z = { 1 }
+        }
     };
     point output;
     u8 encoded_output[57];
@@ -196,9 +200,11 @@ TEST(POINTS_ED448, Add_AddPointOfOrder2ToItself_ResultInIdentity) {
 TEST(POINTS_ED448, Add_AddPointOfOrder4ToItself_TestForIdentityAtEachStep) {
 
     point input = {
-        .X = { .ed448 = { 1 } },
-        .Y = { .ed448 = { 0 } },
-        .Z = { .ed448 = { 1 } }
+        .ed448 = {
+            .X = { 1 },
+            .Y = { 0 },
+            .Z = { 1 }
+        }
     };
 
     point output;

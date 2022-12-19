@@ -16,13 +16,13 @@ extern "C" {
 #define LOW_51_BITS_MASK  0x7ffffffffffffULL
 
 /* Elliptic curve constant d = -121665/121666 */
-static const fe ed25519_d = { .ed25519 = { 0x34dca135978a3, 0x1a8283b156ebd, 0x5e7a26001c029, 0x739c663a03cbb, 0x52036cee2b6ff } };
+static const fe25519 ed25519_d = { 0x34dca135978a3, 0x1a8283b156ebd, 0x5e7a26001c029, 0x739c663a03cbb, 0x52036cee2b6ff };
 /* Additive identity in the field */
-static const fe fe_zero = { .ed25519 = { 0, 0, 0, 0, 0 } };
+static const fe25519 fe_zero = { 0, 0, 0, 0, 0 };
 /* Multiplicative identity in the field */
-static const fe fe_one = { .ed25519 = { 1, 0, 0, 0, 0 } };
+static const fe25519 fe_one = { 1, 0, 0, 0, 0 };
 /* "Positive" (even) square root of -1 in the field */
-static const fe fe_i = { .ed25519 = { 0x61b274a0ea0b0, 0xd5a5fc8f189d, 0x7ef5e9cbd0c60, 0x78595a6804c9e, 0x2b8324804fc1d } };
+static const fe25519 fe_i = { 0x61b274a0ea0b0, 0xd5a5fc8f189d, 0x7ef5e9cbd0c60, 0x78595a6804c9e, 0x2b8324804fc1d };
 
 static inline u64 _load_64(const u8 src[8]) {
 
@@ -64,18 +64,32 @@ static inline void _store_64(u8 dst[8], u64 src) {
 }
 
 /**
+ * @brief Uncondionally copy a field element
+ * @param r Destination field element
+ * @param a Source field element
+ */
+static inline void fe_copy(fe25519 r, const fe25519 a) {
+
+    r[0] = a[0];
+    r[1] = a[1];
+    r[2] = a[2];
+    r[3] = a[3];
+    r[4] = a[4];
+}
+
+/**
  * @brief Check if an elements is in its canonical form, i.e. less than the modulus
  * @param a Field element to check
  * @return 1 if a is in canonical form, 0 otherwise
  */
-static inline int fe_is_canonical(const fe * a) {
+static inline int fe_is_canonical(const fe25519 a) {
 
     int canonical = 1;
-    canonical &= (a->ed25519[0] <  0x7ffffffffffedULL);
-    canonical &= (a->ed25519[1] <= 0x7ffffffffffffULL);
-    canonical &= (a->ed25519[2] <= 0x7ffffffffffffULL);
-    canonical &= (a->ed25519[3] <= 0x7ffffffffffffULL);
-    canonical &= (a->ed25519[4] <= 0x7ffffffffffffULL);
+    canonical &= (a[0] <  0x7ffffffffffedULL);
+    canonical &= (a[1] <= 0x7ffffffffffffULL);
+    canonical &= (a[2] <= 0x7ffffffffffffULL);
+    canonical &= (a[3] <= 0x7ffffffffffffULL);
+    canonical &= (a[4] <= 0x7ffffffffffffULL);
     return canonical;
 }
 
@@ -86,17 +100,17 @@ static inline int fe_is_canonical(const fe * a) {
  * @return 1 if a = b, 0 otherwise
  * @note The elements should be reduced by the caller first
  */
-static inline int fe_equal(const fe * a, const fe * b) {
+static inline int fe_equal(const fe25519 a, const fe25519 b) {
 
     fe_limb_type sum = 0;
 
     /* Do an XOR between the two elements, if they are equal this should amount
      * to zero */
-    sum |= a->ed25519[0] ^ b->ed25519[0];
-    sum |= a->ed25519[1] ^ b->ed25519[1];
-    sum |= a->ed25519[2] ^ b->ed25519[2];
-    sum |= a->ed25519[3] ^ b->ed25519[3];
-    sum |= a->ed25519[4] ^ b->ed25519[4];
+    sum |= a[0] ^ b[0];
+    sum |= a[1] ^ b[1];
+    sum |= a[2] ^ b[2];
+    sum |= a[3] ^ b[3];
+    sum |= a[4] ^ b[4];
 
     /* Bring any 1's down to the least significant bit */
     sum |= (sum >> 32);
@@ -118,7 +132,7 @@ static inline int fe_equal(const fe * a, const fe * b) {
  * @param[in] move Flag deciding on the branch, if set to 0, r ::= r, and if set to 1, r ::= a
  * @note If move is set to anything other than 0 or 1, the results are undefined
  */
-static inline void fe_conditional_move(volatile fe * r, const fe * a, int move) {
+static inline void fe_conditional_move(fe25519 r, const fe25519 a, int move) {
 
     /* Set the mask to 0x0000000000000000 if move is 0 or to 0xFFFFFFFFFFFFFFFF if it is 1 */
     const fe_limb_type mask = (fe_limb_type)( -(i64) move );
@@ -126,18 +140,18 @@ static inline void fe_conditional_move(volatile fe * r, const fe * a, int move) 
     /* The conditional move implementation relies on the identity (x ^ y) ^ y = x */
 
     /* Copy the current contents of r into the t array */
-    fe_limb_type t0 = r->ed25519[0];
-    fe_limb_type t1 = r->ed25519[1];
-    fe_limb_type t2 = r->ed25519[2];
-    fe_limb_type t3 = r->ed25519[3];
-    fe_limb_type t4 = r->ed25519[4];
+    fe_limb_type t0 = r[0];
+    fe_limb_type t1 = r[1];
+    fe_limb_type t2 = r[2];
+    fe_limb_type t3 = r[3];
+    fe_limb_type t4 = r[4];
 
     /* XOR the t's with the limbs of a */
-    fe_limb_type x0 = t0 ^ a->ed25519[0];
-    fe_limb_type x1 = t1 ^ a->ed25519[1];
-    fe_limb_type x2 = t2 ^ a->ed25519[2];
-    fe_limb_type x3 = t3 ^ a->ed25519[3];
-    fe_limb_type x4 = t4 ^ a->ed25519[4];
+    fe_limb_type x0 = t0 ^ a[0];
+    fe_limb_type x1 = t1 ^ a[1];
+    fe_limb_type x2 = t2 ^ a[2];
+    fe_limb_type x3 = t3 ^ a[3];
+    fe_limb_type x4 = t4 ^ a[4];
 
     /* Set the x array to all zeroes if move is zero or leave it be if move is one */
     x0 &= mask;
@@ -149,11 +163,11 @@ static inline void fe_conditional_move(volatile fe * r, const fe * a, int move) 
     /* If move=0 then x0-x4 are all zero and so we write back the limbs of r into r.
      * If move=1 then x0-x4 contain r XOR a and so by XORing back with the limbs of r we
      * write the limbs of a into r */
-    r->ed25519[0] = t0 ^ x0;
-    r->ed25519[1] = t1 ^ x1;
-    r->ed25519[2] = t2 ^ x2;
-    r->ed25519[3] = t3 ^ x3;
-    r->ed25519[4] = t4 ^ x4;
+    r[0] = t0 ^ x0;
+    r[1] = t1 ^ x1;
+    r[2] = t2 ^ x2;
+    r[3] = t3 ^ x3;
+    r[4] = t4 ^ x4;
 }
 
 /**
@@ -162,17 +176,17 @@ static inline void fe_conditional_move(volatile fe * r, const fe * a, int move) 
  * @param[in] a Field element to be reduced
  * @note Note that the result need to be in canonical form, i.e. between 0 and p-1, it need only be less than 2p
  */
-static inline void fe_weak_reduce(fe * r, const fe * a) {
+static inline void fe_weak_reduce(fe25519 r, const fe25519 a) {
 
     /* Do a "relaxed" reduction (to borrow terminology form Michael Scott's "Slothful reduction" paper)
      * - this ensures the result is less than 2p (where p = 2^255 - 19) */
 
     /* Use 128-bit-wide auxiliary variables */
-    u128 t0 = a->ed25519[0];
-    u128 t1 = a->ed25519[1];
-    u128 t2 = a->ed25519[2];
-    u128 t3 = a->ed25519[3];
-    u128 t4 = a->ed25519[4];
+    u128 t0 = a[0];
+    u128 t1 = a[1];
+    u128 t2 = a[2];
+    u128 t3 = a[3];
+    u128 t4 = a[4];
 
     /* The modulus can be expressed as p = s - c, where s = 2^255 and c = 19.
      * Express (split) the value a as a = x + sy. Then
@@ -186,7 +200,7 @@ static inline void fe_weak_reduce(fe * r, const fe * a) {
      * we have the value x.
      */
 
-    /* Add whatever has overflown in t0 (a->ed25519[0]) to t1 (a->ed25519[1])
+    /* Add whatever has overflown in t0 (a[0]) to t1 (a[1])
      * and mask out the overflow in t0 */
     t1 += t0 >> 51;  t0 &= LOW_51_BITS_MASK;
     /* Rinse and repeat for the other limbs */
@@ -208,11 +222,11 @@ static inline void fe_weak_reduce(fe * r, const fe * a) {
     t0 += 19 * (t4 >> 51);
     t4 &= LOW_51_BITS_MASK;
 
-    r->ed25519[0] = t0;
-    r->ed25519[1] = t1;
-    r->ed25519[2] = t2;
-    r->ed25519[3] = t3;
-    r->ed25519[4] = t4;
+    r[0] = t0;
+    r[1] = t1;
+    r[2] = t2;
+    r[3] = t3;
+    r[4] = t4;
 }
 
 /**
@@ -221,35 +235,35 @@ static inline void fe_weak_reduce(fe * r, const fe * a) {
  * @param[in] a Field element to be reduced
  * @note The result is guaranteed to be in canonical form, i.e. between 0 and p-1
  */
-static inline void fe_strong_reduce(fe * r, const fe * a) {
+static inline void fe_strong_reduce(fe25519 r, const fe25519 a) {
 
     fe_weak_reduce(r, a);
     /* After the weak reduction r is congruent to a and less than 2p */
 
     /* Compute r-p and conditionally use it as a result if r is larger than p */
-    fe t;
+    fe25519 t;
     /* Store r + 19 in t (we will subtract 2^255 from it, resulting in t = r - p) */
-    t.ed25519[0] = r->ed25519[0] + 19;
-    t.ed25519[1] = r->ed25519[1];
-    t.ed25519[2] = r->ed25519[2];
-    t.ed25519[3] = r->ed25519[3];
-    t.ed25519[4] = r->ed25519[4];
+    t[0] = r[0] + 19;
+    t[1] = r[1];
+    t[2] = r[2];
+    t[3] = r[3];
+    t[4] = r[4];
 
-    t.ed25519[1] += t.ed25519[0] >> 51;  t.ed25519[0] &= LOW_51_BITS_MASK;
-    t.ed25519[2] += t.ed25519[1] >> 51;  t.ed25519[1] &= LOW_51_BITS_MASK;
-    t.ed25519[3] += t.ed25519[2] >> 51;  t.ed25519[2] &= LOW_51_BITS_MASK;
-    t.ed25519[4] += t.ed25519[3] >> 51;  t.ed25519[3] &= LOW_51_BITS_MASK;
+    t[1] += t[0] >> 51;  t[0] &= LOW_51_BITS_MASK;
+    t[2] += t[1] >> 51;  t[1] &= LOW_51_BITS_MASK;
+    t[3] += t[2] >> 51;  t[2] &= LOW_51_BITS_MASK;
+    t[4] += t[3] >> 51;  t[3] &= LOW_51_BITS_MASK;
 
-    /* At this point t.ed25519[4] contains the highest limb of r + 19. Try subtracting
+    /* At this point t[4] contains the highest limb of r + 19. Try subtracting
      * 2^255 - if we get an underflow this means that r < 2^255 - 19 and so r is the
      * final result. Otherwise we must return r - p (note that this includes the case
-     * where r = p, as no underflow will occur then and t.ed25519[4] will be equal to
+     * where r = p, as no underflow will occur then and t[4] will be equal to
      * zero). */
-    t.ed25519[4] -= (1ULL << 51);
+    t[4] -= (1ULL << 51);
 
-    /* Check the highest bit of t.ed25519[4] for underflow. If the highest bit is set then
+    /* Check the highest bit of t[4] for underflow. If the highest bit is set then
      * underflow occurred and so we return r, otherwise we set r ::= t and return that */
-    fe_conditional_move(r, &t, (t.ed25519[4] >> 63) ^ 1);
+    fe_conditional_move(r, t, (t[4] >> 63) ^ 1);
 }
 
 /**
@@ -257,21 +271,21 @@ static inline void fe_strong_reduce(fe * r, const fe * a) {
  * @param[out] r The result of negation
  * @param[in] a Element to be negated
  */
-static inline void fe_neg(fe * r, const fe * a) {
+static inline void fe_neg(fe25519 r, const fe25519 a) {
 
     /* Check against underflow */
-    FE3C_SANITY_CHECK(a->ed25519[0] <= 0xfffffffffffdaULL);
-    FE3C_SANITY_CHECK(a->ed25519[1] <= 0xffffffffffffeULL);
-    FE3C_SANITY_CHECK(a->ed25519[2] <= 0xffffffffffffeULL);
-    FE3C_SANITY_CHECK(a->ed25519[3] <= 0xffffffffffffeULL);
-    FE3C_SANITY_CHECK(a->ed25519[4] <= 0xffffffffffffeULL);
+    FE3C_SANITY_CHECK(a[0] <= 0xfffffffffffdaULL);
+    FE3C_SANITY_CHECK(a[1] <= 0xffffffffffffeULL);
+    FE3C_SANITY_CHECK(a[2] <= 0xffffffffffffeULL);
+    FE3C_SANITY_CHECK(a[3] <= 0xffffffffffffeULL);
+    FE3C_SANITY_CHECK(a[4] <= 0xffffffffffffeULL);
 
     /* Set r to 2p-a so as to not require strong reduction of a */
-    r->ed25519[0] = 0xfffffffffffdaULL - a->ed25519[0];
-    r->ed25519[1] = 0xffffffffffffeULL - a->ed25519[1];
-    r->ed25519[2] = 0xffffffffffffeULL - a->ed25519[2];
-    r->ed25519[3] = 0xffffffffffffeULL - a->ed25519[3];
-    r->ed25519[4] = 0xffffffffffffeULL - a->ed25519[4];
+    r[0] = 0xfffffffffffdaULL - a[0];
+    r[1] = 0xffffffffffffeULL - a[1];
+    r[2] = 0xffffffffffffeULL - a[2];
+    r[3] = 0xffffffffffffeULL - a[3];
+    r[4] = 0xffffffffffffeULL - a[4];
 }
 
 /**
@@ -280,13 +294,13 @@ static inline void fe_neg(fe * r, const fe * a) {
  * @param[in] a Operand
  * @param[in] b Operand
  */
-static inline void fe_add(fe * r, const fe * a, const fe * b) {
+static inline void fe_add(fe25519 r, const fe25519 a, const fe25519 b) {
 
-    r->ed25519[0] = a->ed25519[0] + b->ed25519[0];
-    r->ed25519[1] = a->ed25519[1] + b->ed25519[1];
-    r->ed25519[2] = a->ed25519[2] + b->ed25519[2];
-    r->ed25519[3] = a->ed25519[3] + b->ed25519[3];
-    r->ed25519[4] = a->ed25519[4] + b->ed25519[4];
+    r[0] = a[0] + b[0];
+    r[1] = a[1] + b[1];
+    r[2] = a[2] + b[2];
+    r[3] = a[3] + b[3];
+    r[4] = a[4] + b[4];
 }
 
 /**
@@ -295,14 +309,14 @@ static inline void fe_add(fe * r, const fe * a, const fe * b) {
  * @param[in] a Minuend
  * @param[in] b Subtrahend
  */
-static inline void fe_sub(fe * r, const fe * a, const fe * b) {
+static inline void fe_sub(fe25519 r, const fe25519 a, const fe25519 b) {
 
     /* Compute a + 2p - b so as to not risk underflow */
-    r->ed25519[0] = a->ed25519[0] + 0xfffffffffffdaULL - b->ed25519[0];
-    r->ed25519[1] = a->ed25519[1] + 0xffffffffffffeULL - b->ed25519[1];
-    r->ed25519[2] = a->ed25519[2] + 0xffffffffffffeULL - b->ed25519[2];
-    r->ed25519[3] = a->ed25519[3] + 0xffffffffffffeULL - b->ed25519[3];
-    r->ed25519[4] = a->ed25519[4] + 0xffffffffffffeULL - b->ed25519[4];
+    r[0] = a[0] + 0xfffffffffffdaULL - b[0];
+    r[1] = a[1] + 0xffffffffffffeULL - b[1];
+    r[2] = a[2] + 0xffffffffffffeULL - b[2];
+    r[3] = a[3] + 0xffffffffffffeULL - b[3];
+    r[4] = a[4] + 0xffffffffffffeULL - b[4];
     /* We could also call fe_neg() followed by fe_add(), but this would require
      * an intermediate fe variable to support aliasing */
 }
@@ -313,21 +327,21 @@ static inline void fe_sub(fe * r, const fe * a, const fe * b) {
  * @param[in] a Operand
  * @param[in] b Operand
  */
-static inline void fe_mul(fe * r, const fe * a, const fe * b) {
+static inline void fe_mul(fe25519 r, const fe25519 a, const fe25519 b) {
 
     u128 r0, r1, r2, r3, r4;
 
-    u128 a0 = a->ed25519[0];
-    u128 a1 = a->ed25519[1];
-    u128 a2 = a->ed25519[2];
-    u128 a3 = a->ed25519[3];
-    u128 a4 = a->ed25519[4];
+    u128 a0 = a[0];
+    u128 a1 = a[1];
+    u128 a2 = a[2];
+    u128 a3 = a[3];
+    u128 a4 = a[4];
 
-    u128 b0 = b->ed25519[0];
-    u128 b1 = b->ed25519[1];
-    u128 b2 = b->ed25519[2];
-    u128 b3 = b->ed25519[3];
-    u128 b4 = b->ed25519[4];
+    u128 b0 = b[0];
+    u128 b1 = b[1];
+    u128 b2 = b[2];
+    u128 b3 = b[3];
+    u128 b4 = b[4];
 
     /* TODO: Try using Karatsuba here */
 
@@ -383,11 +397,11 @@ static inline void fe_mul(fe * r, const fe * a, const fe * b) {
     r0 += 19 * (r4 >> 51);
     r4 &= LOW_51_BITS_MASK;
 
-    r->ed25519[0] = r0;
-    r->ed25519[1] = r1;
-    r->ed25519[2] = r2;
-    r->ed25519[3] = r3;
-    r->ed25519[4] = r4;
+    r[0] = r0;
+    r[1] = r1;
+    r[2] = r2;
+    r[3] = r3;
+    r[4] = r4;
 }
 
 /**
@@ -395,18 +409,18 @@ static inline void fe_mul(fe * r, const fe * a, const fe * b) {
  * @param[out] r Result of the squaring, i.e. the product r = a a
  * @param[in] a Field element to square
  */
-static inline void fe_square(fe * r, const fe * a) {
+static inline void fe_square(fe25519 r, const fe25519 a) {
 
 #if !FE3C_OPTIMIZATION_FAST_SQUARING
     fe_mul(r, a, a);
 #else
     u128 r0, r1, r2, r3, r4;
 
-    u128 a0 = a->ed25519[0];
-    u128 a1 = a->ed25519[1];
-    u128 a2 = a->ed25519[2];
-    u128 a3 = a->ed25519[3];
-    u128 a4 = a->ed25519[4];
+    u128 a0 = a[0];
+    u128 a1 = a[1];
+    u128 a2 = a[2];
+    u128 a3 = a[3];
+    u128 a4 = a[4];
     /* Do the naive schoolbook multiplication but allow the compiler to group together
      * like terms. Partial single-precision products in the schoolbook multiplication
      * are of the form aibj for different i and j. When squaring the term aibj is
@@ -441,110 +455,12 @@ static inline void fe_square(fe * r, const fe * a) {
     r0 += 19 * (r4 >> 51);
     r4 &= LOW_51_BITS_MASK;
 
-    r->ed25519[0] = r0;
-    r->ed25519[1] = r1;
-    r->ed25519[2] = r2;
-    r->ed25519[3] = r3;
-    r->ed25519[4] = r4;
+    r[0] = r0;
+    r[1] = r1;
+    r[2] = r2;
+    r[3] = r3;
+    r[4] = r4;
 #endif /* FE3C_OPTIMIZATION_FAST_SQUARING */
-}
-
-/**
- * @brief Find a multiplicative inverse of a field element
- * @param[out] r Result of inversion, i.e. such element r that r a = 1
- * @param[in] a Field element to invert
- */
-static inline void fe_invert(fe * r, const fe * a) {
-
-    /* Make a local copy to support aliasing */
-    fe x = *a;
-
-    /* Use the Fermat's little theorem identity: a^(p-1) = 1 (mod p) and obtain
-     * the inverse as a^(p-2), i.e. a to the power 2^255 - 19 - 2. Note that
-     *
-     * p-2 = 0x7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffeb
-     *
-     * and so p-2 is 250 ones followed by a zero and then 0xb = 0b1011. Use a
-     * square and multiply algorithm to obtain the result.
-     *
-     * Note that with this method "inverting zero" is possible and the result
-     * is also zero.
-     */
-
-    /* TODO: Investigate other approaches to do this */
-
-    /* Initialize r with the initial squaring and multiplication (this covers
-     * the two leftmost ones in the exponent - since the first one corresponds
-     * to a no-op) */
-    fe_square(r, &x);
-    fe_mul(r, r, &x);
-
-    /* Do a square-and-multiply step for the remaining 248 ones in the binary
-     * representation of the exponent (p-2) */
-    for (int i = 0; i < 248; i++) {
-
-        fe_square(r, r);
-        fe_mul(r, r, &x);
-    }
-
-    /* Zero in the exponent - just a squaring, with no multiplication */
-    fe_square(r, r);
-
-    /* One in the exponent - do both a squaring and a multiplication */
-    fe_square(r, r);
-    fe_mul(r, r, &x);
-
-    /* Zero in the exponent - only square */
-    fe_square(r, r);
-
-    /* Two last ones in the exponent - do both a squaring and a multiplication */
-    fe_square(r, r);
-    fe_mul(r, r, &x);
-    fe_square(r, r);
-    fe_mul(r, r, &x);
-}
-
-/**
- * @brief Raise an element to the power (p-5)/8 where p = 2^255 - 19 is the field modulus
- * @param[out] r Result of the exponentation
- * @param[in] a The element to exponentiate
- */
-static inline void fe_exp_p_minus_5_over_8(fe * r, const fe * a) {
-
-    /* Make a local copy to support aliasing */
-    fe x = *a;
-
-    /* Note that (p-5)/8 is equal to (2^255-24)/8 = 2^252-3, which has the following
-     * hexadecimal representation:
-     *
-     * (p-5)/8 = 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffd
-     *
-     * i.e. it is a sequence of 248 ones followed by 0xd = 0b1101 (250 consecutive
-     * ones in total). Use a square-and-multiply algorithm to obtain the result.
-     */
-
-    /* TODO: Investigate other approaches to do this */
-
-    /* Initialize r with the initial squaring and multiplication (this covers
-     * the two leftmost ones in the exponent - since the first one corresponds
-     * to a no-op) */
-    fe_square(r, &x);
-    fe_mul(r, r, &x);
-
-    /* Do a square-and-multiply step for the remaining 248 ones in the binary
-     * representation of the exponent */
-    for (int i = 0; i < 248; i++) {
-
-        fe_square(r, r);
-        fe_mul(r, r, &x);
-    }
-
-    /* Zero in the exponent - just a squaring, with no multiplication */
-    fe_square(r, r);
-
-    /* One in the exponent - do both a squaring and a multiplication */
-    fe_square(r, r);
-    fe_mul(r, r, &x);
 }
 
 /**
@@ -552,7 +468,7 @@ static inline void fe_exp_p_minus_5_over_8(fe * r, const fe * a) {
  * @param[out] buffer Output buffer for the encoded field element
  * @param[in] a Field element to encode
  */
-static inline void fe_encode(u8 * buffer, fe * a) {
+static inline void fe_encode(u8 * buffer, fe25519 a) {
 
     /* Canonicalize the element first */
     fe_strong_reduce(a, a);
@@ -561,15 +477,15 @@ static inline void fe_encode(u8 * buffer, fe * a) {
      * registers) to allow for greater instruction-level parallelism */
 
     /* Store the lowest limb + whatever can fit (13 bits) of the second lowest limb */
-    u64 t0 = ( a->ed25519[0] >>  0 ) | ( a->ed25519[1] << 51 );
-    /* 13 bits of a->ed25519[1] are in t0, store the rest (38 bits) here + whatever can fit
-     * (26 bits) of a->ed25519[2] */
-    u64 t1 = ( a->ed25519[1] >> 13 ) | ( a->ed25519[2] << 38 );
-    /* 26 bits of a->ed25519[2] are in t1, store the rest (25 bits) here + whatever can fit
-     * (39 bits) of a->ed25519[3] */
-    u64 t2 = ( a->ed25519[2] >> 26 ) | ( a->ed25519[3] << 25 );
-    /* Store the top 51-39=12 bits of a->ed25519[3] and all of a->ed25519[4] */
-    u64 t3 = ( a->ed25519[3] >> 39 ) | ( a->ed25519[4] << 12 );
+    u64 t0 = ( a[0] >>  0 ) | ( a[1] << 51 );
+    /* 13 bits of a[1] are in t0, store the rest (38 bits) here + whatever can fit
+     * (26 bits) of a[2] */
+    u64 t1 = ( a[1] >> 13 ) | ( a[2] << 38 );
+    /* 26 bits of a[2] are in t1, store the rest (25 bits) here + whatever can fit
+     * (39 bits) of a[3] */
+    u64 t2 = ( a[2] >> 26 ) | ( a[3] << 25 );
+    /* Store the top 51-39=12 bits of a[3] and all of a[4] */
+    u64 t3 = ( a[3] >> 39 ) | ( a[4] << 12 );
 
     /* The field elements get encoded as little-endian byte strings according to RFC 8032 */
     _store_64(&buffer[0 * 8], t0);
@@ -585,34 +501,23 @@ static inline void fe_encode(u8 * buffer, fe * a) {
  * @return 1 if decoding succeeded, 0 otherwise
  */
 __attribute__((warn_unused_result))
-static inline int fe_decode(fe * r, const u8 * buffer) {
+static inline int fe_decode(fe25519 r, const u8 * buffer) {
 
-    r->ed25519[0] = ( _load_64(&buffer[ 0]) >> 0 ) & LOW_51_BITS_MASK;
+    r[0] = ( _load_64(&buffer[ 0]) >> 0 ) & LOW_51_BITS_MASK;
     /* Do not offset by 8 now since we have dropped the top byte
      * and a few more bits from the first word by masking. Offset
      * by 51 bits (6 bytes + 3 bits of shift): */
-    r->ed25519[1] = ( _load_64(&buffer[ 6]) >> 3 ) & LOW_51_BITS_MASK;
+    r[1] = ( _load_64(&buffer[ 6]) >> 3 ) & LOW_51_BITS_MASK;
     /* Same spiel - offset by another 51 bits */
-    r->ed25519[2] = ( _load_64(&buffer[12]) >> 6 ) & LOW_51_BITS_MASK;
+    r[2] = ( _load_64(&buffer[12]) >> 6 ) & LOW_51_BITS_MASK;
     /* Now the "shift" bits have added up to over a byte, and so
      * we offset by 3*6+1 bytes and the leftover bit */
-    r->ed25519[3] = ( _load_64(&buffer[19]) >> 1 ) & LOW_51_BITS_MASK;
+    r[3] = ( _load_64(&buffer[19]) >> 1 ) & LOW_51_BITS_MASK;
     /* Load the last limb (note that the last bit gets naturally ignored
      * as required by RFC 8032) */
-    r->ed25519[4] = ( _load_64(&buffer[25]) >> 4 ) & LOW_51_BITS_MASK;
+    r[4] = ( _load_64(&buffer[25]) >> 4 ) & LOW_51_BITS_MASK;
 
     return fe_is_canonical(r);
-}
-
-/**
- * @brief Return the least-significant bit of the field element
- * @param a Field element
- * @return Least-significant bit of a
- */
-static inline int fe_lsb(fe * a) {
-
-    fe_strong_reduce(a, a);
-    return a->ed25519[0] & 1;
 }
 
 #ifdef __cplusplus
