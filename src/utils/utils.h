@@ -28,17 +28,26 @@ static inline void purge_secrets(void * secrets, size_t size) {
 #if FE3C_ENABLE_SANITY_CHECKS
     #include <stdio.h>
     #include <stdlib.h>
-    static inline void __sanity_check_failed(const char * check, const char * file, int line) {
+    #include <stdarg.h>
+    __attribute__((format(printf, 4, 5)))
+    static inline void __sanity_check_failed(const char * check, const char * file, int line, const char * format, ...) {
 
         fprintf(stderr, "%s in %s at line %d: [ %s ]\n", \
             __FUNCTION__, file, line, check);
+        if (format) {
+            va_list ap;
+            va_start(ap, format);
+            vfprintf(stderr, format, ap);
+            va_end(ap);
+            fprintf(stderr, "\n");
+        }
         abort();
     }
-    #define FE3C_SANITY_CHECK(x)               if (!(x)) { __sanity_check_failed(#x, __FILE__, __LINE__); }
-    #define FE3C_COMPILE_TIME_SANITY_CHECK(x)  _Static_assert(x)
+    #define FE3C_SANITY_CHECK(check, message, ...)  if (!(check)) { __sanity_check_failed(#check, __FILE__, __LINE__, message, ##__VA_ARGS__); }
+    #define FE3C_COMPILE_TIME_SANITY_CHECK(check)   _Static_assert(check)
 #else
-    #define FE3C_SANITY_CHECK(x)
-    #define FE3C_COMPILE_TIME_SANITY_CHECK(x)
+    #define FE3C_SANITY_CHECK(check, message, ...)
+    #define FE3C_COMPILE_TIME_SANITY_CHECK(check)
 #endif /* FE3C_ENABLE_SANITY_CHECKS */
 
 #ifdef __cplusplus

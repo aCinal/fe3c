@@ -11,8 +11,8 @@ static inline void load_64(u64 * dst, const u8 * src, size_t wordcount);
 
 void hash_sha512(u8 * output, const struct iovec * iov, int iovcnt) {
 
-    FE3C_SANITY_CHECK(output);
-    FE3C_SANITY_CHECK(iov || iovcnt == 0);
+    FE3C_SANITY_CHECK(output, NULL);
+    FE3C_SANITY_CHECK(iov || iovcnt == 0, NULL);
 
     /* For big endian targets we could use the output buffer directly for the state
      * and avoid a copy at the end, but we go for a more readable code by always

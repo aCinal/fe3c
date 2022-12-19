@@ -5,13 +5,13 @@
     #include <points/points_ed25519_comb_method.h>
 #endif /* FE3C_OPTIMIZATION_COMB_METHOD */
 
-static inline void ed25519_identity(point_ed25519 * p) {
-
-    fe_copy(p->X, fe_zero);
-    fe_copy(p->Y, fe_one);
-    fe_copy(p->Z, fe_one);
-    fe_copy(p->T, fe_zero);
-}
+#define ED25519_STR \
+    "    X = " FE25519_STR "\n" \
+    "    Y = " FE25519_STR "\n" \
+    "    Z = " FE25519_STR "\n" \
+    "    T = " FE25519_STR
+#define ED25519_TO_STR(p) \
+    FE25519_TO_STR(p->X), FE25519_TO_STR(p->Y), FE25519_TO_STR(p->Z), FE25519_TO_STR(p->T)
 
 #if FE3C_ENABLE_SANITY_CHECKS
 static inline int ed25519_is_on_curve(const point_ed25519 * p) {
@@ -50,6 +50,14 @@ static inline int ed25519_is_on_curve(const point_ed25519 * p) {
     return fe_equal(fe_zero, y) & fe_equal(tz, xy);
 }
 #endif /* FE3C_ENABLE_SANITY_CHECKS */
+
+static inline void ed25519_identity(point_ed25519 * p) {
+
+    fe_copy(p->X, fe_zero);
+    fe_copy(p->Y, fe_one);
+    fe_copy(p->Z, fe_one);
+    fe_copy(p->T, fe_zero);
+}
 
 static int ed25519_points_equal(const point * pgen, const point * qgen) {
 
@@ -92,7 +100,7 @@ static void ed25519_encode(u8 * buf, const point * pgen) {
     fe_encode(buf, y);
     /* Encode the "sign" of the x-coordinate (parity) in the most
      * significant bit of the last byte */
-    FE3C_SANITY_CHECK( (buf[31] >> 7) == 0);
+    FE3C_SANITY_CHECK((buf[31] >> 7) == 0, "buf[31] = 0x%x", buf[31]);
     buf[31] |= fe_lsb(x) << 7;
 }
 
@@ -254,8 +262,8 @@ static void ed25519_points_add(point * rgen, const point * pgen, const point * q
     const point_ed25519 * p = (const point_ed25519 *) pgen;
     const point_ed25519 * q = (const point_ed25519 *) qgen;
 
-    FE3C_SANITY_CHECK(ed25519_is_on_curve(p));
-    FE3C_SANITY_CHECK(ed25519_is_on_curve(q));
+    FE3C_SANITY_CHECK(ed25519_is_on_curve(p), ED25519_STR, ED25519_TO_STR(p));
+    FE3C_SANITY_CHECK(ed25519_is_on_curve(q), ED25519_STR, ED25519_TO_STR(q));
 
     /* TODO: Reuse some old variables to reduce stack usage */
     fe25519 A, B, C, D, E, F, G, H;
@@ -303,7 +311,7 @@ static void ed25519_scalar_multiply(point * rgen, const point * pgen, const u8 *
     point_ed25519 * r = (point_ed25519 *) rgen;
     point_ed25519 * p = (point_ed25519 *) pgen;
 
-    FE3C_SANITY_CHECK(ed25519_is_on_curve(p));
+    FE3C_SANITY_CHECK(ed25519_is_on_curve(p), ED25519_STR, ED25519_TO_STR(p));
 
     point_ed25519 R[2];
     ed25519_identity(&R[0]);
@@ -422,7 +430,7 @@ static void ed25519_multiply_basepoint(point * rgen, const u8 * s) {
         carry >>= 4;
         naf[2 * i + 1] -= carry << 4;
     }
-    FE3C_SANITY_CHECK(carry == 0);
+    FE3C_SANITY_CHECK(carry == 0, NULL);
 
     ed25519_identity(r);
     point_precomp p;

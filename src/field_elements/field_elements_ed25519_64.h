@@ -14,6 +14,9 @@ extern "C" {
 #endif /* !FE3C_64BIT */
 
 #define LOW_51_BITS_MASK  0x7ffffffffffffULL
+#define FE25519_STR "0x%lx, 0x%lx, 0x%lx, 0x%lx, 0x%lx"
+#define FE25519_TO_STR(x) \
+    x[0], x[1], x[2], x[3], x[4]
 
 /* Elliptic curve constant d = -121665/121666 */
 static const fe25519 ed25519_d = { 0x34dca135978a3, 0x1a8283b156ebd, 0x5e7a26001c029, 0x739c663a03cbb, 0x52036cee2b6ff };
@@ -274,11 +277,11 @@ static inline void fe_strong_reduce(fe25519 r, const fe25519 a) {
 static inline void fe_neg(fe25519 r, const fe25519 a) {
 
     /* Check against underflow */
-    FE3C_SANITY_CHECK(a[0] <= 0xfffffffffffdaULL);
-    FE3C_SANITY_CHECK(a[1] <= 0xffffffffffffeULL);
-    FE3C_SANITY_CHECK(a[2] <= 0xffffffffffffeULL);
-    FE3C_SANITY_CHECK(a[3] <= 0xffffffffffffeULL);
-    FE3C_SANITY_CHECK(a[4] <= 0xffffffffffffeULL);
+    FE3C_SANITY_CHECK(a[0] <= 0xfffffffffffdaULL, FE25519_STR, FE25519_TO_STR(a));
+    FE3C_SANITY_CHECK(a[1] <= 0xffffffffffffeULL, FE25519_STR, FE25519_TO_STR(a));
+    FE3C_SANITY_CHECK(a[2] <= 0xffffffffffffeULL, FE25519_STR, FE25519_TO_STR(a));
+    FE3C_SANITY_CHECK(a[3] <= 0xffffffffffffeULL, FE25519_STR, FE25519_TO_STR(a));
+    FE3C_SANITY_CHECK(a[4] <= 0xffffffffffffeULL, FE25519_STR, FE25519_TO_STR(a));
 
     /* Set r to 2p-a so as to not require strong reduction of a */
     r[0] = 0xfffffffffffdaULL - a[0];

@@ -4,14 +4,14 @@
 
 void eddsa_sign(const eddsa_sign_request * req) {
 
-    FE3C_SANITY_CHECK(req);
-    FE3C_SANITY_CHECK(req->signature);
-    FE3C_SANITY_CHECK(req->secret_key);
-    FE3C_SANITY_CHECK(req->message || req->message_length == 0);
-    FE3C_SANITY_CHECK(req->context_length == 0 || req->context);
-    FE3C_SANITY_CHECK(req->curve_id < EDDSA_NUMBER_OF_SUPPORTED_CURVES);
-    FE3C_SANITY_CHECK(curves[req->curve_id]);
-    FE3C_SANITY_CHECK(req->phflag <= 1);
+    FE3C_SANITY_CHECK(req, NULL);
+    FE3C_SANITY_CHECK(req->signature, NULL);
+    FE3C_SANITY_CHECK(req->secret_key, NULL);
+    FE3C_SANITY_CHECK(req->message || req->message_length == 0, NULL);
+    FE3C_SANITY_CHECK(req->context_length == 0 || req->context, NULL);
+    FE3C_SANITY_CHECK(req->curve_id < EDDSA_NUMBER_OF_SUPPORTED_CURVES, NULL);
+    FE3C_SANITY_CHECK(curves[req->curve_id], NULL);
+    FE3C_SANITY_CHECK(req->phflag <= 1, NULL);
 
     /* Iverson brackets testing if the context is used
      * and/or the message has been prehashed */
@@ -106,14 +106,14 @@ int eddsa_verify(const eddsa_verify_request * req) {
 
     /* Do sanity-checks about parameters which are under the control of
      * the caller (not a remote adversarial party) */
-    FE3C_SANITY_CHECK(req);
-    FE3C_SANITY_CHECK(req->signature);
-    FE3C_SANITY_CHECK(req->public_key);
-    FE3C_SANITY_CHECK(req->message || req->message_length == 0);
-    FE3C_SANITY_CHECK(req->context_length == 0 || req->context);
-    FE3C_SANITY_CHECK(req->curve_id < EDDSA_NUMBER_OF_SUPPORTED_CURVES);
-    FE3C_SANITY_CHECK(curves[req->curve_id]);
-    FE3C_SANITY_CHECK(req->phflag <= 1);
+    FE3C_SANITY_CHECK(req, NULL);
+    FE3C_SANITY_CHECK(req->signature, NULL);
+    FE3C_SANITY_CHECK(req->public_key, NULL);
+    FE3C_SANITY_CHECK(req->message || req->message_length == 0, NULL);
+    FE3C_SANITY_CHECK(req->context_length == 0 || req->context, NULL);
+    FE3C_SANITY_CHECK(req->curve_id < EDDSA_NUMBER_OF_SUPPORTED_CURVES, NULL);
+    FE3C_SANITY_CHECK(curves[req->curve_id], NULL);
+    FE3C_SANITY_CHECK(req->phflag <= 1, NULL);
 
     /* Verification status */
     int verified = 1;
@@ -190,10 +190,10 @@ int eddsa_verify(const eddsa_verify_request * req) {
 
 void eddsa_derive_public_key(u8 * public_key, const u8 * secret_key, eddsa_curve curve_id) {
 
-    FE3C_SANITY_CHECK(curve_id < EDDSA_NUMBER_OF_SUPPORTED_CURVES);
-    FE3C_SANITY_CHECK(curves[curve_id])
-    FE3C_SANITY_CHECK(public_key);
-    FE3C_SANITY_CHECK(secret_key);
+    FE3C_SANITY_CHECK(curve_id < EDDSA_NUMBER_OF_SUPPORTED_CURVES, NULL);
+    FE3C_SANITY_CHECK(curves[curve_id], NULL);
+    FE3C_SANITY_CHECK(public_key, NULL);
+    FE3C_SANITY_CHECK(secret_key, NULL);
 
     /* Edwards curve to be used */
     const curve * curve = curves[curve_id];
@@ -226,24 +226,24 @@ void eddsa_derive_public_key(u8 * public_key, const u8 * secret_key, eddsa_curve
 
 int eddsa_get_signature_length(eddsa_curve curve_id) {
 
-    FE3C_SANITY_CHECK(curve_id < EDDSA_NUMBER_OF_SUPPORTED_CURVES);
-    FE3C_SANITY_CHECK(curves[curve_id]);
+    FE3C_SANITY_CHECK(curve_id < EDDSA_NUMBER_OF_SUPPORTED_CURVES, NULL);
+    FE3C_SANITY_CHECK(curves[curve_id], NULL);
 
     return 2 * curves[curve_id]->b_in_bytes;
 }
 
 int eddsa_get_public_key_length(eddsa_curve curve_id) {
 
-    FE3C_SANITY_CHECK(curve_id < EDDSA_NUMBER_OF_SUPPORTED_CURVES);
-    FE3C_SANITY_CHECK(curves[curve_id]);
+    FE3C_SANITY_CHECK(curve_id < EDDSA_NUMBER_OF_SUPPORTED_CURVES, NULL);
+    FE3C_SANITY_CHECK(curves[curve_id], NULL);
 
     return curves[curve_id]->b_in_bytes;
 }
 
 int eddsa_get_secret_key_length(eddsa_curve curve_id) {
 
-    FE3C_SANITY_CHECK(curve_id < EDDSA_NUMBER_OF_SUPPORTED_CURVES);
-    FE3C_SANITY_CHECK(curves[curve_id]);
+    FE3C_SANITY_CHECK(curve_id < EDDSA_NUMBER_OF_SUPPORTED_CURVES, NULL);
+    FE3C_SANITY_CHECK(curves[curve_id], NULL);
 
     return curves[curve_id]->b_in_bytes;
 }

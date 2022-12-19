@@ -14,6 +14,12 @@ extern "C" {
 #endif /* !FE3C_32BIT */
 
 #define LOW_28_BITS_MASK  0xfffffff
+#define FE448_STR "0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x"
+#define FE448_TO_STR(x) \
+    x[ 0], x[ 1], x[ 2], x[ 3], \
+    x[ 4], x[ 5], x[ 6], x[ 7], \
+    x[ 8], x[ 9], x[10], x[11], \
+    x[12], x[13], x[14], x[15]
 
 /* Elliptic curve constant d = -39081 */
 static const fe448 ed448_d = {
@@ -426,22 +432,22 @@ static inline void fe_strong_reduce(fe448 r, const fe448 a) {
 static inline void fe_neg(fe448 r, const fe448 a) {
 
     /* Check against underflow */
-    FE3C_SANITY_CHECK(a[ 0] <  0x1ffffffe);
-    FE3C_SANITY_CHECK(a[ 1] <= 0x1ffffffe);
-    FE3C_SANITY_CHECK(a[ 2] <= 0x1ffffffe);
-    FE3C_SANITY_CHECK(a[ 3] <= 0x1ffffffe);
-    FE3C_SANITY_CHECK(a[ 4] <= 0x1ffffffe);
-    FE3C_SANITY_CHECK(a[ 5] <= 0x1ffffffe);
-    FE3C_SANITY_CHECK(a[ 6] <= 0x1ffffffe);
-    FE3C_SANITY_CHECK(a[ 7] <= 0x1ffffffe);
-    FE3C_SANITY_CHECK(a[ 8] <= 0x1ffffffc);
-    FE3C_SANITY_CHECK(a[ 9] <= 0x1ffffffe);
-    FE3C_SANITY_CHECK(a[10] <= 0x1ffffffe);
-    FE3C_SANITY_CHECK(a[11] <= 0x1ffffffe);
-    FE3C_SANITY_CHECK(a[12] <= 0x1ffffffe);
-    FE3C_SANITY_CHECK(a[13] <= 0x1ffffffe);
-    FE3C_SANITY_CHECK(a[14] <= 0x1ffffffe);
-    FE3C_SANITY_CHECK(a[15] <= 0x1ffffffe);
+    FE3C_SANITY_CHECK(a[ 0] <  0x1ffffffe, FE448_STR, FE448_TO_STR(a));
+    FE3C_SANITY_CHECK(a[ 1] <= 0x1ffffffe, FE448_STR, FE448_TO_STR(a));
+    FE3C_SANITY_CHECK(a[ 2] <= 0x1ffffffe, FE448_STR, FE448_TO_STR(a));
+    FE3C_SANITY_CHECK(a[ 3] <= 0x1ffffffe, FE448_STR, FE448_TO_STR(a));
+    FE3C_SANITY_CHECK(a[ 4] <= 0x1ffffffe, FE448_STR, FE448_TO_STR(a));
+    FE3C_SANITY_CHECK(a[ 5] <= 0x1ffffffe, FE448_STR, FE448_TO_STR(a));
+    FE3C_SANITY_CHECK(a[ 6] <= 0x1ffffffe, FE448_STR, FE448_TO_STR(a));
+    FE3C_SANITY_CHECK(a[ 7] <= 0x1ffffffe, FE448_STR, FE448_TO_STR(a));
+    FE3C_SANITY_CHECK(a[ 8] <= 0x1ffffffc, FE448_STR, FE448_TO_STR(a));
+    FE3C_SANITY_CHECK(a[ 9] <= 0x1ffffffe, FE448_STR, FE448_TO_STR(a));
+    FE3C_SANITY_CHECK(a[10] <= 0x1ffffffe, FE448_STR, FE448_TO_STR(a));
+    FE3C_SANITY_CHECK(a[11] <= 0x1ffffffe, FE448_STR, FE448_TO_STR(a));
+    FE3C_SANITY_CHECK(a[12] <= 0x1ffffffe, FE448_STR, FE448_TO_STR(a));
+    FE3C_SANITY_CHECK(a[13] <= 0x1ffffffe, FE448_STR, FE448_TO_STR(a));
+    FE3C_SANITY_CHECK(a[14] <= 0x1ffffffe, FE448_STR, FE448_TO_STR(a));
+    FE3C_SANITY_CHECK(a[15] <= 0x1ffffffe, FE448_STR, FE448_TO_STR(a));
 
     /* Set r to 2p-a so as to not require strong reduction of a */
     r[ 0] = 0x1ffffffe - a[ 0];

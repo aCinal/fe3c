@@ -5,12 +5,12 @@
     #include <points/points_ed448_comb_method.h>
 #endif /* FE3C_OPTIMIZATION_COMB_METHOD */
 
-static inline void ed448_identity(point_ed448 * p) {
-
-    fe_copy(p->X, fe_zero);
-    fe_copy(p->Y, fe_one);
-    fe_copy(p->Z, fe_one);
-}
+#define ED448_STR \
+    "    X = " FE448_STR "\n" \
+    "    Y = " FE448_STR "\n" \
+    "    Z = " FE448_STR
+#define ED448_TO_STR(p) \
+    FE448_TO_STR(p->X), FE448_TO_STR(p->Y), FE448_TO_STR(p->Z)
 
 #if FE3C_ENABLE_SANITY_CHECKS
 static inline int ed448_is_on_curve(const point_ed448 * p) {
@@ -41,6 +41,13 @@ static inline int ed448_is_on_curve(const point_ed448 * p) {
     return fe_equal(fe_zero, y);
 }
 #endif /* FE3C_ENABLE_SANITY_CHECKS */
+
+static inline void ed448_identity(point_ed448 * p) {
+
+    fe_copy(p->X, fe_zero);
+    fe_copy(p->Y, fe_one);
+    fe_copy(p->Z, fe_one);
+}
 
 static int ed448_points_equal(const point * pgen, const point * qgen) {
 
@@ -84,7 +91,7 @@ static void ed448_encode(u8 * buf, const point * pgen) {
     fe_encode(buf, y);
     /* Encode the "sign" of the x coordinate (parity) in the most
      * significant bit of the last byte */
-    FE3C_SANITY_CHECK(buf[56] == 0);
+    FE3C_SANITY_CHECK(buf[56] == 0, "buf[56] = 0x%x", buf[56]);
     buf[56] |= fe_lsb(x) << 7;
 }
 
@@ -210,8 +217,8 @@ static void ed448_points_add(point * rgen, const point * pgen, const point * qge
     const point_ed448 * p = (const point_ed448 *) pgen;
     const point_ed448 * q = (const point_ed448 *) qgen;
 
-    FE3C_SANITY_CHECK(ed448_is_on_curve(p));
-    FE3C_SANITY_CHECK(ed448_is_on_curve(q));
+    FE3C_SANITY_CHECK(ed448_is_on_curve(p), ED448_STR, ED448_TO_STR(p));
+    FE3C_SANITY_CHECK(ed448_is_on_curve(q), ED448_STR, ED448_TO_STR(q));
 
     /* TODO: Reuse some old variables to reduce stack usage */
     fe448 A, B, C, D, E, F, G, H;
@@ -261,7 +268,7 @@ static void ed448_scalar_multiply(point * rgen, const point * pgen, const u8 * s
     point_ed448 * r = (point_ed448 *) rgen;
     const point_ed448 * p = (const point_ed448 *) pgen;
 
-    FE3C_SANITY_CHECK(ed448_is_on_curve(p));
+    FE3C_SANITY_CHECK(ed448_is_on_curve(p), ED448_STR, ED448_TO_STR(p));
 
     point_ed448 R[2];
     ed448_identity(&R[0]);
@@ -386,7 +393,7 @@ static void ed448_multiply_basepoint(point * rgen, const u8 * s) {
         carry >>= 4;
         naf[2 * i + 1] -= carry << 4;
     }
-    FE3C_SANITY_CHECK(carry == 0);
+    FE3C_SANITY_CHECK(carry == 0, NULL);
 
     ed448_identity(r);
     point_ed448 p;

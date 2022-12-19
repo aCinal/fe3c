@@ -44,13 +44,13 @@ static inline void ed448_point_conditional_neg_in_place(point_ed448 * p, int neg
 
 static inline void ed448_comb_read_precomp(point_ed448 * r, u8 j, i8 ijt) {
 
-    FE3C_SANITY_CHECK( j < sizeof(ed448_comb_precomp) );
+    FE3C_SANITY_CHECK(j < sizeof(ed448_comb_precomp), NULL);
 
     /* Check the sign bit, cast ijt to u8 first to counteract sign extension */
     u8 negate = (u8) ijt >> 7;
     /* If the sign bit is set we obtain an identity mask which results in computing (ijt-2ijt) or -ijt */
     u8 ijtabs = ijt - 2 * ((-negate) & ijt);
-    FE3C_SANITY_CHECK( ijtabs <= sizeof(ed448_comb_precomp[0]) );
+    FE3C_SANITY_CHECK(ijtabs <= sizeof(ed448_comb_precomp[0]), "ijt=%d", ijt);
 
     /* Start with the identity - if ijt is 0 then we leave the result as the identity */
     fe_copy(r->X, fe_zero);
