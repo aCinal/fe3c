@@ -11,6 +11,9 @@ extern "C" {
 
 /* Provide constant-time and otherwise secure implementations of common libc functions */
 
+#if FE3C_OPTIMIZATION_SKIP_ZEROIZATION
+#define purge_secrets(...)
+#else
 /**
  * @brief Clear secret data in memory so that erroneous accesses to the same stack space later do not reveal anything
  * @param secrets Buffer to be cleared
@@ -24,6 +27,7 @@ static inline void purge_secrets(void * secrets, size_t size) {
         *p++ = 0;
     }
 }
+#endif /* FE3C_OPTIMIZATION_SKIP_ZEROIZATION */
 
 #if FE3C_ENABLE_SANITY_CHECKS
     #include <stdio.h>

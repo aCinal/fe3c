@@ -401,8 +401,6 @@ TEST(EDDSA_TAMING_THE_MANY_EDDSAS, Test8) {
     };
     int verified = eddsa_verify(&req);
     /* Fail the vector because of small order commitment */
-    /* TODO: This verification should fail because of non-canonical encoding
-     * (sign bit set despite x-coordinate being zero) */
     CHECK_EQUAL(0, verified);
 }
 
@@ -450,8 +448,6 @@ TEST(EDDSA_TAMING_THE_MANY_EDDSAS, Test9) {
     };
     int verified = eddsa_verify(&req);
     /* Fail the vector because of small order commitment */
-    /* TODO: This verification should fail because of non-canonical encoding
-     * (sign bit set despite x-coordinate being zero) */
     CHECK_EQUAL(0, verified);
 }
 
@@ -499,8 +495,6 @@ TEST(EDDSA_TAMING_THE_MANY_EDDSAS, Test10) {
     };
     int verified = eddsa_verify(&req);
     /* Fail the vector because of small order public key */
-    /* TODO: This verification should fail because of non-canonical encoding
-     * (sign bit set despite x-coordinate being zero) */
     CHECK_EQUAL(0, verified);
 }
 
@@ -548,7 +542,5 @@ TEST(EDDSA_TAMING_THE_MANY_EDDSAS, Test11) {
     };
     int verified = eddsa_verify(&req);
     /* Fail the vector because of small order public key */
-    /* TODO: This verification should fail because of non-canonical encoding
-     * (sign bit set despite x-coordinate being zero) */
     CHECK_EQUAL(0, verified);
 }

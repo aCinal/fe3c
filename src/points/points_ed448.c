@@ -1,6 +1,7 @@
 #include <points/points.h>
 #include <scalars/scalars.h>
 #include <field_elements/field_elements_ed448.h>
+#include <utils/utils.h>
 #if FE3C_OPTIMIZATION_COMB_METHOD
     #include <points/points_ed448_comb_method.h>
 #endif /* FE3C_OPTIMIZATION_COMB_METHOD */
@@ -200,8 +201,9 @@ static int ed448_decode(point * pgen, const u8 * buf) {
      * move it into p->X, if the parity of x is incorrect now */
     fe_neg(v, p->X);
     fe_conditional_move(p->X, v, parity ^ fe_lsb(p->X));
-    /* TODO: RFC 8032 dictates that if x0, i.e. parity, is one and x=0, decoding fails.
-     * This is required to have unique codability/decodability of e.g. the identity element. */
+    /* RFC 8032 dictates that if x0, i.e. parity, is one and x=0, decoding fails, but since
+     * the only points with x=0 (i.e. (0, 1) and (0, -1)) are of low order and so we reject
+     * them anyway, we skip this check. */
 
     /* Set Z to one (normalized projective representation) */
     fe_copy(p->Z, fe_one);
@@ -284,6 +286,8 @@ static void ed448_scalar_multiply(point * rgen, const point * pgen, const u8 * s
     }
 
     *r = R[0];
+    purge_secrets(&R[1], sizeof(R[1]));
+
     /* TODO: Study different implementations */
 }
 
@@ -434,6 +438,8 @@ static void ed448_multiply_basepoint(point * rgen, const u8 * s) {
 
     /* Clear the recoding of the secret scalar from the stack */
     purge_secrets(naf, sizeof(naf));
+    /* Clear the last accessed precomputed point */
+    purge_secrets(&p, sizeof(p));
 #endif /* !FE3C_OPTIMIZATION_COMB_METHOD */
 }
 

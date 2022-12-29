@@ -45,7 +45,7 @@ AC_SUBST([AM_CPPFLAGS])
 # -------------------------------- Supported elliptic curves --------------------------------
 ed25519="no"
 AC_ARG_ENABLE([ed25519],
-              [AS_HELP_STRING([--enable-ed25519], [Enable support for the ED25519 curve])],
+              [AS_HELP_STRING([--enable-ed25519], [Enable support for the Ed25519 curve])],
               [AS_IF([test "x$enableval" = "xyes"],
                      [ed25519="yes"],
 
@@ -57,7 +57,7 @@ AS_IF([test "x$ed25519" = "xyes"], AC_DEFINE([FE3C_SUPPORT_CURVE_ED25519]), [])
 
 ed448="no"
 AC_ARG_ENABLE([ed448],
-              [AS_HELP_STRING([--enable-ed448], [Enable support for the ED448 curve])],
+              [AS_HELP_STRING([--enable-ed448], [Enable support for the Ed448 curve])],
               [AS_IF([test "x$enableval" = "xyes"],
                      [ed448="yes"],
 
@@ -92,10 +92,25 @@ AC_ARG_ENABLE([comb-method],
                      [optimization_comb_method="no"],
 
                      [test "x$enableval" != "xyes"],
-                     [AC_MSG_ERROR([bad value ${enableval} for --enable-fast-squaring])])],
+                     [AC_MSG_ERROR([bad value ${enableval} for --enable-comb-method])])],
               [])
 AM_CONDITIONAL([FE3C_OPTIMIZATION_COMB_METHOD], [test "x$optimization_comb_method" = "xyes"])
 AS_IF([test "x$optimization_comb_method" = "xyes"], AC_DEFINE([FE3C_OPTIMIZATION_COMB_METHOD]), [])
+
+optimization_skip_zeroization="no"
+AC_ARG_ENABLE([zeroization],
+              [AS_HELP_STRING([--disable-zeroization],
+                              [Disable zeroization of intermediate results on stack, which may marginally increase
+                               performance and reduce code footprint, but decreases security in systems where stack
+                               is shared with unsafe code, which may read data left behind by crypto operations])],
+              [AS_IF([test "x$enableval" = "xno"],
+                     [optimization_skip_zeroization="yes"],
+
+                     [test "x$enableval" != "xyes"],
+                     [AC_MSG_ERROR([bad value ${enableval} for --enable-zeroization])])],
+              [])
+AM_CONDITIONAL([FE3C_OPTIMIZATION_SKIP_ZEROIZATION], [test "x$optimization_skip_zeroization" = "xyes"])
+AS_IF([test "x$optimization_skip_zeroization" = "xyes"], AC_DEFINE([FE3C_OPTIMIZATION_SKIP_ZEROIZATION]), [])
 
 # -------------------------------------------------------------------------------------------
 
@@ -141,4 +156,5 @@ AC_MSG_RESULT([
 
     Optimized field element squaring:       ${optimization_fast_squaring}
     Comb method for scalar multiplication:  ${optimization_comb_method}
+    Skip secret zeroization on stack:       ${optimization_skip_zeroization}
 ])

@@ -87,6 +87,12 @@ typedef union shake256_state {
     u64 permutation_state_array[5][5];
 } shake256_state;
 
+typedef struct shake256_working_variables {
+    u64 B[5][5];  /**< SHAKE256 intermediate array */
+    u64 C[5];     /**< SHAKE256 intermediate array */
+    u64 D[5];     /**< SHAKE256 intermediate array */
+} shake256_working_variables;
+
 /* Let the compiler allocate the array(s) according to their initializer(s) and later validate the size(s) */
 FE3C_COMPILE_TIME_SANITY_CHECK(sizeof(shake256_state) == SHAKE256_STATE_SIZE_BYTES);
 FE3C_COMPILE_TIME_SANITY_CHECK(sizeof(round_constants) / sizeof(round_constants[0]) == SHAKE256_ROUNDS_COUNT);

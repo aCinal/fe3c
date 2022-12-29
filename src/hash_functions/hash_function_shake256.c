@@ -4,9 +4,9 @@
 /* Note that the SHAKE-256 implementation provided is specifically tailored to EdDSA use and so
  * uses a fixed-length 114-byte output. */
 
-static inline void absorb_block(shake256_state * state, const u8 * block);
-static inline void keccak_f(u64 A[5][5]);
-static inline void keccak_theta(u64 A[5][5]);
+static inline void absorb_block(shake256_state * state, const u8 * block, shake256_working_variables * working_variables);
+static inline void keccak_f(u64 A[5][5], u64 B[5][5], u64 C[5], u64 D[5]);
+static inline void keccak_theta(u64 A[5][5], u64 C[5], u64 D[5]);
 static inline void keccak_chi(u64 A[5][5], const u64 B[5][5]);
 static inline u64 load_64(const u8 src[8]);
 static inline void store_64(u8 * dst, const u64 * src, int bytecount);
@@ -15,6 +15,7 @@ void hash_shake256(u8 * output, const struct iovec * iov, int iovcnt) {
 
     /* Start with an empty state */
     shake256_state state = {};
+    shake256_working_variables working_variables;
     u8 block_buffer[SHAKE256_BLOCK_SIZE_BYTES];
 
     /* Store how much the block buffer has been filled by a previous iteration */
@@ -35,13 +36,13 @@ void hash_shake256(u8 * output, const struct iovec * iov, int iovcnt) {
             input += remaining_space;
             input_length -= remaining_space;
 
-            absorb_block(&state, block_buffer);
+            absorb_block(&state, block_buffer, &working_variables);
 
             /* Continue processing full blocks of the current input buffer (read it directly from the
              * input buffer not from the intermediate block buffer) */
             while (input_length >= SHAKE256_BLOCK_SIZE_BYTES) {
 
-                absorb_block(&state, input);
+                absorb_block(&state, input, &working_variables);
                 input += SHAKE256_BLOCK_SIZE_BYTES;
                 input_length -= SHAKE256_BLOCK_SIZE_BYTES;
             }
@@ -63,16 +64,17 @@ void hash_shake256(u8 * output, const struct iovec * iov, int iovcnt) {
     /* Toggle the last bit of the padding */
     block_buffer[SHAKE256_BLOCK_SIZE_BYTES - 1] |= 0x80;
     /* Absorb the final block */
-    absorb_block(&state, block_buffer);
+    absorb_block(&state, block_buffer, &working_variables);
 
     /* Squeeze 114 bytes of result */
     store_64(output, state.outer_state, SHAKE256_OUTPUT_SIZE_BYTES);
 
-    /* Purge the state */
+    /* Purge the state and the working variables */
     purge_secrets(&state, sizeof(state));
+    purge_secrets(&working_variables, sizeof(working_variables));
 }
 
-static inline void absorb_block(shake256_state * state, const u8 * block) {
+static inline void absorb_block(shake256_state * state, const u8 * block, shake256_working_variables * working_variables) {
 
     /* XOR the block buffer with*/
     for (int j = 0; j < sizeof(state->outer_state) / sizeof(state->outer_state[0]); j++) {
@@ -80,10 +82,15 @@ static inline void absorb_block(shake256_state * state, const u8 * block) {
         state->outer_state[j] ^= load_64(&block[j << 3]);
     }
     /* Apply the Keccak-f permutation to the state */
-    keccak_f(state->permutation_state_array);
+    keccak_f(
+        state->permutation_state_array,
+        working_variables->B,
+        working_variables->C,
+        working_variables->D
+    );
 }
 
-static inline void keccak_f(u64 A[5][5]) {
+static inline void keccak_f(u64 A[5][5], u64 B[5][5], u64 C[5], u64 D[5]) {
 
     /* TODO: Consider preallocating the working space as in SHA512 implementation so as to
      * not leave traces on the stack */
@@ -91,10 +98,9 @@ static inline void keccak_f(u64 A[5][5]) {
     for (int i = 0; i < SHAKE256_ROUNDS_COUNT; i++) {
 
         /* Do the theta step */
-        keccak_theta(A);
+        keccak_theta(A, C, D);
 
         /* Do the rho and pi steps */
-        u64 B[5][5];
         B[0][0] = ROT(A[0][0], rotation_offsets[0][0]);
         B[3][1] = ROT(A[1][0], rotation_offsets[1][0]);
         B[1][2] = ROT(A[2][0], rotation_offsets[2][0]);
@@ -129,10 +135,7 @@ static inline void keccak_f(u64 A[5][5]) {
     }
 }
 
-static inline void keccak_theta(u64 A[5][5]) {
-
-    u64 C[5];
-    u64 D[5];
+static inline void keccak_theta(u64 A[5][5], u64 C[5], u64 D[5]) {
 
     C[0] = A[0][0] ^ A[1][0] ^ A[2][0] ^ A[3][0] ^ A[4][0];
     C[1] = A[0][1] ^ A[1][1] ^ A[2][1] ^ A[3][1] ^ A[4][1];

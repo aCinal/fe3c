@@ -118,25 +118,29 @@ static void ed448_scalar_reduce(u8 * s) {
     /* Ed448 reduction inputs can be 114 bytes long. Use intermediate 56-bit reduced-radix
      * representation during reduction. */
 
+    u128 t[17];
+    u64 x[8];
+    u64 mask;
+
     /* Parse the scalar into limbs */
-    u128 t0  = load_56(&s[ 0 * 7]);
-    u128 t1  = load_56(&s[ 1 * 7]);
-    u128 t2  = load_56(&s[ 2 * 7]);
-    u128 t3  = load_56(&s[ 3 * 7]);
-    u128 t4  = load_56(&s[ 4 * 7]);
-    u128 t5  = load_56(&s[ 5 * 7]);
-    u128 t6  = load_56(&s[ 6 * 7]);
-    u128 t7  = load_56(&s[ 7 * 7]);
-    u128 t8  = load_56(&s[ 8 * 7]);
-    u128 t9  = load_56(&s[ 9 * 7]);
-    u128 t10 = load_56(&s[10 * 7]);
-    u128 t11 = load_56(&s[11 * 7]);
-    u128 t12 = load_56(&s[12 * 7]);
-    u128 t13 = load_56(&s[13 * 7]);
-    u128 t14 = load_56(&s[14 * 7]);
-    u128 t15 = load_56(&s[15 * 7]);
+    t[ 0] = load_56(&s[ 0 * 7]);
+    t[ 1] = load_56(&s[ 1 * 7]);
+    t[ 2] = load_56(&s[ 2 * 7]);
+    t[ 3] = load_56(&s[ 3 * 7]);
+    t[ 4] = load_56(&s[ 4 * 7]);
+    t[ 5] = load_56(&s[ 5 * 7]);
+    t[ 6] = load_56(&s[ 6 * 7]);
+    t[ 7] = load_56(&s[ 7 * 7]);
+    t[ 8] = load_56(&s[ 8 * 7]);
+    t[ 9] = load_56(&s[ 9 * 7]);
+    t[10] = load_56(&s[10 * 7]);
+    t[11] = load_56(&s[11 * 7]);
+    t[12] = load_56(&s[12 * 7]);
+    t[13] = load_56(&s[13 * 7]);
+    t[14] = load_56(&s[14 * 7]);
+    t[15] = load_56(&s[15 * 7]);
     /* Load the trailing 16 bits into t16 */
-    u128 t16 = ( (u128) s[113] << 8 ) | s[112];
+    t[16] = ( (u128) s[113] << 8 ) | s[112];
 
     /* Let L = 2^446 - c denote the group order. We shall split s into x + y 2^446
      * and use the identity:
@@ -148,211 +152,223 @@ static void ed448_scalar_reduce(u8 * s) {
      * larger weights. To compensate this we multiply them by four as we go.
      */
 
-    t4  += t12 * 4 * GROUP_ORDER_SUB_LIMB_0;
-    t5  += t12 * 4 * GROUP_ORDER_SUB_LIMB_1;
-    t6  += t12 * 4 * GROUP_ORDER_SUB_LIMB_2;
-    t7  += t12 * 4 * GROUP_ORDER_SUB_LIMB_3;
+    t[ 4] += t[12] * 4 * GROUP_ORDER_SUB_LIMB_0;
+    t[ 5] += t[12] * 4 * GROUP_ORDER_SUB_LIMB_1;
+    t[ 6] += t[12] * 4 * GROUP_ORDER_SUB_LIMB_2;
+    t[ 7] += t[12] * 4 * GROUP_ORDER_SUB_LIMB_3;
 
-    t5  += t13 * 4 * GROUP_ORDER_SUB_LIMB_0;
-    t6  += t13 * 4 * GROUP_ORDER_SUB_LIMB_1;
-    t7  += t13 * 4 * GROUP_ORDER_SUB_LIMB_2;
-    t8  += t13 * 4 * GROUP_ORDER_SUB_LIMB_3;
+    t[ 5] += t[13] * 4 * GROUP_ORDER_SUB_LIMB_0;
+    t[ 6] += t[13] * 4 * GROUP_ORDER_SUB_LIMB_1;
+    t[ 7] += t[13] * 4 * GROUP_ORDER_SUB_LIMB_2;
+    t[ 8] += t[13] * 4 * GROUP_ORDER_SUB_LIMB_3;
 
-    t6  += t14 * 4 * GROUP_ORDER_SUB_LIMB_0;
-    t7  += t14 * 4 * GROUP_ORDER_SUB_LIMB_1;
-    t8  += t14 * 4 * GROUP_ORDER_SUB_LIMB_2;
-    t9  += t14 * 4 * GROUP_ORDER_SUB_LIMB_3;
+    t[ 6] += t[14] * 4 * GROUP_ORDER_SUB_LIMB_0;
+    t[ 7] += t[14] * 4 * GROUP_ORDER_SUB_LIMB_1;
+    t[ 8] += t[14] * 4 * GROUP_ORDER_SUB_LIMB_2;
+    t[ 9] += t[14] * 4 * GROUP_ORDER_SUB_LIMB_3;
 
-    t7  += t15 * 4 * GROUP_ORDER_SUB_LIMB_0;
-    t8  += t15 * 4 * GROUP_ORDER_SUB_LIMB_1;
-    t9  += t15 * 4 * GROUP_ORDER_SUB_LIMB_2;
-    t10 += t15 * 4 * GROUP_ORDER_SUB_LIMB_3;
+    t[ 7] += t[15] * 4 * GROUP_ORDER_SUB_LIMB_0;
+    t[ 8] += t[15] * 4 * GROUP_ORDER_SUB_LIMB_1;
+    t[ 9] += t[15] * 4 * GROUP_ORDER_SUB_LIMB_2;
+    t[10] += t[15] * 4 * GROUP_ORDER_SUB_LIMB_3;
 
-    t8  += t16 * 4 * GROUP_ORDER_SUB_LIMB_0;
-    t9  += t16 * 4 * GROUP_ORDER_SUB_LIMB_1;
-    t10 += t16 * 4 * GROUP_ORDER_SUB_LIMB_2;
-    t11 += t16 * 4 * GROUP_ORDER_SUB_LIMB_3;
+    t[ 8] += t[16] * 4 * GROUP_ORDER_SUB_LIMB_0;
+    t[ 9] += t[16] * 4 * GROUP_ORDER_SUB_LIMB_1;
+    t[10] += t[16] * 4 * GROUP_ORDER_SUB_LIMB_2;
+    t[11] += t[16] * 4 * GROUP_ORDER_SUB_LIMB_3;
 
     /* Do a partial reduction of the limbs we have been working with above
      * to ensure no overflows occur */
-    t5  += t4  >> 56;  t4  &= LOW_56_BITS_MASK;
-    t6  += t5  >> 56;  t5  &= LOW_56_BITS_MASK;
-    t7  += t6  >> 56;  t6  &= LOW_56_BITS_MASK;
-    t8  += t7  >> 56;  t7  &= LOW_56_BITS_MASK;
-    t9  += t8  >> 56;  t8  &= LOW_56_BITS_MASK;
-    t10 += t9  >> 56;  t9  &= LOW_56_BITS_MASK;
-    t11 += t10 >> 56;  t10 &= LOW_56_BITS_MASK;
+    t[ 5] += t[ 4] >> 56;  t[ 4] &= LOW_56_BITS_MASK;
+    t[ 6] += t[ 5] >> 56;  t[ 5] &= LOW_56_BITS_MASK;
+    t[ 7] += t[ 6] >> 56;  t[ 6] &= LOW_56_BITS_MASK;
+    t[ 8] += t[ 7] >> 56;  t[ 7] &= LOW_56_BITS_MASK;
+    t[ 9] += t[ 8] >> 56;  t[ 8] &= LOW_56_BITS_MASK;
+    t[10] += t[ 9] >> 56;  t[ 9] &= LOW_56_BITS_MASK;
+    t[11] += t[10] >> 56;  t[10] &= LOW_56_BITS_MASK;
     /* Use t12 to store the overflow of t11 */
-    t12  = t11 >> 56;  t11 &= LOW_56_BITS_MASK;
+    t[12]  = t[11] >> 56;  t[11] &= LOW_56_BITS_MASK;
 
-    t0  += t8  * 4 * GROUP_ORDER_SUB_LIMB_0;
-    t1  += t8  * 4 * GROUP_ORDER_SUB_LIMB_1;
-    t2  += t8  * 4 * GROUP_ORDER_SUB_LIMB_2;
-    t3  += t8  * 4 * GROUP_ORDER_SUB_LIMB_3;
+    t[ 0] += t[ 8] * 4 * GROUP_ORDER_SUB_LIMB_0;
+    t[ 1] += t[ 8] * 4 * GROUP_ORDER_SUB_LIMB_1;
+    t[ 2] += t[ 8] * 4 * GROUP_ORDER_SUB_LIMB_2;
+    t[ 3] += t[ 8] * 4 * GROUP_ORDER_SUB_LIMB_3;
 
-    t1  += t9  * 4 * GROUP_ORDER_SUB_LIMB_0;
-    t2  += t9  * 4 * GROUP_ORDER_SUB_LIMB_1;
-    t3  += t9  * 4 * GROUP_ORDER_SUB_LIMB_2;
-    t4  += t9  * 4 * GROUP_ORDER_SUB_LIMB_3;
+    t[ 1] += t[ 9] * 4 * GROUP_ORDER_SUB_LIMB_0;
+    t[ 2] += t[ 9] * 4 * GROUP_ORDER_SUB_LIMB_1;
+    t[ 3] += t[ 9] * 4 * GROUP_ORDER_SUB_LIMB_2;
+    t[ 4] += t[ 9] * 4 * GROUP_ORDER_SUB_LIMB_3;
 
-    t2  += t10 * 4 * GROUP_ORDER_SUB_LIMB_0;
-    t3  += t10 * 4 * GROUP_ORDER_SUB_LIMB_1;
-    t4  += t10 * 4 * GROUP_ORDER_SUB_LIMB_2;
-    t5  += t10 * 4 * GROUP_ORDER_SUB_LIMB_3;
+    t[ 2] += t[10] * 4 * GROUP_ORDER_SUB_LIMB_0;
+    t[ 3] += t[10] * 4 * GROUP_ORDER_SUB_LIMB_1;
+    t[ 4] += t[10] * 4 * GROUP_ORDER_SUB_LIMB_2;
+    t[ 5] += t[10] * 4 * GROUP_ORDER_SUB_LIMB_3;
 
-    t3  += t11 * 4 * GROUP_ORDER_SUB_LIMB_0;
-    t4  += t11 * 4 * GROUP_ORDER_SUB_LIMB_1;
-    t5  += t11 * 4 * GROUP_ORDER_SUB_LIMB_2;
-    t6  += t11 * 4 * GROUP_ORDER_SUB_LIMB_3;
+    t[ 3] += t[11] * 4 * GROUP_ORDER_SUB_LIMB_0;
+    t[ 4] += t[11] * 4 * GROUP_ORDER_SUB_LIMB_1;
+    t[ 5] += t[11] * 4 * GROUP_ORDER_SUB_LIMB_2;
+    t[ 6] += t[11] * 4 * GROUP_ORDER_SUB_LIMB_3;
 
-    t4  += t12 * 4 * GROUP_ORDER_SUB_LIMB_0;
-    t5  += t12 * 4 * GROUP_ORDER_SUB_LIMB_1;
-    t6  += t12 * 4 * GROUP_ORDER_SUB_LIMB_2;
-    t7  += t12 * 4 * GROUP_ORDER_SUB_LIMB_3;
+    t[ 4] += t[12] * 4 * GROUP_ORDER_SUB_LIMB_0;
+    t[ 5] += t[12] * 4 * GROUP_ORDER_SUB_LIMB_1;
+    t[ 6] += t[12] * 4 * GROUP_ORDER_SUB_LIMB_2;
+    t[ 7] += t[12] * 4 * GROUP_ORDER_SUB_LIMB_3;
 
-    t1  += t0  >> 56;  t0  &= LOW_56_BITS_MASK;
-    t2  += t1  >> 56;  t1  &= LOW_56_BITS_MASK;
-    t3  += t2  >> 56;  t2  &= LOW_56_BITS_MASK;
-    t4  += t3  >> 56;  t3  &= LOW_56_BITS_MASK;
-    t5  += t4  >> 56;  t4  &= LOW_56_BITS_MASK;
-    t6  += t5  >> 56;  t5  &= LOW_56_BITS_MASK;
-    t7  += t6  >> 56;  t6  &= LOW_56_BITS_MASK;
+    t[ 1] += t[ 0] >> 56;  t[ 0] &= LOW_56_BITS_MASK;
+    t[ 2] += t[ 1] >> 56;  t[ 1] &= LOW_56_BITS_MASK;
+    t[ 3] += t[ 2] >> 56;  t[ 2] &= LOW_56_BITS_MASK;
+    t[ 4] += t[ 3] >> 56;  t[ 3] &= LOW_56_BITS_MASK;
+    t[ 5] += t[ 4] >> 56;  t[ 4] &= LOW_56_BITS_MASK;
+    t[ 6] += t[ 5] >> 56;  t[ 5] &= LOW_56_BITS_MASK;
+    t[ 7] += t[ 6] >> 56;  t[ 6] &= LOW_56_BITS_MASK;
     /* Use t8 to store the overflow of t7 */
-    t8   = t7  >> 56;  t7  &= LOW_56_BITS_MASK;
+    t[ 8]  = t[ 7] >> 56;  t[ 7] &= LOW_56_BITS_MASK;
 
     /* Bring down whatever has bubbled up into t8 */
-    t0  += t8  * 4 * GROUP_ORDER_SUB_LIMB_0;
-    t1  += t8  * 4 * GROUP_ORDER_SUB_LIMB_1;
-    t2  += t8  * 4 * GROUP_ORDER_SUB_LIMB_2;
-    t3  += t8  * 4 * GROUP_ORDER_SUB_LIMB_3;
+    t[ 0] += t[ 8] * 4 * GROUP_ORDER_SUB_LIMB_0;
+    t[ 1] += t[ 8] * 4 * GROUP_ORDER_SUB_LIMB_1;
+    t[ 2] += t[ 8] * 4 * GROUP_ORDER_SUB_LIMB_2;
+    t[ 3] += t[ 8] * 4 * GROUP_ORDER_SUB_LIMB_3;
 
-    t1  += t0  >> 56;  t0  &= LOW_56_BITS_MASK;
-    t2  += t1  >> 56;  t1  &= LOW_56_BITS_MASK;
-    t3  += t2  >> 56;  t2  &= LOW_56_BITS_MASK;
-    t4  += t3  >> 56;  t3  &= LOW_56_BITS_MASK;
-    t5  += t4  >> 56;  t4  &= LOW_56_BITS_MASK;
-    t6  += t5  >> 56;  t5  &= LOW_56_BITS_MASK;
-    t7  += t6  >> 56;  t6  &= LOW_56_BITS_MASK;
+    t[ 1] += t[ 0] >> 56;  t[ 0] &= LOW_56_BITS_MASK;
+    t[ 2] += t[ 1] >> 56;  t[ 1] &= LOW_56_BITS_MASK;
+    t[ 3] += t[ 2] >> 56;  t[ 2] &= LOW_56_BITS_MASK;
+    t[ 4] += t[ 3] >> 56;  t[ 3] &= LOW_56_BITS_MASK;
+    t[ 5] += t[ 4] >> 56;  t[ 4] &= LOW_56_BITS_MASK;
+    t[ 6] += t[ 5] >> 56;  t[ 5] &= LOW_56_BITS_MASK;
+    t[ 7] += t[ 6] >> 56;  t[ 6] &= LOW_56_BITS_MASK;
     /* Use t8 to store the overflow of t7. Note that at this point
      * we also set t7 to its canonical form which is 54-bits wide. */
-    t8   = t7  >> 54;  t7  &= LOW_54_BITS_MASK;
+    t[ 8]  = t[ 7] >> 54;  t[ 7]  &= LOW_54_BITS_MASK;
 
     /* Note that the "shift by two" has already been accounted for */
-    t0  += t8  * GROUP_ORDER_SUB_LIMB_0;
-    t1  += t8  * GROUP_ORDER_SUB_LIMB_1;
-    t2  += t8  * GROUP_ORDER_SUB_LIMB_2;
-    t3  += t8  * GROUP_ORDER_SUB_LIMB_3;
+    t[ 0] += t[ 8] * GROUP_ORDER_SUB_LIMB_0;
+    t[ 1] += t[ 8] * GROUP_ORDER_SUB_LIMB_1;
+    t[ 2] += t[ 8] * GROUP_ORDER_SUB_LIMB_2;
+    t[ 3] += t[ 8] * GROUP_ORDER_SUB_LIMB_3;
 
     /* Do one final weak reduction */
-    t1  += t0  >> 56;  t0  &= LOW_56_BITS_MASK;
-    t2  += t1  >> 56;  t1  &= LOW_56_BITS_MASK;
-    t3  += t2  >> 56;  t2  &= LOW_56_BITS_MASK;
-    t4  += t3  >> 56;  t3  &= LOW_56_BITS_MASK;
-    t5  += t4  >> 56;  t4  &= LOW_56_BITS_MASK;
-    t6  += t5  >> 56;  t5  &= LOW_56_BITS_MASK;
-    t7  += t6  >> 56;  t6  &= LOW_56_BITS_MASK;
-    t7  &= LOW_54_BITS_MASK;
+    t[ 1] += t[ 0] >> 56;  t[ 0] &= LOW_56_BITS_MASK;
+    t[ 2] += t[ 1] >> 56;  t[ 1] &= LOW_56_BITS_MASK;
+    t[ 3] += t[ 2] >> 56;  t[ 2] &= LOW_56_BITS_MASK;
+    t[ 4] += t[ 3] >> 56;  t[ 3] &= LOW_56_BITS_MASK;
+    t[ 5] += t[ 4] >> 56;  t[ 4] &= LOW_56_BITS_MASK;
+    t[ 6] += t[ 5] >> 56;  t[ 5] &= LOW_56_BITS_MASK;
+    t[ 7] += t[ 6] >> 56;  t[ 6] &= LOW_56_BITS_MASK;
+    t[ 7] &= LOW_54_BITS_MASK;
 
     /* By this point we have done a "relaxed reduction", i.e. s is in the range
      * [0, 2*L). Compute s-L and conditionally use it as a result if s is still
      * larger than or equal to L. Start by computing s+c, where c = 2^446 - L.
      * To limit stack usage, reuse the t8-t15 limbs. */
-    t8  = t0 + GROUP_ORDER_SUB_LIMB_0;
-    t9  = t1 + GROUP_ORDER_SUB_LIMB_1;
-    t10 = t2 + GROUP_ORDER_SUB_LIMB_2;
-    t11 = t3 + GROUP_ORDER_SUB_LIMB_3;
-    t12 = t4;
-    t13 = t5;
-    t14 = t6;
-    t15 = t7;
+    t[ 8] = t[ 0] + GROUP_ORDER_SUB_LIMB_0;
+    t[ 9] = t[ 1] + GROUP_ORDER_SUB_LIMB_1;
+    t[10] = t[ 2] + GROUP_ORDER_SUB_LIMB_2;
+    t[11] = t[ 3] + GROUP_ORDER_SUB_LIMB_3;
+    t[12] = t[ 4];
+    t[13] = t[ 5];
+    t[14] = t[ 6];
+    t[15] = t[ 7];
 
     /* Normalize the result, i.e. propagate the overflows upwards */
-    t9  += t8  >> 56;  t8  &= LOW_56_BITS_MASK;
-    t10 += t9  >> 56;  t9  &= LOW_56_BITS_MASK;
-    t11 += t10 >> 56;  t10 &= LOW_56_BITS_MASK;
-    t12 += t11 >> 56;  t11 &= LOW_56_BITS_MASK;
-    t13 += t12 >> 56;  t12 &= LOW_56_BITS_MASK;
-    t14 += t13 >> 56;  t13 &= LOW_56_BITS_MASK;
-    t15 += t14 >> 56;  t14 &= LOW_56_BITS_MASK;
+    t[ 9] += t[ 8] >> 56;  t[ 8] &= LOW_56_BITS_MASK;
+    t[10] += t[ 9] >> 56;  t[ 9] &= LOW_56_BITS_MASK;
+    t[11] += t[10] >> 56;  t[10] &= LOW_56_BITS_MASK;
+    t[12] += t[11] >> 56;  t[11] &= LOW_56_BITS_MASK;
+    t[13] += t[12] >> 56;  t[12] &= LOW_56_BITS_MASK;
+    t[14] += t[13] >> 56;  t[13] &= LOW_56_BITS_MASK;
+    t[15] += t[14] >> 56;  t[14] &= LOW_56_BITS_MASK;
     /* At this point t15 contains the highest limb of s + c (extended to 128 bits).
      * Try subtracting 2^446. */
-    t15 -= 1ULL << 54;
+    t[15] -= 1ULL << 54;
     /* Check if the subtraction resulted in an underflow and use the result to create
      * a mask for a conditional move. */
-    u64 mask = (u64)( -(i64)( (t15 >> 127) ^ 1 ) );
+    mask = (u64)( -(i64)( (t[15] >> 127) ^ 1 ) );
     /* If the subtraction underflowed, then mask is set to all zeroes and we will
      * discard limbs t9-t15. Otherwise we will use them as the result. */
-    t15 &= LOW_54_BITS_MASK;
+    t[15] &= LOW_54_BITS_MASK;
 
-    u64 x0 = t0 ^ t8;
-    u64 x1 = t1 ^ t9;
-    u64 x2 = t2 ^ t10;
-    u64 x3 = t3 ^ t11;
-    u64 x4 = t4 ^ t12;
-    u64 x5 = t5 ^ t13;
-    u64 x6 = t6 ^ t14;
-    u64 x7 = t7 ^ t15;
-    x0 &= mask;
-    x1 &= mask;
-    x2 &= mask;
-    x3 &= mask;
-    x4 &= mask;
-    x5 &= mask;
-    x6 &= mask;
-    x7 &= mask;
+    x[0] = t[0] ^ t[ 8];
+    x[1] = t[1] ^ t[ 9];
+    x[2] = t[2] ^ t[10];
+    x[3] = t[3] ^ t[11];
+    x[4] = t[4] ^ t[12];
+    x[5] = t[5] ^ t[13];
+    x[6] = t[6] ^ t[14];
+    x[7] = t[7] ^ t[15];
 
-    t0 ^= x0;
-    t1 ^= x1;
-    t2 ^= x2;
-    t3 ^= x3;
-    t4 ^= x4;
-    t5 ^= x5;
-    t6 ^= x6;
-    t7 ^= x7;
+    x[0] &= mask;
+    x[1] &= mask;
+    x[2] &= mask;
+    x[3] &= mask;
+    x[4] &= mask;
+    x[5] &= mask;
+    x[6] &= mask;
+    x[7] &= mask;
 
-    store_56(&s[0 * 7], t0);
-    store_56(&s[1 * 7], t1);
-    store_56(&s[2 * 7], t2);
-    store_56(&s[3 * 7], t3);
-    store_56(&s[4 * 7], t4);
-    store_56(&s[5 * 7], t5);
-    store_56(&s[6 * 7], t6);
-    store_56(&s[7 * 7], t7);
+    t[0] ^= x[0];
+    t[1] ^= x[1];
+    t[2] ^= x[2];
+    t[3] ^= x[3];
+    t[4] ^= x[4];
+    t[5] ^= x[5];
+    t[6] ^= x[6];
+    t[7] ^= x[7];
+
+    store_56(&s[0 * 7], t[0]);
+    store_56(&s[1 * 7], t[1]);
+    store_56(&s[2 * 7], t[2]);
+    store_56(&s[3 * 7], t[3]);
+    store_56(&s[4 * 7], t[4]);
+    store_56(&s[5 * 7], t[5]);
+    store_56(&s[6 * 7], t[6]);
+    store_56(&s[7 * 7], t[7]);
     /* Set the last byte to 0 */
     s[56] = 0;
+
+    purge_secrets(t, sizeof(t));
+    purge_secrets(x, sizeof(x));
+    purge_secrets(&mask, sizeof(mask));
 }
 
-static void ed448_scalars_muladd(u8 * r, const u8 * a, const u8 * b, const u8 * c) {
+static void ed448_scalars_muladd(u8 * r, const u8 * aa, const u8 * bb, const u8 * cc) {
 
     /* Ed448 multiplication+addition inputs must be 57 (56) bytes long. Use intermediate
      * 56-bit reduced-radix representation. */
 
-    u128 a0 = load_56(&a[0 * 7]);
-    u128 a1 = load_56(&a[1 * 7]);
-    u128 a2 = load_56(&a[2 * 7]);
-    u128 a3 = load_56(&a[3 * 7]);
-    u128 a4 = load_56(&a[4 * 7]);
-    u128 a5 = load_56(&a[5 * 7]);
-    u128 a6 = load_56(&a[6 * 7]);
-    u128 a7 = load_56(&a[7 * 7]);
+    u128 a[8];
+    u128 b[8];
+    u128 c[8];
+    u128 t[16];
+    u64 x[8];
+    u64 mask;
 
-    u128 b0 = load_56(&b[0 * 7]);
-    u128 b1 = load_56(&b[1 * 7]);
-    u128 b2 = load_56(&b[2 * 7]);
-    u128 b3 = load_56(&b[3 * 7]);
-    u128 b4 = load_56(&b[4 * 7]);
-    u128 b5 = load_56(&b[5 * 7]);
-    u128 b6 = load_56(&b[6 * 7]);
-    u128 b7 = load_56(&b[7 * 7]);
+    a[0] = load_56(&aa[0 * 7]);
+    a[1] = load_56(&aa[1 * 7]);
+    a[2] = load_56(&aa[2 * 7]);
+    a[3] = load_56(&aa[3 * 7]);
+    a[4] = load_56(&aa[4 * 7]);
+    a[5] = load_56(&aa[5 * 7]);
+    a[6] = load_56(&aa[6 * 7]);
+    a[7] = load_56(&aa[7 * 7]);
 
-    u128 c0 = load_56(&c[0 * 7]);
-    u128 c1 = load_56(&c[1 * 7]);
-    u128 c2 = load_56(&c[2 * 7]);
-    u128 c3 = load_56(&c[3 * 7]);
-    u128 c4 = load_56(&c[4 * 7]);
-    u128 c5 = load_56(&c[5 * 7]);
-    u128 c6 = load_56(&c[6 * 7]);
-    u128 c7 = load_56(&c[7 * 7]);
+    b[0] = load_56(&bb[0 * 7]);
+    b[1] = load_56(&bb[1 * 7]);
+    b[2] = load_56(&bb[2 * 7]);
+    b[3] = load_56(&bb[3 * 7]);
+    b[4] = load_56(&bb[4 * 7]);
+    b[5] = load_56(&bb[5 * 7]);
+    b[6] = load_56(&bb[6 * 7]);
+    b[7] = load_56(&bb[7 * 7]);
+
+    c[0] = load_56(&cc[0 * 7]);
+    c[1] = load_56(&cc[1 * 7]);
+    c[2] = load_56(&cc[2 * 7]);
+    c[3] = load_56(&cc[3 * 7]);
+    c[4] = load_56(&cc[4 * 7]);
+    c[5] = load_56(&cc[5 * 7]);
+    c[6] = load_56(&cc[6 * 7]);
+    c[7] = load_56(&cc[7 * 7]);
 
     /* Do the naive schoolbook multiplication - note that a*b takes 15 (16 with carry) limbs
      * (columns in the multplication algorithm). Offset the first 8 limbs by the limbs of c
@@ -371,40 +387,39 @@ static void ed448_scalars_muladd(u8 * r, const u8 * a, const u8 * b, const u8 * 
      *                                                     c7     c6     c5     c4     c3     c2     c1     c0
      */
 
-    u128 t0  = c0 + a0*b0;
-    u128 t1  = c1 + a0*b1 + a1*b0;
-    u128 t2  = c2 + a0*b2 + a1*b1 + a2*b0;
-    u128 t3  = c3 + a0*b3 + a1*b2 + a2*b1 + a3*b0;
-    u128 t4  = c4 + a0*b4 + a1*b3 + a2*b2 + a3*b1 + a4*b0;
-    u128 t5  = c5 + a0*b5 + a1*b4 + a2*b3 + a3*b2 + a4*b1 + a5*b0;
-    u128 t6  = c6 + a0*b6 + a1*b5 + a2*b4 + a3*b3 + a4*b2 + a5*b1 + a6*b0;
-    u128 t7  = c7 + a0*b7 + a1*b6 + a2*b5 + a3*b4 + a4*b3 + a5*b2 + a6*b1 + a7*b0;
-    u128 t8  =              a1*b7 + a2*b6 + a3*b5 + a4*b4 + a5*b3 + a6*b2 + a7*b1;
-    u128 t9  =                      a2*b7 + a3*b6 + a4*b5 + a5*b4 + a6*b3 + a7*b2;
-    u128 t10 =                              a3*b7 + a4*b6 + a5*b5 + a6*b4 + a7*b3;
-    u128 t11 =                                      a4*b7 + a5*b6 + a6*b5 + a7*b4;
-    u128 t12 =                                              a5*b7 + a6*b6 + a7*b5;
-    u128 t13 =                                                      a6*b7 + a7*b6;
-    u128 t14 =                                                              a7*b7;
-    u128 t15;
+    t[ 0] = c[0] + a[0]*b[0];
+    t[ 1] = c[1] + a[0]*b[1] + a[1]*b[0];
+    t[ 2] = c[2] + a[0]*b[2] + a[1]*b[1] + a[2]*b[0];
+    t[ 3] = c[3] + a[0]*b[3] + a[1]*b[2] + a[2]*b[1] + a[3]*b[0];
+    t[ 4] = c[4] + a[0]*b[4] + a[1]*b[3] + a[2]*b[2] + a[3]*b[1] + a[4]*b[0];
+    t[ 5] = c[5] + a[0]*b[5] + a[1]*b[4] + a[2]*b[3] + a[3]*b[2] + a[4]*b[1] + a[5]*b[0];
+    t[ 6] = c[6] + a[0]*b[6] + a[1]*b[5] + a[2]*b[4] + a[3]*b[3] + a[4]*b[2] + a[5]*b[1] + a[6]*b[0];
+    t[ 7] = c[7] + a[0]*b[7] + a[1]*b[6] + a[2]*b[5] + a[3]*b[4] + a[4]*b[3] + a[5]*b[2] + a[6]*b[1] + a[7]*b[0];
+    t[ 8] =                    a[1]*b[7] + a[2]*b[6] + a[3]*b[5] + a[4]*b[4] + a[5]*b[3] + a[6]*b[2] + a[7]*b[1];
+    t[ 9] =                                a[2]*b[7] + a[3]*b[6] + a[4]*b[5] + a[5]*b[4] + a[6]*b[3] + a[7]*b[2];
+    t[10] =                                            a[3]*b[7] + a[4]*b[6] + a[5]*b[5] + a[6]*b[4] + a[7]*b[3];
+    t[11] =                                                        a[4]*b[7] + a[5]*b[6] + a[6]*b[5] + a[7]*b[4];
+    t[12] =                                                                    a[5]*b[7] + a[6]*b[6] + a[7]*b[5];
+    t[13] =                                                                                a[6]*b[7] + a[7]*b[6];
+    t[14] =                                                                                            a[7]*b[7];
 
     /* Normalize the limbs to identify the overflow */
-    t1  += t0  >> 56;  t0  &= LOW_56_BITS_MASK;
-    t2  += t1  >> 56;  t1  &= LOW_56_BITS_MASK;
-    t3  += t2  >> 56;  t2  &= LOW_56_BITS_MASK;
-    t4  += t3  >> 56;  t3  &= LOW_56_BITS_MASK;
-    t5  += t4  >> 56;  t4  &= LOW_56_BITS_MASK;
-    t6  += t5  >> 56;  t5  &= LOW_56_BITS_MASK;
-    t7  += t6  >> 56;  t6  &= LOW_56_BITS_MASK;
-    t8  += t7  >> 56;  t7  &= LOW_56_BITS_MASK;
-    t9  += t8  >> 56;  t8  &= LOW_56_BITS_MASK;
-    t10 += t9  >> 56;  t9  &= LOW_56_BITS_MASK;
-    t11 += t10 >> 56;  t10 &= LOW_56_BITS_MASK;
-    t12 += t11 >> 56;  t11 &= LOW_56_BITS_MASK;
-    t13 += t12 >> 56;  t12 &= LOW_56_BITS_MASK;
-    t14 += t13 >> 56;  t13 &= LOW_56_BITS_MASK;
+    t[ 1] += t[ 0] >> 56;  t[ 0] &= LOW_56_BITS_MASK;
+    t[ 2] += t[ 1] >> 56;  t[ 1] &= LOW_56_BITS_MASK;
+    t[ 3] += t[ 2] >> 56;  t[ 2] &= LOW_56_BITS_MASK;
+    t[ 4] += t[ 3] >> 56;  t[ 3] &= LOW_56_BITS_MASK;
+    t[ 5] += t[ 4] >> 56;  t[ 4] &= LOW_56_BITS_MASK;
+    t[ 6] += t[ 5] >> 56;  t[ 5] &= LOW_56_BITS_MASK;
+    t[ 7] += t[ 6] >> 56;  t[ 6] &= LOW_56_BITS_MASK;
+    t[ 8] += t[ 7] >> 56;  t[ 7] &= LOW_56_BITS_MASK;
+    t[ 9] += t[ 8] >> 56;  t[ 8] &= LOW_56_BITS_MASK;
+    t[10] += t[ 9] >> 56;  t[ 9] &= LOW_56_BITS_MASK;
+    t[11] += t[10] >> 56;  t[10] &= LOW_56_BITS_MASK;
+    t[12] += t[11] >> 56;  t[11] &= LOW_56_BITS_MASK;
+    t[13] += t[12] >> 56;  t[12] &= LOW_56_BITS_MASK;
+    t[14] += t[13] >> 56;  t[13] &= LOW_56_BITS_MASK;
     /* Use t15 to store the overflow of t14 */
-    t15  = t14 >> 56;  t14 &= LOW_56_BITS_MASK;
+    t[15]  = t[14] >> 56;  t[14] &= LOW_56_BITS_MASK;
 
     /* Bring down the limbs that exceed 2^446 according to the identity:
      *
@@ -415,157 +430,170 @@ static void ed448_scalars_muladd(u8 * r, const u8 * a, const u8 * b, const u8 * 
      * by four (due to how the scalars were parsed and handled).
      */
 
-    t4  += t12 * 4 * GROUP_ORDER_SUB_LIMB_0;
-    t5  += t12 * 4 * GROUP_ORDER_SUB_LIMB_1;
-    t6  += t12 * 4 * GROUP_ORDER_SUB_LIMB_2;
-    t7  += t12 * 4 * GROUP_ORDER_SUB_LIMB_3;
+    t[ 4] += t[12] * 4 * GROUP_ORDER_SUB_LIMB_0;
+    t[ 5] += t[12] * 4 * GROUP_ORDER_SUB_LIMB_1;
+    t[ 6] += t[12] * 4 * GROUP_ORDER_SUB_LIMB_2;
+    t[ 7] += t[12] * 4 * GROUP_ORDER_SUB_LIMB_3;
 
-    t5  += t13 * 4 * GROUP_ORDER_SUB_LIMB_0;
-    t6  += t13 * 4 * GROUP_ORDER_SUB_LIMB_1;
-    t7  += t13 * 4 * GROUP_ORDER_SUB_LIMB_2;
-    t8  += t13 * 4 * GROUP_ORDER_SUB_LIMB_3;
+    t[ 5] += t[13] * 4 * GROUP_ORDER_SUB_LIMB_0;
+    t[ 6] += t[13] * 4 * GROUP_ORDER_SUB_LIMB_1;
+    t[ 7] += t[13] * 4 * GROUP_ORDER_SUB_LIMB_2;
+    t[ 8] += t[13] * 4 * GROUP_ORDER_SUB_LIMB_3;
 
-    t6  += t14 * 4 * GROUP_ORDER_SUB_LIMB_0;
-    t7  += t14 * 4 * GROUP_ORDER_SUB_LIMB_1;
-    t8  += t14 * 4 * GROUP_ORDER_SUB_LIMB_2;
-    t9  += t14 * 4 * GROUP_ORDER_SUB_LIMB_3;
+    t[ 6] += t[14] * 4 * GROUP_ORDER_SUB_LIMB_0;
+    t[ 7] += t[14] * 4 * GROUP_ORDER_SUB_LIMB_1;
+    t[ 8] += t[14] * 4 * GROUP_ORDER_SUB_LIMB_2;
+    t[ 9] += t[14] * 4 * GROUP_ORDER_SUB_LIMB_3;
 
-    t7  += t15 * 4 * GROUP_ORDER_SUB_LIMB_0;
-    t8  += t15 * 4 * GROUP_ORDER_SUB_LIMB_1;
-    t9  += t15 * 4 * GROUP_ORDER_SUB_LIMB_2;
-    t10 += t15 * 4 * GROUP_ORDER_SUB_LIMB_3;
+    t[ 7] += t[15] * 4 * GROUP_ORDER_SUB_LIMB_0;
+    t[ 8] += t[15] * 4 * GROUP_ORDER_SUB_LIMB_1;
+    t[ 9] += t[15] * 4 * GROUP_ORDER_SUB_LIMB_2;
+    t[10] += t[15] * 4 * GROUP_ORDER_SUB_LIMB_3;
 
     /* Do a partial reduction of the limbs we have been working with above
      * to ensure no overflows occur */
-    t5  += t4  >> 56;  t4  &= LOW_56_BITS_MASK;
-    t6  += t5  >> 56;  t5  &= LOW_56_BITS_MASK;
-    t7  += t6  >> 56;  t6  &= LOW_56_BITS_MASK;
-    t8  += t7  >> 56;  t7  &= LOW_56_BITS_MASK;
-    t9  += t8  >> 56;  t8  &= LOW_56_BITS_MASK;
-    t10 += t9  >> 56;  t9  &= LOW_56_BITS_MASK;
-    t11 += t10 >> 56;  t10 &= LOW_56_BITS_MASK;
+    t[ 5] += t[ 4] >> 56;  t[ 4] &= LOW_56_BITS_MASK;
+    t[ 6] += t[ 5] >> 56;  t[ 5] &= LOW_56_BITS_MASK;
+    t[ 7] += t[ 6] >> 56;  t[ 6] &= LOW_56_BITS_MASK;
+    t[ 8] += t[ 7] >> 56;  t[ 7] &= LOW_56_BITS_MASK;
+    t[ 9] += t[ 8] >> 56;  t[ 8] &= LOW_56_BITS_MASK;
+    t[10] += t[ 9] >> 56;  t[ 9] &= LOW_56_BITS_MASK;
+    t[11] += t[10] >> 56;  t[10] &= LOW_56_BITS_MASK;
     /* Use t12 to store the overflow of t11 */
-    t12  = t11 >> 56;  t11 &= LOW_56_BITS_MASK;
+    t[12]  = t[11] >> 56;  t[11] &= LOW_56_BITS_MASK;
 
-    t0  += t8  * 4 * GROUP_ORDER_SUB_LIMB_0;
-    t1  += t8  * 4 * GROUP_ORDER_SUB_LIMB_1;
-    t2  += t8  * 4 * GROUP_ORDER_SUB_LIMB_2;
-    t3  += t8  * 4 * GROUP_ORDER_SUB_LIMB_3;
+    t[ 0] += t[ 8] * 4 * GROUP_ORDER_SUB_LIMB_0;
+    t[ 1] += t[ 8] * 4 * GROUP_ORDER_SUB_LIMB_1;
+    t[ 2] += t[ 8] * 4 * GROUP_ORDER_SUB_LIMB_2;
+    t[ 3] += t[ 8] * 4 * GROUP_ORDER_SUB_LIMB_3;
 
-    t1  += t9  * 4 * GROUP_ORDER_SUB_LIMB_0;
-    t2  += t9  * 4 * GROUP_ORDER_SUB_LIMB_1;
-    t3  += t9  * 4 * GROUP_ORDER_SUB_LIMB_2;
-    t4  += t9  * 4 * GROUP_ORDER_SUB_LIMB_3;
+    t[ 1] += t[ 9] * 4 * GROUP_ORDER_SUB_LIMB_0;
+    t[ 2] += t[ 9] * 4 * GROUP_ORDER_SUB_LIMB_1;
+    t[ 3] += t[ 9] * 4 * GROUP_ORDER_SUB_LIMB_2;
+    t[ 4] += t[ 9] * 4 * GROUP_ORDER_SUB_LIMB_3;
 
-    t2  += t10 * 4 * GROUP_ORDER_SUB_LIMB_0;
-    t3  += t10 * 4 * GROUP_ORDER_SUB_LIMB_1;
-    t4  += t10 * 4 * GROUP_ORDER_SUB_LIMB_2;
-    t5  += t10 * 4 * GROUP_ORDER_SUB_LIMB_3;
+    t[ 2] += t[10] * 4 * GROUP_ORDER_SUB_LIMB_0;
+    t[ 3] += t[10] * 4 * GROUP_ORDER_SUB_LIMB_1;
+    t[ 4] += t[10] * 4 * GROUP_ORDER_SUB_LIMB_2;
+    t[ 5] += t[10] * 4 * GROUP_ORDER_SUB_LIMB_3;
 
-    t3  += t11 * 4 * GROUP_ORDER_SUB_LIMB_0;
-    t4  += t11 * 4 * GROUP_ORDER_SUB_LIMB_1;
-    t5  += t11 * 4 * GROUP_ORDER_SUB_LIMB_2;
-    t6  += t11 * 4 * GROUP_ORDER_SUB_LIMB_3;
+    t[ 3] += t[11] * 4 * GROUP_ORDER_SUB_LIMB_0;
+    t[ 4] += t[11] * 4 * GROUP_ORDER_SUB_LIMB_1;
+    t[ 5] += t[11] * 4 * GROUP_ORDER_SUB_LIMB_2;
+    t[ 6] += t[11] * 4 * GROUP_ORDER_SUB_LIMB_3;
 
-    t4  += t12 * 4 * GROUP_ORDER_SUB_LIMB_0;
-    t5  += t12 * 4 * GROUP_ORDER_SUB_LIMB_1;
-    t6  += t12 * 4 * GROUP_ORDER_SUB_LIMB_2;
-    t7  += t12 * 4 * GROUP_ORDER_SUB_LIMB_3;
+    t[ 4] += t[12] * 4 * GROUP_ORDER_SUB_LIMB_0;
+    t[ 5] += t[12] * 4 * GROUP_ORDER_SUB_LIMB_1;
+    t[ 6] += t[12] * 4 * GROUP_ORDER_SUB_LIMB_2;
+    t[ 7] += t[12] * 4 * GROUP_ORDER_SUB_LIMB_3;
 
-    t1  += t0  >> 56;  t0  &= LOW_56_BITS_MASK;
-    t2  += t1  >> 56;  t1  &= LOW_56_BITS_MASK;
-    t3  += t2  >> 56;  t2  &= LOW_56_BITS_MASK;
-    t4  += t3  >> 56;  t3  &= LOW_56_BITS_MASK;
-    t5  += t4  >> 56;  t4  &= LOW_56_BITS_MASK;
-    t6  += t5  >> 56;  t5  &= LOW_56_BITS_MASK;
-    t7  += t6  >> 56;  t6  &= LOW_56_BITS_MASK;
+    t[ 1] += t[ 0] >> 56;  t[ 0] &= LOW_56_BITS_MASK;
+    t[ 2] += t[ 1] >> 56;  t[ 1] &= LOW_56_BITS_MASK;
+    t[ 3] += t[ 2] >> 56;  t[ 2] &= LOW_56_BITS_MASK;
+    t[ 4] += t[ 3] >> 56;  t[ 3] &= LOW_56_BITS_MASK;
+    t[ 5] += t[ 4] >> 56;  t[ 4] &= LOW_56_BITS_MASK;
+    t[ 6] += t[ 5] >> 56;  t[ 5] &= LOW_56_BITS_MASK;
+    t[ 7] += t[ 6] >> 56;  t[ 6] &= LOW_56_BITS_MASK;
     /* Use t8 to store the overflow of t7. Note that at this point
      * we also set t7 to its canonical form which is 54-bits wide. */
-    t8   = t7  >> 54;  t7  &= LOW_54_BITS_MASK;
+    t[ 8]  = t[ 7] >> 54;  t[ 7] &= LOW_54_BITS_MASK;
 
     /* Note that the "shift by two" has already been accounted for */
-    t0  += t8  * GROUP_ORDER_SUB_LIMB_0;
-    t1  += t8  * GROUP_ORDER_SUB_LIMB_1;
-    t2  += t8  * GROUP_ORDER_SUB_LIMB_2;
-    t3  += t8  * GROUP_ORDER_SUB_LIMB_3;
+    t[ 0] += t[ 8] * GROUP_ORDER_SUB_LIMB_0;
+    t[ 1] += t[ 8] * GROUP_ORDER_SUB_LIMB_1;
+    t[ 2] += t[ 8] * GROUP_ORDER_SUB_LIMB_2;
+    t[ 3] += t[ 8] * GROUP_ORDER_SUB_LIMB_3;
 
     /* Do one final weak reduction */
-    t1  += t0  >> 56;  t0  &= LOW_56_BITS_MASK;
-    t2  += t1  >> 56;  t1  &= LOW_56_BITS_MASK;
-    t3  += t2  >> 56;  t2  &= LOW_56_BITS_MASK;
-    t4  += t3  >> 56;  t3  &= LOW_56_BITS_MASK;
-    t5  += t4  >> 56;  t4  &= LOW_56_BITS_MASK;
-    t6  += t5  >> 56;  t5  &= LOW_56_BITS_MASK;
-    t7  += t6  >> 56;  t6  &= LOW_56_BITS_MASK;
-    t7  &= LOW_54_BITS_MASK;
+    t[ 1] += t[ 0] >> 56;  t[ 0] &= LOW_56_BITS_MASK;
+    t[ 2] += t[ 1] >> 56;  t[ 1] &= LOW_56_BITS_MASK;
+    t[ 3] += t[ 2] >> 56;  t[ 2] &= LOW_56_BITS_MASK;
+    t[ 4] += t[ 3] >> 56;  t[ 3] &= LOW_56_BITS_MASK;
+    t[ 5] += t[ 4] >> 56;  t[ 4] &= LOW_56_BITS_MASK;
+    t[ 6] += t[ 5] >> 56;  t[ 5] &= LOW_56_BITS_MASK;
+    t[ 7] += t[ 6] >> 56;  t[ 6] &= LOW_56_BITS_MASK;
+    t[ 7] &= LOW_54_BITS_MASK;
 
     /* By this point we have done a "relaxed reduction", i.e. the result is in
      * the range [0, 2*L). Compute ab+c-L and conditionally use it as a result if
      * the result is still larger than or equal to L. Start by computing ab+c+u,
      * where u = 2^446 - L. To limit stack usage, reuse the t8-t15 limbs. */
-    t8  = GROUP_ORDER_SUB_LIMB_0 + t0;
-    t9  = GROUP_ORDER_SUB_LIMB_1 + t1;
-    t10 = GROUP_ORDER_SUB_LIMB_2 + t2;
-    t11 = GROUP_ORDER_SUB_LIMB_3 + t3;
-    t12 = t4;
-    t13 = t5;
-    t14 = t6;
-    t15 = t7;
+    t[ 8] = GROUP_ORDER_SUB_LIMB_0 + t[ 0];
+    t[ 9] = GROUP_ORDER_SUB_LIMB_1 + t[ 1];
+    t[10] = GROUP_ORDER_SUB_LIMB_2 + t[ 2];
+    t[11] = GROUP_ORDER_SUB_LIMB_3 + t[ 3];
+    t[12] = t[ 4];
+    t[13] = t[ 5];
+    t[14] = t[ 6];
+    t[15] = t[ 7];
 
     /* Normalize the result, i.e. propagate the overflows upwards */
-    t9  += t8  >> 56;  t8  &= LOW_56_BITS_MASK;
-    t10 += t9  >> 56;  t9  &= LOW_56_BITS_MASK;
-    t11 += t10 >> 56;  t10 &= LOW_56_BITS_MASK;
-    t12 += t11 >> 56;  t11 &= LOW_56_BITS_MASK;
-    t13 += t12 >> 56;  t12 &= LOW_56_BITS_MASK;
-    t14 += t13 >> 56;  t13 &= LOW_56_BITS_MASK;
-    t15 += t14 >> 56;  t14 &= LOW_56_BITS_MASK;
+    t[ 9] += t[ 8] >> 56;  t[ 8] &= LOW_56_BITS_MASK;
+    t[10] += t[ 9] >> 56;  t[ 9] &= LOW_56_BITS_MASK;
+    t[11] += t[10] >> 56;  t[10] &= LOW_56_BITS_MASK;
+    t[12] += t[11] >> 56;  t[11] &= LOW_56_BITS_MASK;
+    t[13] += t[12] >> 56;  t[12] &= LOW_56_BITS_MASK;
+    t[14] += t[13] >> 56;  t[13] &= LOW_56_BITS_MASK;
+    t[15] += t[14] >> 56;  t[14] &= LOW_56_BITS_MASK;
     /* At this point t15 contains the highest limb of ab+c+u (extended to 128 bits).
      * Try subtracting 2^446 */
-    t15 -= (1ULL << 54);
+    t[15] -= (1ULL << 54);
     /* Check if the subtraction resulted in an underflow and use the result to create
      * a mask for a conditional move. */
-    u64 mask = (u64)( -(i64)( (t15 >> 127) ^ 1 ) );
+    mask = (u64)( -(i64)( (t[15] >> 127) ^ 1 ) );
     /* If the subtraction underflowed, then mask is set to all zeroes and we will
      * discard limbs t9-t15. Otherwise we will use them as the result. */
-    t15 &= LOW_54_BITS_MASK;
+    t[15] &= LOW_54_BITS_MASK;
 
-    u64 x0 = t0 ^ t8;
-    u64 x1 = t1 ^ t9;
-    u64 x2 = t2 ^ t10;
-    u64 x3 = t3 ^ t11;
-    u64 x4 = t4 ^ t12;
-    u64 x5 = t5 ^ t13;
-    u64 x6 = t6 ^ t14;
-    u64 x7 = t7 ^ t15;
-    x0 &= mask;
-    x1 &= mask;
-    x2 &= mask;
-    x3 &= mask;
-    x4 &= mask;
-    x5 &= mask;
-    x6 &= mask;
-    x7 &= mask;
+    x[0] = t[ 0] ^ t[ 8];
+    x[1] = t[ 1] ^ t[ 9];
+    x[2] = t[ 2] ^ t[10];
+    x[3] = t[ 3] ^ t[11];
+    x[4] = t[ 4] ^ t[12];
+    x[5] = t[ 5] ^ t[13];
+    x[6] = t[ 6] ^ t[14];
+    x[7] = t[ 7] ^ t[15];
 
-    t0 ^= x0;
-    t1 ^= x1;
-    t2 ^= x2;
-    t3 ^= x3;
-    t4 ^= x4;
-    t5 ^= x5;
-    t6 ^= x6;
-    t7 ^= x7;
+    x[0] &= mask;
+    x[1] &= mask;
+    x[2] &= mask;
+    x[3] &= mask;
+    x[4] &= mask;
+    x[5] &= mask;
+    x[6] &= mask;
+    x[7] &= mask;
 
-    store_56(&r[0 * 7], t0);
-    store_56(&r[1 * 7], t1);
-    store_56(&r[2 * 7], t2);
-    store_56(&r[3 * 7], t3);
-    store_56(&r[4 * 7], t4);
-    store_56(&r[5 * 7], t5);
-    store_56(&r[6 * 7], t6);
-    store_56(&r[7 * 7], t7);
+    t[0] ^= x[0];
+    t[1] ^= x[1];
+    t[2] ^= x[2];
+    t[3] ^= x[3];
+    t[4] ^= x[4];
+    t[5] ^= x[5];
+    t[6] ^= x[6];
+    t[7] ^= x[7];
+
+    store_56(&r[0 * 7], t[0]);
+    store_56(&r[1 * 7], t[1]);
+    store_56(&r[2 * 7], t[2]);
+    store_56(&r[3 * 7], t[3]);
+    store_56(&r[4 * 7], t[4]);
+    store_56(&r[5 * 7], t[5]);
+    store_56(&r[6 * 7], t[6]);
+    store_56(&r[7 * 7], t[7]);
     /* Set the last byte to 0 */
     r[56] = 0;
+
+    /* In an EdDSA scheme the b and c scalars correspond to the long-term secret key and
+     * the ephemeral mask, respectively. Both are secret so we zeroize their intermediate
+     * representations. The scalar a corresponds to the public hash value so we do not
+     * zeroize it. Neither do we zeroize the t array since its contents are perfectly
+     * determined by the public output t0-t7 (response scalar S) as we have reused the
+     * upper limbs of t to store ab+c-L. We do however, zeroize the x array and the mask
+     * since they leak information about whether or not a strong reduction was needed. */
+    purge_secrets(b, sizeof(b));
+    purge_secrets(c, sizeof(c));
+    purge_secrets(x, sizeof(x));
+    purge_secrets(&mask, sizeof(mask));
 }
 
 scalar_ops ed448_scalar_ops = {
