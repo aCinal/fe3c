@@ -70,7 +70,7 @@ static inline void _store_64(u8 dst[8], u64 src) {
  * @param r Destination field element
  * @param a Source field element
  */
-static inline void fe_copy(fe25519 r, const fe25519 a) {
+static inline void fe_copy(fe448 r, const fe448 a) {
 
     r[0] = a[0];
     r[1] = a[1];

@@ -175,15 +175,12 @@ int eddsa_verify(const eddsa_verify_request * req) {
     /* Reduce the digest output as a scalar */
     sops->reduce(digest);
 
-    /* TODO: Study WolfSSL's implementation of S*B - h*A concurrent multplication */
-    gops->scalar_multiply(&public_key, &public_key, digest);
-    gops->points_add(&commitment, &commitment, &public_key);
-
-    /* Compute S B */
-    point response_point;
-    gops->multiply_basepoint(&response_point, &req->signature[curve->b_in_bytes]);
-    /* Check if S B == R + h A */
-    verified &= gops->points_equal(&response_point, &commitment);
+    point pretender_point;
+    /* Compute S*B - h*A */
+    gops->point_negate(&public_key);
+    gops->double_scalar_multiply(&pretender_point, &req->signature[curve->b_in_bytes], digest, &public_key);
+    /* Check if S*B - h*A == R */
+    verified &= gops->points_equal(&pretender_point, &commitment);
 
     return verified;
 }

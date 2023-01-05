@@ -3,6 +3,7 @@
 #define __FE3C_POINTS_POINTS_ED25519_COMB_METHOD_H
 
 #include <field_elements/field_elements_ed25519.h>
+#include <utils/utils.h>
 
 /* Store intermediate results needed for addition in the precomputation table */
 typedef struct point_precomp {
@@ -43,14 +44,6 @@ static inline void ed25519_point_precomp_conditional_neg_in_place(point_precomp 
     fe_conditional_move(p->T2d, minusT2d, negate);
 }
 
-#define equal(x, y)  ({ \
-    u8 __aux = (x ^ y); \
-    __aux |= (__aux >> 4); \
-    __aux |= (__aux >> 2); \
-    __aux |= (__aux >> 1); \
-    1 & (__aux ^ 1); \
-})
-
 static inline void ed25519_comb_read_precomp(point_precomp * r, u8 j, i8 ijt) {
 
     FE3C_SANITY_CHECK(j < sizeof(ed25519_comb_precomp), NULL);
@@ -69,14 +62,14 @@ static inline void ed25519_comb_read_precomp(point_precomp * r, u8 j, i8 ijt) {
     /* Choose one entry of the precomputation table in a branchless manner
      * - an added advantage is that we access all elements in a given row
      * (for a given subblock j) thus preventing cache-based timing attacks. */
-    ed25519_point_precomp_conditional_move(r, &ed25519_comb_precomp[j][0], equal(ijtabs, 1));
-    ed25519_point_precomp_conditional_move(r, &ed25519_comb_precomp[j][1], equal(ijtabs, 2));
-    ed25519_point_precomp_conditional_move(r, &ed25519_comb_precomp[j][2], equal(ijtabs, 3));
-    ed25519_point_precomp_conditional_move(r, &ed25519_comb_precomp[j][3], equal(ijtabs, 4));
-    ed25519_point_precomp_conditional_move(r, &ed25519_comb_precomp[j][4], equal(ijtabs, 5));
-    ed25519_point_precomp_conditional_move(r, &ed25519_comb_precomp[j][5], equal(ijtabs, 6));
-    ed25519_point_precomp_conditional_move(r, &ed25519_comb_precomp[j][6], equal(ijtabs, 7));
-    ed25519_point_precomp_conditional_move(r, &ed25519_comb_precomp[j][7], equal(ijtabs, 8));
+    ed25519_point_precomp_conditional_move(r, &ed25519_comb_precomp[j][0], byte_equal(ijtabs, 1));
+    ed25519_point_precomp_conditional_move(r, &ed25519_comb_precomp[j][1], byte_equal(ijtabs, 2));
+    ed25519_point_precomp_conditional_move(r, &ed25519_comb_precomp[j][2], byte_equal(ijtabs, 3));
+    ed25519_point_precomp_conditional_move(r, &ed25519_comb_precomp[j][3], byte_equal(ijtabs, 4));
+    ed25519_point_precomp_conditional_move(r, &ed25519_comb_precomp[j][4], byte_equal(ijtabs, 5));
+    ed25519_point_precomp_conditional_move(r, &ed25519_comb_precomp[j][5], byte_equal(ijtabs, 6));
+    ed25519_point_precomp_conditional_move(r, &ed25519_comb_precomp[j][6], byte_equal(ijtabs, 7));
+    ed25519_point_precomp_conditional_move(r, &ed25519_comb_precomp[j][7], byte_equal(ijtabs, 8));
 
     /* Negate the point if necessary */
     ed25519_point_precomp_conditional_neg_in_place(r, negate);
@@ -118,6 +111,37 @@ static inline void ed25519_points_add_precomp(point_ed25519 * r, const point_ed2
     fe_mul(r->T, E, H);
     /* Z3 ::= F*G */
     fe_mul(r->Z, F, G);
+}
+
+static inline void ed25519_comb_recode_scalar_into_4naf(i8 naf[64], const u8 s[32]) {
+
+    i8 carry;
+
+    /* Split the scalar into base-16 unsigned representation */
+    for (int i = 0; i < 32; i++) {
+
+        /* From each byte of the scalar extract the two 4-bit digits - note that the exponent array
+         * is ordered down columns first (column index changes more slowly) which allows for simpler
+         * recoding of the scalar than in Lim/Lee method (where each entry of the recoding table has
+         * to be a sum over bits distant by a). */
+        naf[2 * i + 0] = ( (s[i] >> 0) & 0xF );
+        naf[2 * i + 1] = ( (s[i] >> 4) & 0xF );
+    }
+
+    /* Recode the scalar into NAF representation */
+    carry = 0;
+    for (int i = 0; i < 63; i++) {
+
+        naf[i] += carry;
+        /* Check if naf[i] is larger than 2^{w-1} = 8 and if so make naf[i] negative
+         * (subtract 2^w = 16) and propagate the carry to the next digit */
+        carry = naf[i] + 0x8;
+        /* Note that carry can only be 0 or 1 at this point */
+        carry >>= 4;
+        naf[i] -= carry << 4;
+    }
+    /* Propagate the carry to the overflow digit (top 4 bits) */
+    naf[63] += carry;
 }
 
 #endif /* __FE3C_POINTS_POINTS_ED25519_COMB_METHOD_H */

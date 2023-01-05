@@ -38,14 +38,54 @@ typedef union point {
 } point;
 
 typedef struct group_ops {
+
+    /**
+     * @brief Compare two Edwards curve points for equality
+     * @param[in] p Edwards curve point
+     * @param[in] q Edwards curve point
+     * @return 1 if p = q, 0 otherwise
+     */
     __attribute__((warn_unused_result))
-    int   (* points_equal)        (const point * p, const point * q);             /**< Check if two points are equal */
-    void  (* encode)              (u8 * buf, const point * p);                    /**< Encode the point */
+    int (* points_equal)(const point * p, const point * q);
+
+    /**
+     * @brief Encode an Edwards curve point
+     * @param[out] buf Resulting point encoding
+     * @param[in] p Edwards curve point
+     */
+    void (* encode)(u8 * buf, const point * p);
+
+    /**
+     * @brief Decode an Edwards curve point
+     * @param[out] p Decoded Edwards curve point
+     * @param[in] buf Point encoding
+     * @return 1 if decoding was successful, 0 otherwise
+     */
     __attribute__((warn_unused_result))
-    int   (* decode)              (point * p, const u8 * buf);                    /**< Try decoding the point, set to the neutral element (0, 1) if decoding fails */
-    void  (* points_add)          (point * r, const point * p, const point * q);  /**< Add point p to the point q */
-    void  (* scalar_multiply)     (point * r, const point * p, const u8 * s);     /**< Multiply point p by the scalar s */
-    void  (* multiply_basepoint)  (point * r, const u8 * s);                      /**< Multiply the group generator by the scalar s */
+    int (* decode)(point * p, const u8 * buf);
+
+    /**
+     * @brief Multiply the group generator by a scalar
+     * @param[out] r Resulting Edwards curve point
+     * @param[in] s Secret scalar
+     */
+    void (* multiply_basepoint)(point * r, const u8 * s);
+
+    /**
+     * @brief Negate in place a point on the curve
+     * @param[in, out] p Edwards curve point
+     */
+    void (* point_negate)(point * p);
+
+    /**
+     * @brief Compute double scalar multiplication efficiently, i.e. evaluate the expression [S]B + [h](-A)
+     * @param[out] r Resulting Edwards curve point, i.e. the result of multiplying the basepoint by s and adding h times p
+     * @param[in] s Response scalar (S in the brief description and RFC 8032)
+     * @param[in] h Challenge scalar (hash)
+     * @param[in] p Negated public key (-A in the brief description and RFC 8032)
+     */
+    void (* double_scalar_multiply)(point * r, const u8 * s, const u8 * h, const point * p);
+
 } group_ops;
 
 #if FE3C_SUPPORT_CURVE_ED25519

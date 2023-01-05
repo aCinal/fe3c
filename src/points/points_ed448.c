@@ -13,6 +13,23 @@
 #define ED448_TO_STR(p) \
     FE448_TO_STR(p->X), FE448_TO_STR(p->Y), FE448_TO_STR(p->Z)
 
+static const point_ed448 ed448_basepoint = {
+#if FE3C_64BIT
+    .X = { 0x26a82bc70cc05e, 0x80e18b00938e26, 0xf72ab66511433b, 0xa3d3a46412ae1a, 0xf1767ea6de324, 0x36da9e14657047, 0xed221d15a622bf, 0x4f1970c66bed0d },
+    .Y = { 0x8795bf230fa14, 0x132c4ed7c8ad98, 0x1ce67c39c4fdbd, 0x5a0c2d73ad3ff, 0xa3984087789c1e, 0xc7624bea73736c, 0x248876203756c9, 0x693f46716eb6bc },
+#else
+    .X = {
+        0x70cc05e, 0x26a82bc, 0x938e26, 0x80e18b0, 0x511433b, 0xf72ab66, 0x412ae1a, 0xa3d3a46,
+        0xa6de324, 0xf1767e, 0x4657047, 0x36da9e1, 0x5a622bf, 0xed221d1, 0x66bed0d, 0x4f1970c
+    },
+    .Y = {
+        0x230fa14, 0x8795bf, 0x7c8ad98, 0x132c4ed, 0x9c4fdbd, 0x1ce67c3, 0x73ad3ff, 0x5a0c2d,
+        0x7789c1e, 0xa398408, 0xa73736c, 0xc7624be, 0x3756c9, 0x2488762, 0x16eb6bc, 0x693f467
+    },
+#endif /* FE3C_64BIT */
+    .Z = { 1 }
+};
+
 #if FE3C_ENABLE_SANITY_CHECKS
 static inline int ed448_is_on_curve(const point_ed448 * p) {
 
@@ -213,11 +230,7 @@ static int ed448_decode(point * pgen, const u8 * buf) {
     return success;
 }
 
-static void ed448_points_add(point * rgen, const point * pgen, const point * qgen) {
-
-    point_ed448 * r = (point_ed448 *) rgen;
-    const point_ed448 * p = (const point_ed448 *) pgen;
-    const point_ed448 * q = (const point_ed448 *) qgen;
+static void ed448_points_add(point_ed448 * r, const point_ed448 * p, const point_ed448 * q) {
 
     FE3C_SANITY_CHECK(ed448_is_on_curve(p), ED448_STR, ED448_TO_STR(p));
     FE3C_SANITY_CHECK(ed448_is_on_curve(q), ED448_STR, ED448_TO_STR(q));
@@ -265,10 +278,8 @@ static void ed448_points_add(point * rgen, const point * pgen, const point * qge
     fe_mul(r->Z, F, G);
 }
 
-static void ed448_scalar_multiply(point * rgen, const point * pgen, const u8 * s) {
-
-    point_ed448 * r = (point_ed448 *) rgen;
-    const point_ed448 * p = (const point_ed448 *) pgen;
+#if !FE3C_OPTIMIZATION_COMB_METHOD
+static inline void ed448_scalar_multiply(point_ed448 * r, const point_ed448 * p, const u8 * s) {
 
     FE3C_SANITY_CHECK(ed448_is_on_curve(p), ED448_STR, ED448_TO_STR(p));
 
@@ -277,11 +288,11 @@ static void ed448_scalar_multiply(point * rgen, const point * pgen, const u8 * s
     R[1] = *p;
 
     /* Do a simple Montgomery ladder for now */
-    for (int i = 455; i >= 0; i--) {
+    for (int i = 447; i >= 0; i--) {
 
         /* Recover the ith bit of the scalar */
         int bit = ( s[i >> 3] >> (i & 0x7) ) & 1;
-        ed448_points_add((point *) &R[1 - bit], (point *) &R[1 - bit], (point *) &R[bit]);
+        ed448_points_add(&R[1 - bit], &R[1 - bit], &R[bit]);
         ed448_point_double(&R[bit], &R[bit]);
     }
 
@@ -290,35 +301,14 @@ static void ed448_scalar_multiply(point * rgen, const point * pgen, const u8 * s
 
     /* TODO: Study different implementations */
 }
+#endif /* !FE3C_OPTIMIZATION_COMB_METHOD */
 
 static void ed448_multiply_basepoint(point * rgen, const u8 * s) {
 
-#if !FE3C_OPTIMIZATION_COMB_METHOD
-    #if FE3C_64BIT
-    static const point_ed448 basepoint = {
-        .X = { 0x26a82bc70cc05e, 0x80e18b00938e26, 0xf72ab66511433b, 0xa3d3a46412ae1a, 0xf1767ea6de324, 0x36da9e14657047, 0xed221d15a622bf, 0x4f1970c66bed0d },
-        .Y = { 0x8795bf230fa14, 0x132c4ed7c8ad98, 0x1ce67c39c4fdbd, 0x5a0c2d73ad3ff, 0xa3984087789c1e, 0xc7624bea73736c, 0x248876203756c9, 0x693f46716eb6bc },
-        .Z = { 1, 0, 0, 0, 0, 0, 0, 0 }
-    };
-    #else
-    static const point_ed448 basepoint = {
-        .X = {
-            0x70cc05e, 0x26a82bc, 0x938e26, 0x80e18b0, 0x511433b, 0xf72ab66, 0x412ae1a, 0xa3d3a46,
-            0xa6de324, 0xf1767e, 0x4657047, 0x36da9e1, 0x5a622bf, 0xed221d1, 0x66bed0d, 0x4f1970c
-        },
-        .Y = {
-            0x230fa14, 0x8795bf, 0x7c8ad98, 0x132c4ed, 0x9c4fdbd, 0x1ce67c3, 0x73ad3ff, 0x5a0c2d,
-            0x7789c1e, 0xa398408, 0xa73736c, 0xc7624be, 0x3756c9, 0x2488762, 0x16eb6bc, 0x693f467
-        },
-        .Z = {
-            1, 0, 0, 0, 0, 0, 0, 0,
-            0, 0, 0, 0, 0, 0, 0, 0
-        }
-    };
-    #endif /* FE3C_64BIT */
-    ed448_scalar_multiply(rgen, (point *) &basepoint, s);
-#else
     point_ed448 * r = (point_ed448 *) rgen;
+#if !FE3C_OPTIMIZATION_COMB_METHOD
+    ed448_scalar_multiply(r, &ed448_basepoint, s);
+#else
     /* Implement the improved comb method from "Improved Fixed-base Comb Method for Fast
      * Scalar Multiplication" by Mohamed et. al. Start by recoding the scalar into an array
      * of a columns S[d] each being an integer represented in non-adjacent form (NAF) of length w
@@ -376,29 +366,7 @@ static void ed448_multiply_basepoint(point * rgen, const u8 * s) {
      * 448 is nicely divisible by four) we get a = 112 and b = 2. Note that we must allocate one
      * extra byte for possible overflow (NAF representation may require an additional digit) */
     i8 naf[113];
-    i8 carry;
-
-    carry = 0;
-    for (int i = 0; i < 56; i++) {
-
-        /* From each byte of the scalar extract the two 4-bit digits - note that the exponent array
-         * is ordered down columns first (column index changes more slowly) which allows for simpler
-         * recoding of the scalar than in Lim/Lee method (where each entry of the recoding table has
-         * to be a sum over bits distant by a). */
-        naf[2 * i + 0] = ( (s[i] >> 0) & 0xF ) + carry;
-        /* Check if naf[2 * i + 0] is larger than 2^{w-1} = 8 and if so make naf[2 * i + 0] negative
-         * (subtract 2^w = 16) and propagate the carry to the next digit */
-        carry = naf[2 * i + 0] + 0x8;
-        /* Note that carry can only be 0 or 1 at this point */
-        carry >>= 4;
-        naf[2 * i + 0] -= carry << 4;
-
-        naf[2 * i + 1] = ( (s[i] >> 4) & 0xF ) + carry;
-        carry = naf[2 * i + 1] + 0x8;
-        carry >>= 4;
-        naf[2 * i + 1] -= carry << 4;
-    }
-    naf[112] = carry;
+    ed448_comb_recode_scalar_into_4naf(naf, s);
 
     ed448_identity(r);
     point_ed448 p;
@@ -415,7 +383,7 @@ static void ed448_multiply_basepoint(point * rgen, const u8 * s) {
         /* We let the loop index run twice as fast and skip every other entry of naf,
          * but correct for it in the j index (j = i / 2) */
         ed448_comb_read_precomp(&p, i >> 1, naf[i]);
-        ed448_points_add(rgen, rgen, (point *) &p);
+        ed448_points_add(r, r, &p);
     }
 
     /* Compute 2^{tw} Q = 2^4 Q */
@@ -431,7 +399,7 @@ static void ed448_multiply_basepoint(point * rgen, const u8 * s) {
         /* We let the loop index run twice as fast and skip every other entry of naf,
          * but correct for it in the j index (j = i / 2) */
         ed448_comb_read_precomp(&p, i >> 1, naf[i]);
-        ed448_points_add(rgen, rgen, (point *) &p);
+        ed448_points_add(r, r, &p);
     }
 
     /* At this point Q := 2^{tw} Q is a no-op since 2^{tw} Q = 2^0 Q */
@@ -443,11 +411,98 @@ static void ed448_multiply_basepoint(point * rgen, const u8 * s) {
 #endif /* !FE3C_OPTIMIZATION_COMB_METHOD */
 }
 
+static void ed448_point_negate(point * pgen) {
+
+    point_ed448 * p = (point_ed448 *) pgen;
+    fe_neg(p->X, p->X);
+}
+
+static inline void ed448_conditional_move(point_ed448 * r, const point_ed448 * p, int move) {
+
+    fe_conditional_move(r->X, p->X, move);
+    fe_conditional_move(r->Y, p->Y, move);
+    fe_conditional_move(r->Z, p->Z, move);
+}
+
+static void ed448_double_scalar_multiply(point * rgen, const u8 * s, const u8 * h, const point * pgen) {
+
+    point_ed448 * r = (point_ed448 *) rgen;
+    const point_ed448 * p = (const point_ed448 *) pgen;
+
+    point_ed448 G[16];
+    G[0] = ed448_basepoint;                    /* [0]A + [1]B */
+    ed448_point_double(&G[ 1], &G[ 0]);        /* [0]A + [2]B */
+    ed448_points_add(&G[ 2], &G[ 1], &G[ 0]);  /* [0]A + [3]B */
+    G[3] = *p;                                 /* [1]A + [0]B */
+    ed448_points_add(&G[ 4], &G[ 3], &G[ 0]);  /* [1]A + [1]B */
+    ed448_points_add(&G[ 5], &G[ 3], &G[ 1]);  /* [1]A + [2]B */
+    ed448_points_add(&G[ 6], &G[ 3], &G[ 2]);  /* [1]A + [3]B */
+    ed448_point_double(&G[ 7], &G[ 3]);        /* [2]A + [0]B */
+    ed448_points_add(&G[ 8], &G[ 7], &G[ 0]);  /* [2]A + [1]B */
+    ed448_point_double(&G[ 9], &G[ 4]);        /* [2]A + [2]B */
+    ed448_points_add(&G[10], &G[ 7], &G[ 2]);  /* [2]A + [3]B */
+    ed448_points_add(&G[11], &G[ 7], &G[ 3]);  /* [3]A + [0]B */
+    ed448_points_add(&G[12], &G[11], &G[ 0]);  /* [3]A + [1]B */
+    ed448_points_add(&G[13], &G[11], &G[ 1]);  /* [3]A + [2]B */
+    ed448_points_add(&G[14], &G[11], &G[ 2]);  /* [3]A + [3]B */
+
+    /* Represent the two scalars as arrays of base-4 digits:
+     *
+     *                 s = (s127, s126, ..., s2, s1, s0)
+     *                 h = (h127, h126, ..., h2, h1, h0)
+     *
+     * where si, hi are in { 0, 1, 2, 3 }. At each iteration i add to the
+     * accumulator the point [si]B + [hi]A. Use the two base-4 digits to
+     * find the point in the precomputation table.
+     */
+    ed448_identity(r);
+
+    for (int i = 223; i >= 0; i--) {
+
+        ed448_point_double(r, r);
+        ed448_point_double(r, r);
+
+        /* Recode the scalars on the fly into base-4 representation */
+        u8 ss = (array_bit(s, 2*i + 1) << 1) | array_bit(s, 2*i);
+        u8 hh = (array_bit(h, 2*i + 1) << 1) | array_bit(h, 2*i);
+        u8 index = (hh << 2) | ss;
+        /* TODO: Study how we can use NAF here to reduce the amount
+         * of precomputation. The problem with NAF seems to be that
+         * we must additionally precompute the sums [n]A + [k]B where
+         * n and k have different signs. */
+
+        /* Access all elements of the array to prevent cache-based timing
+         * attacks. Note that for most applications constant-time signature
+         * verification is not needed. It is for the few that care that we
+         * do this. */
+        point_ed448 t;
+        ed448_identity(&t);
+        ed448_conditional_move(&t, &G[ 0], byte_equal(index,  1));
+        ed448_conditional_move(&t, &G[ 1], byte_equal(index,  2));
+        ed448_conditional_move(&t, &G[ 2], byte_equal(index,  3));
+        ed448_conditional_move(&t, &G[ 3], byte_equal(index,  4));
+        ed448_conditional_move(&t, &G[ 4], byte_equal(index,  5));
+        ed448_conditional_move(&t, &G[ 5], byte_equal(index,  6));
+        ed448_conditional_move(&t, &G[ 6], byte_equal(index,  7));
+        ed448_conditional_move(&t, &G[ 7], byte_equal(index,  8));
+        ed448_conditional_move(&t, &G[ 8], byte_equal(index,  9));
+        ed448_conditional_move(&t, &G[ 9], byte_equal(index, 10));
+        ed448_conditional_move(&t, &G[10], byte_equal(index, 11));
+        ed448_conditional_move(&t, &G[11], byte_equal(index, 12));
+        ed448_conditional_move(&t, &G[12], byte_equal(index, 13));
+        ed448_conditional_move(&t, &G[13], byte_equal(index, 14));
+        ed448_conditional_move(&t, &G[14], byte_equal(index, 15));
+        ed448_conditional_move(&t, &G[15], byte_equal(index, 16));
+
+        ed448_points_add(r, r, &t);
+    }
+}
+
 group_ops ed448_group_ops = {
     .points_equal = ed448_points_equal,
     .encode = ed448_encode,
     .decode = ed448_decode,
-    .points_add = ed448_points_add,
-    .scalar_multiply = ed448_scalar_multiply,
-    .multiply_basepoint = ed448_multiply_basepoint
+    .multiply_basepoint = ed448_multiply_basepoint,
+    .point_negate = ed448_point_negate,
+    .double_scalar_multiply = ed448_double_scalar_multiply
 };

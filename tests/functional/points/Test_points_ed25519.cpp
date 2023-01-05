@@ -118,51 +118,54 @@ TEST(POINTS_ED25519, Decode_X2IsANonResidue_FailDecoding) {
     CHECK_EQUAL(0, success);
 }
 
-TEST(POINTS_ED25519, Add_AddIdentityElement_NoOp) {
+TEST(POINTS_ED25519, DoubleScalarMultiply_AddReciprocals_ResultInIdentity) {
 
+    const u8 random_scalar[] = {
+        0xf4, 0xed, 0x73, 0x11, 0x45, 0xb7, 0x69, 0x5f,
+        0x88, 0x9e, 0x59, 0x88, 0x13, 0xf7, 0x6c, 0xae,
+        0x3e, 0x30, 0xaa, 0xcc, 0xc4, 0x75, 0xa4, 0x4a,
+        0x6d, 0x09, 0x1e, 0xd0, 0xd8, 0xcc, 0x04, 0x02
+    };
+
+    const u8 unit_scalar[] = {
+        0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
+    };
+
+    /* Compute P = [S]B */
     point input;
-    const u8 encoded_input[] = \
-        "\xd7\x5a\x98\x01\x82\xb1\x0a\xb7\xd5\x4b\xfe\xd3\xc9\x64\x07\x3a" \
-        "\x0e\xe1\x72\xf3\xda\xa6\x23\x25\xaf\x02\x1a\x68\xf7\x07\x51\x1a";
-    point output;
-    u8 encoded_output[32];
+    ed25519_group_ops.multiply_basepoint(&input, random_scalar);
 
-    int success = ed25519_group_ops.decode(&input, encoded_input);
-    CHECK_EQUAL(1, success);
-    ed25519_group_ops.points_add(&output, &identity, &input);
-    ed25519_group_ops.encode(encoded_output, &output);
-    MEMCMP_EQUAL(encoded_input, encoded_output, sizeof(encoded_output));
+    /* Compute [S]B - [1]P, which should give the identity [0]B */
+    point output;
+    ed25519_group_ops.point_negate(&input);
+    ed25519_group_ops.double_scalar_multiply(&output, random_scalar, unit_scalar, &input);
+    int equal = ed25519_group_ops.points_equal(&identity, &output);
+    CHECK_EQUAL(1, equal);
 }
 
-TEST(POINTS_ED25519, Add_AddReciprocalsOfEachOther_ResultInIdentity) {
+TEST(POINTS_ED25519, DoubleScalarMultiply_SubtractTwicePointOfOrderTwo_NoOp) {
 
-    point input1;
-    const u8 encoded_input1[] = \
-        "\xd7\x5a\x98\x01\x82\xb1\x0a\xb7\xd5\x4b\xfe\xd3\xc9\x64\x07\x3a" \
-        "\x0e\xe1\x72\xf3\xda\xa6\x23\x25\xaf\x02\x1a\x68\xf7\x07\x51\x1a";
-    point input2;
-    const u8 encoded_input2[] = \
-        "\xd7\x5a\x98\x01\x82\xb1\x0a\xb7\xd5\x4b\xfe\xd3\xc9\x64\x07\x3a" \
-        "\x0e\xe1\x72\xf3\xda\xa6\x23\x25\xaf\x02\x1a\x68\xf7\x07\x51\x9a";
-    point output;
-    u8 encoded_output[32];
-    const u8 expected_output[] = \
-        "\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00" \
-        "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00";
+    const u8 random_scalar[] = {
+        0xf4, 0xed, 0x73, 0x11, 0x45, 0xb7, 0x69, 0x5f,
+        0x88, 0x9e, 0x59, 0x88, 0x13, 0xf7, 0x6c, 0xae,
+        0x3e, 0x30, 0xaa, 0xcc, 0xc4, 0x75, 0xa4, 0x4a,
+        0x6d, 0x09, 0x1e, 0xd0, 0xd8, 0xcc, 0x04, 0x02
+    };
+    const u8 scalar_two[] = {
+        0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
+    };
 
-    int success = 1;
-    success &= ed25519_group_ops.decode(&input1, encoded_input1);
-    success &= ed25519_group_ops.decode(&input2, encoded_input2);
-    CHECK_EQUAL(1, success);
+    /* Compute P = [S]B */
+    point expected;
+    ed25519_group_ops.multiply_basepoint(&expected, random_scalar);
 
-    ed25519_group_ops.points_add(&output, &input1, &input2);
-    ed25519_group_ops.encode(encoded_output, &output);
-    MEMCMP_EQUAL(expected_output, encoded_output, sizeof(encoded_output));
-}
-
-TEST(POINTS_ED25519, Add_AddPointOfOrder2ToItself_ResultInIdentity) {
-
-    point input = {
+    point point_of_order_two = {
         .ed25519 = {
             .X = { 0 },
 #if FE3C_64BIT
@@ -174,20 +177,36 @@ TEST(POINTS_ED25519, Add_AddPointOfOrder2ToItself_ResultInIdentity) {
             .T = { 0 }
         }
     };
-    point output;
-    u8 encoded_output[32];
-    const u8 expected_output[] = \
-        "\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00" \
-        "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00";
 
-    ed25519_group_ops.points_add(&output, &input, &input);
-    ed25519_group_ops.encode(encoded_output, &output);
-    MEMCMP_EQUAL(expected_output, encoded_output, sizeof(encoded_output));
+    /* Compute [S]B - [2]T, where T is the point of order two so [2]T = O */
+    point output;
+    ed25519_group_ops.point_negate(&point_of_order_two);
+    ed25519_group_ops.double_scalar_multiply(&output, random_scalar, scalar_two, &point_of_order_two);
+    /* Expect the output to be [S]B */
+    int equal = ed25519_group_ops.points_equal(&expected, &output);
+    CHECK_EQUAL(1, equal);
 }
 
-TEST(POINTS_ED25519, Add_AddPointOfOrder4ToItself_TestForIdentityAtEachStep) {
+TEST(POINTS_ED25519, DoubleScalarMultiply_SubtractFourTimesThePointOfOrderFour_NoOp) {
 
-    point input = {
+    const u8 random_scalar[] = {
+        0xf4, 0xed, 0x73, 0x11, 0x45, 0xb7, 0x69, 0x5f,
+        0x88, 0x9e, 0x59, 0x88, 0x13, 0xf7, 0x6c, 0xae,
+        0x3e, 0x30, 0xaa, 0xcc, 0xc4, 0x75, 0xa4, 0x4a,
+        0x6d, 0x09, 0x1e, 0xd0, 0xd8, 0xcc, 0x04, 0x02
+    };
+    const u8 scalar_four[] = {
+        0x04, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
+    };
+
+    /* Compute P = [S]B */
+    point expected;
+    ed25519_group_ops.multiply_basepoint(&expected, random_scalar);
+
+    point point_of_order_four = {
         .ed25519 = {
 #if FE3C_64BIT
             .X = { 0x61b274a0ea0b0, 0xd5a5fc8f189d, 0x7ef5e9cbd0c60, 0x78595a6804c9e, 0x2b8324804fc1d },
@@ -200,23 +219,13 @@ TEST(POINTS_ED25519, Add_AddPointOfOrder4ToItself_TestForIdentityAtEachStep) {
         }
     };
 
+    /* Compute [S]B - [4]T, where T is the point of order four so [4]T = O */
     point output;
-    u8 encoded_output[32];
-    const u8 expected_final_output[] = \
-        "\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00" \
-        "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00";
-    const u8 expected_intermediate_output[] = \
-        "\xec\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff" \
-        "\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\x7f";
-
-    ed25519_group_ops.points_add(&output, &input, &input);
-    /* Expect output = (0, -1) at this point */
-    ed25519_group_ops.encode(encoded_output, &output);
-    MEMCMP_EQUAL(expected_intermediate_output, encoded_output, sizeof(encoded_output));
-    ed25519_group_ops.points_add(&output, &output, &output);
-    /* Expect output = (0, 1) at this point */
-    ed25519_group_ops.encode(encoded_output, &output);
-    MEMCMP_EQUAL(expected_final_output, encoded_output, sizeof(encoded_output));
+    ed25519_group_ops.point_negate(&point_of_order_four);
+    ed25519_group_ops.double_scalar_multiply(&output, random_scalar, scalar_four, &point_of_order_four);
+    /* Expect the output to be [S]B */
+    int equal = ed25519_group_ops.points_equal(&expected, &output);
+    CHECK_EQUAL(1, equal);
 }
 
 TEST(POINTS_ED25519, MultiplyBasepoint_MultiplyByOrder_ResultInIdentity) {
