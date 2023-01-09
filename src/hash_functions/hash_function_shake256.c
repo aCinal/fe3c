@@ -92,9 +92,6 @@ static inline void absorb_block(shake256_state * state, const u8 * block, shake2
 
 static inline void keccak_f(u64 A[5][5], u64 B[5][5], u64 C[5], u64 D[5]) {
 
-    /* TODO: Consider preallocating the working space as in SHA512 implementation so as to
-     * not leave traces on the stack */
-
     for (int i = 0; i < SHAKE256_ROUNDS_COUNT; i++) {
 
         /* Do the theta step */

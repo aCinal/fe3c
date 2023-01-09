@@ -22,6 +22,7 @@ typedef struct point_ed448 {
     fe448 X;
     fe448 Y;
     fe448 Z;
+    fe448 T;
 } point_ed448;
 #endif /* FE3C_SUPPORT_CURVE_ED448 */
 

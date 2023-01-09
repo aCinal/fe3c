@@ -277,18 +277,18 @@ static inline void fe_strong_reduce(fe25519 r, const fe25519 a) {
 static inline void fe_neg(fe25519 r, const fe25519 a) {
 
     /* Check against underflow */
-    FE3C_SANITY_CHECK(a[0] <= 0xfffffffffffdaULL, FE25519_STR, FE25519_TO_STR(a));
-    FE3C_SANITY_CHECK(a[1] <= 0xffffffffffffeULL, FE25519_STR, FE25519_TO_STR(a));
-    FE3C_SANITY_CHECK(a[2] <= 0xffffffffffffeULL, FE25519_STR, FE25519_TO_STR(a));
-    FE3C_SANITY_CHECK(a[3] <= 0xffffffffffffeULL, FE25519_STR, FE25519_TO_STR(a));
-    FE3C_SANITY_CHECK(a[4] <= 0xffffffffffffeULL, FE25519_STR, FE25519_TO_STR(a));
+    FE3C_SANITY_CHECK(a[0] <= 0x3fffffffffff68ULL, FE25519_STR, FE25519_TO_STR(a));
+    FE3C_SANITY_CHECK(a[1] <= 0x3ffffffffffff8ULL, FE25519_STR, FE25519_TO_STR(a));
+    FE3C_SANITY_CHECK(a[2] <= 0x3ffffffffffff8ULL, FE25519_STR, FE25519_TO_STR(a));
+    FE3C_SANITY_CHECK(a[3] <= 0x3ffffffffffff8ULL, FE25519_STR, FE25519_TO_STR(a));
+    FE3C_SANITY_CHECK(a[4] <= 0x3ffffffffffff8ULL, FE25519_STR, FE25519_TO_STR(a));
 
-    /* Set r to 2p-a so as to not require strong reduction of a */
-    r[0] = 0xfffffffffffdaULL - a[0];
-    r[1] = 0xffffffffffffeULL - a[1];
-    r[2] = 0xffffffffffffeULL - a[2];
-    r[3] = 0xffffffffffffeULL - a[3];
-    r[4] = 0xffffffffffffeULL - a[4];
+    /* Set r to 8p-a so as to not require strong reduction of a */
+    r[0] = 0x3fffffffffff68ULL - a[0];
+    r[1] = 0x3ffffffffffff8ULL - a[1];
+    r[2] = 0x3ffffffffffff8ULL - a[2];
+    r[3] = 0x3ffffffffffff8ULL - a[3];
+    r[4] = 0x3ffffffffffff8ULL - a[4];
 }
 
 /**
@@ -314,12 +314,19 @@ static inline void fe_add(fe25519 r, const fe25519 a, const fe25519 b) {
  */
 static inline void fe_sub(fe25519 r, const fe25519 a, const fe25519 b) {
 
-    /* Compute a + 2p - b so as to not risk underflow */
-    r[0] = a[0] + 0xfffffffffffdaULL - b[0];
-    r[1] = a[1] + 0xffffffffffffeULL - b[1];
-    r[2] = a[2] + 0xffffffffffffeULL - b[2];
-    r[3] = a[3] + 0xffffffffffffeULL - b[3];
-    r[4] = a[4] + 0xffffffffffffeULL - b[4];
+    /* Check against underflow */
+    FE3C_SANITY_CHECK(b[0] <= 0x3fffffffffff68ULL, FE25519_STR, FE25519_TO_STR(b));
+    FE3C_SANITY_CHECK(b[1] <= 0x3ffffffffffff8ULL, FE25519_STR, FE25519_TO_STR(b));
+    FE3C_SANITY_CHECK(b[2] <= 0x3ffffffffffff8ULL, FE25519_STR, FE25519_TO_STR(b));
+    FE3C_SANITY_CHECK(b[3] <= 0x3ffffffffffff8ULL, FE25519_STR, FE25519_TO_STR(b));
+    FE3C_SANITY_CHECK(b[4] <= 0x3ffffffffffff8ULL, FE25519_STR, FE25519_TO_STR(b));
+
+    /* Compute a + 8p - b so as to not risk underflow */
+    r[0] = a[0] + 0x3fffffffffff68ULL - b[0];
+    r[1] = a[1] + 0x3ffffffffffff8ULL - b[1];
+    r[2] = a[2] + 0x3ffffffffffff8ULL - b[2];
+    r[3] = a[3] + 0x3ffffffffffff8ULL - b[3];
+    r[4] = a[4] + 0x3ffffffffffff8ULL - b[4];
     /* We could also call fe_neg() followed by fe_add(), but this would require
      * an intermediate fe variable to support aliasing */
 }

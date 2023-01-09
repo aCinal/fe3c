@@ -28,6 +28,13 @@ static const fe448 ed448_d = {
     0xffffffe, 0xfffffff, 0xfffffff, 0xfffffff,
     0xfffffff, 0xfffffff, 0xfffffff, 0xfffffff
 };
+/* Twisted elliptic curve constant d' = d-1 */
+static const fe448 ed448twist_d = {
+    0xfff6755, 0xfffffff, 0xfffffff, 0xfffffff,
+    0xfffffff, 0xfffffff, 0xfffffff, 0xfffffff,
+    0xffffffe, 0xfffffff, 0xfffffff, 0xfffffff,
+    0xfffffff, 0xfffffff, 0xfffffff, 0xfffffff
+};
 /* Additive identity in the field */
 static const fe448 fe_zero = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 /* Multiplicative identity in the field */
@@ -432,7 +439,7 @@ static inline void fe_strong_reduce(fe448 r, const fe448 a) {
 static inline void fe_neg(fe448 r, const fe448 a) {
 
     /* Check against underflow */
-    FE3C_SANITY_CHECK(a[ 0] <  0x1ffffffe, FE448_STR, FE448_TO_STR(a));
+    FE3C_SANITY_CHECK(a[ 0] <= 0x1ffffffe, FE448_STR, FE448_TO_STR(a));
     FE3C_SANITY_CHECK(a[ 1] <= 0x1ffffffe, FE448_STR, FE448_TO_STR(a));
     FE3C_SANITY_CHECK(a[ 2] <= 0x1ffffffe, FE448_STR, FE448_TO_STR(a));
     FE3C_SANITY_CHECK(a[ 3] <= 0x1ffffffe, FE448_STR, FE448_TO_STR(a));
@@ -501,6 +508,24 @@ static inline void fe_add(fe448 r, const fe448 a, const fe448 b) {
  * @param[in] b Subtrahend
  */
 static inline void fe_sub(fe448 r, const fe448 a, const fe448 b) {
+
+    /* Check against underflow */
+    FE3C_SANITY_CHECK(b[ 0] <= 0x1ffffffe, FE448_STR, FE448_TO_STR(b));
+    FE3C_SANITY_CHECK(b[ 1] <= 0x1ffffffe, FE448_STR, FE448_TO_STR(b));
+    FE3C_SANITY_CHECK(b[ 2] <= 0x1ffffffe, FE448_STR, FE448_TO_STR(b));
+    FE3C_SANITY_CHECK(b[ 3] <= 0x1ffffffe, FE448_STR, FE448_TO_STR(b));
+    FE3C_SANITY_CHECK(b[ 4] <= 0x1ffffffe, FE448_STR, FE448_TO_STR(b));
+    FE3C_SANITY_CHECK(b[ 5] <= 0x1ffffffe, FE448_STR, FE448_TO_STR(b));
+    FE3C_SANITY_CHECK(b[ 6] <= 0x1ffffffe, FE448_STR, FE448_TO_STR(b));
+    FE3C_SANITY_CHECK(b[ 7] <= 0x1ffffffe, FE448_STR, FE448_TO_STR(b));
+    FE3C_SANITY_CHECK(b[ 8] <= 0x1ffffffc, FE448_STR, FE448_TO_STR(b));
+    FE3C_SANITY_CHECK(b[ 9] <= 0x1ffffffe, FE448_STR, FE448_TO_STR(b));
+    FE3C_SANITY_CHECK(b[10] <= 0x1ffffffe, FE448_STR, FE448_TO_STR(b));
+    FE3C_SANITY_CHECK(b[11] <= 0x1ffffffe, FE448_STR, FE448_TO_STR(b));
+    FE3C_SANITY_CHECK(b[12] <= 0x1ffffffe, FE448_STR, FE448_TO_STR(b));
+    FE3C_SANITY_CHECK(b[13] <= 0x1ffffffe, FE448_STR, FE448_TO_STR(b));
+    FE3C_SANITY_CHECK(b[14] <= 0x1ffffffe, FE448_STR, FE448_TO_STR(b));
+    FE3C_SANITY_CHECK(b[15] <= 0x1ffffffe, FE448_STR, FE448_TO_STR(b));
 
     /* Set r to 2p-a so as to not require strong reduction of a */
     r[ 0] = a[ 0] + 0x1ffffffe - b[ 0];

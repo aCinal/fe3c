@@ -393,6 +393,18 @@ static inline void fe_add(fe25519 r, const fe25519 a, const fe25519 b) {
  */
 static inline void fe_sub(fe25519 r, const fe25519 a, const fe25519 b) {
 
+    /* Check against underflow */
+    FE3C_SANITY_CHECK(b[0] <= 0x7ffffda, FE25519_STR, FE25519_TO_STR(b));
+    FE3C_SANITY_CHECK(b[1] <= 0x3fffffe, FE25519_STR, FE25519_TO_STR(b));
+    FE3C_SANITY_CHECK(b[2] <= 0x7fffffe, FE25519_STR, FE25519_TO_STR(b));
+    FE3C_SANITY_CHECK(b[3] <= 0x3fffffe, FE25519_STR, FE25519_TO_STR(b));
+    FE3C_SANITY_CHECK(b[4] <= 0x7fffffe, FE25519_STR, FE25519_TO_STR(b));
+    FE3C_SANITY_CHECK(b[5] <= 0x3fffffe, FE25519_STR, FE25519_TO_STR(b));
+    FE3C_SANITY_CHECK(b[6] <= 0x7fffffe, FE25519_STR, FE25519_TO_STR(b));
+    FE3C_SANITY_CHECK(b[7] <= 0x3fffffe, FE25519_STR, FE25519_TO_STR(b));
+    FE3C_SANITY_CHECK(b[8] <= 0x7fffffe, FE25519_STR, FE25519_TO_STR(b));
+    FE3C_SANITY_CHECK(b[9] <= 0x3fffffe, FE25519_STR, FE25519_TO_STR(b));
+
     /* Compute a + 2p - b so as to not risk underflow */
     r[0] = a[0] + 0x7ffffda - b[0];
     r[1] = a[1] + 0x3fffffe - b[1];

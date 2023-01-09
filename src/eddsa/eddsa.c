@@ -178,6 +178,9 @@ int eddsa_verify(const eddsa_verify_request * req) {
     point pretender_point;
     /* Compute S*B - h*A */
     gops->point_negate(&public_key);
+    /* Note that when verifying Ed448 signatures we do essentially cofactored verification, since we check
+     * the group equation on an isogenous curve (TODO: study cofactored verification in the context of
+     * batch verification and reject mixed-order points ahead of time) */
     gops->double_scalar_multiply(&pretender_point, &req->signature[curve->b_in_bytes], digest, &public_key);
     /* Check if S*B - h*A == R */
     verified &= gops->points_equal(&pretender_point, &commitment);

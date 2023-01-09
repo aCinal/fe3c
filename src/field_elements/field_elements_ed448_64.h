@@ -21,6 +21,8 @@ extern "C" {
 
 /* Elliptic curve constant d = -39081 */
 static const fe448 ed448_d = { 0xffffffffff6756, 0xffffffffffffff, 0xffffffffffffff, 0xffffffffffffff, 0xfffffffffffffe, 0xffffffffffffff, 0xffffffffffffff, 0xffffffffffffff };
+/* Twisted elliptic curve constant d' = d-1 */
+static const fe448 ed448twist_d = { 0xffffffffff6755, 0xffffffffffffff, 0xffffffffffffff, 0xffffffffffffff, 0xfffffffffffffe, 0xffffffffffffff, 0xffffffffffffff, 0xffffffffffffff };
 /* Additive identity in the field */
 static const fe448 fe_zero = { 0, 0, 0, 0, 0, 0, 0, 0 };
 /* Multiplicative identity in the field */
@@ -326,24 +328,24 @@ static inline void fe_strong_reduce(fe448 r, const fe448 a) {
 static inline void fe_neg(fe448 r, const fe448 a) {
 
     /* Check against underflow */
-    FE3C_SANITY_CHECK(a[0] <  0x1fffffffffffffeULL, FE448_STR, FE448_TO_STR(a));
-    FE3C_SANITY_CHECK(a[1] <= 0x1fffffffffffffeULL, FE448_STR, FE448_TO_STR(a));
-    FE3C_SANITY_CHECK(a[2] <= 0x1fffffffffffffeULL, FE448_STR, FE448_TO_STR(a));
-    FE3C_SANITY_CHECK(a[3] <= 0x1fffffffffffffeULL, FE448_STR, FE448_TO_STR(a));
-    FE3C_SANITY_CHECK(a[4] <= 0x1fffffffffffffcULL, FE448_STR, FE448_TO_STR(a));
-    FE3C_SANITY_CHECK(a[5] <= 0x1fffffffffffffeULL, FE448_STR, FE448_TO_STR(a));
-    FE3C_SANITY_CHECK(a[6] <= 0x1fffffffffffffeULL, FE448_STR, FE448_TO_STR(a));
-    FE3C_SANITY_CHECK(a[7] <= 0x1fffffffffffffeULL, FE448_STR, FE448_TO_STR(a));
+    FE3C_SANITY_CHECK(a[0] <= 0x3fffffffffffffcULL, FE448_STR, FE448_TO_STR(a));
+    FE3C_SANITY_CHECK(a[1] <= 0x3fffffffffffffcULL, FE448_STR, FE448_TO_STR(a));
+    FE3C_SANITY_CHECK(a[2] <= 0x3fffffffffffffcULL, FE448_STR, FE448_TO_STR(a));
+    FE3C_SANITY_CHECK(a[3] <= 0x3fffffffffffffcULL, FE448_STR, FE448_TO_STR(a));
+    FE3C_SANITY_CHECK(a[4] <= 0x3fffffffffffff8ULL, FE448_STR, FE448_TO_STR(a));
+    FE3C_SANITY_CHECK(a[5] <= 0x3fffffffffffffcULL, FE448_STR, FE448_TO_STR(a));
+    FE3C_SANITY_CHECK(a[6] <= 0x3fffffffffffffcULL, FE448_STR, FE448_TO_STR(a));
+    FE3C_SANITY_CHECK(a[7] <= 0x3fffffffffffffcULL, FE448_STR, FE448_TO_STR(a));
 
-    /* Set r to 2p-a so as to not require strong reduction of a */
-    r[0] = 0x1fffffffffffffeULL - a[0];
-    r[1] = 0x1fffffffffffffeULL - a[1];
-    r[2] = 0x1fffffffffffffeULL - a[2];
-    r[3] = 0x1fffffffffffffeULL - a[3];
-    r[4] = 0x1fffffffffffffcULL - a[4];
-    r[5] = 0x1fffffffffffffeULL - a[5];
-    r[6] = 0x1fffffffffffffeULL - a[6];
-    r[7] = 0x1fffffffffffffeULL - a[7];
+    /* Set r to 4p-a so as to not require strong reduction of a */
+    r[0] = 0x3fffffffffffffcULL - a[0];
+    r[1] = 0x3fffffffffffffcULL - a[1];
+    r[2] = 0x3fffffffffffffcULL - a[2];
+    r[3] = 0x3fffffffffffffcULL - a[3];
+    r[4] = 0x3fffffffffffff8ULL - a[4];
+    r[5] = 0x3fffffffffffffcULL - a[5];
+    r[6] = 0x3fffffffffffffcULL - a[6];
+    r[7] = 0x3fffffffffffffcULL - a[7];
 }
 
 /**
@@ -372,15 +374,25 @@ static inline void fe_add(fe448 r, const fe448 a, const fe448 b) {
  */
 static inline void fe_sub(fe448 r, const fe448 a, const fe448 b) {
 
-    /* Compute a + 2p - b so as to not risk underflow */
-    r[0] = a[0] + 0x1fffffffffffffeULL - b[0];
-    r[1] = a[1] + 0x1fffffffffffffeULL - b[1];
-    r[2] = a[2] + 0x1fffffffffffffeULL - b[2];
-    r[3] = a[3] + 0x1fffffffffffffeULL - b[3];
-    r[4] = a[4] + 0x1fffffffffffffcULL - b[4];
-    r[5] = a[5] + 0x1fffffffffffffeULL - b[5];
-    r[6] = a[6] + 0x1fffffffffffffeULL - b[6];
-    r[7] = a[7] + 0x1fffffffffffffeULL - b[7];
+    /* Check against underflow */
+    FE3C_SANITY_CHECK(b[0] <= 0x3fffffffffffffcULL, FE448_STR, FE448_TO_STR(b));
+    FE3C_SANITY_CHECK(b[1] <= 0x3fffffffffffffcULL, FE448_STR, FE448_TO_STR(b));
+    FE3C_SANITY_CHECK(b[2] <= 0x3fffffffffffffcULL, FE448_STR, FE448_TO_STR(b));
+    FE3C_SANITY_CHECK(b[3] <= 0x3fffffffffffffcULL, FE448_STR, FE448_TO_STR(b));
+    FE3C_SANITY_CHECK(b[4] <= 0x3fffffffffffff8ULL, FE448_STR, FE448_TO_STR(b));
+    FE3C_SANITY_CHECK(b[5] <= 0x3fffffffffffffcULL, FE448_STR, FE448_TO_STR(b));
+    FE3C_SANITY_CHECK(b[6] <= 0x3fffffffffffffcULL, FE448_STR, FE448_TO_STR(b));
+    FE3C_SANITY_CHECK(b[7] <= 0x3fffffffffffffcULL, FE448_STR, FE448_TO_STR(b));
+
+    /* Compute a + 4p - b so as to not risk underflow */
+    r[0] = a[0] + 0x3fffffffffffffcULL - b[0];
+    r[1] = a[1] + 0x3fffffffffffffcULL - b[1];
+    r[2] = a[2] + 0x3fffffffffffffcULL - b[2];
+    r[3] = a[3] + 0x3fffffffffffffcULL - b[3];
+    r[4] = a[4] + 0x3fffffffffffff8ULL - b[4];
+    r[5] = a[5] + 0x3fffffffffffffcULL - b[5];
+    r[6] = a[6] + 0x3fffffffffffffcULL - b[6];
+    r[7] = a[7] + 0x3fffffffffffffcULL - b[7];
     /* We could also call fe_neg() followed by fe_add(), but this would require
      * an intermediate fe variable to support aliasing */
 }

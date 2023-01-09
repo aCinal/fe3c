@@ -75,7 +75,7 @@ static inline void ed25519_comb_read_precomp(point_precomp * r, u8 j, i8 ijt) {
     ed25519_point_precomp_conditional_neg_in_place(r, negate);
 }
 
-static inline void ed25519_points_add_precomp(point_ed25519 * r, const point_ed25519 * p, const point_precomp * q) {
+static inline void ed25519_points_add_precomp(point_ed25519 * r, const point_ed25519 * p, const point_precomp * q, int set_extended_coordinate) {
 
     /* TODO: Reuse some old variables to reduce stack usage */
     fe25519 A, B, C, D, E, F, G, H;
@@ -107,10 +107,16 @@ static inline void ed25519_points_add_precomp(point_ed25519 * r, const point_ed2
     fe_mul(r->X, E, F);
     /* Y3 ::= G*H */
     fe_mul(r->Y, G, H);
-    /* T3 ::= E*H */
-    fe_mul(r->T, E, H);
     /* Z3 ::= F*G */
     fe_mul(r->Z, F, G);
+
+    /* When scheduled to be followed by another doubling we can skip setting the extended coordinate T
+     * which is not needed for doubling */
+    if (set_extended_coordinate) {
+
+        /* T3 ::= E*H */
+        fe_mul(r->T, E, H);
+    }
 }
 
 static inline void ed25519_comb_recode_scalar_into_4naf(i8 naf[64], const u8 s[32]) {

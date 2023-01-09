@@ -1,5 +1,4 @@
 #include <points/points.h>
-#include <scalars/scalars.h>
 #include <field_elements/field_elements_ed25519.h>
 #include <utils/utils.h>
 #if FE3C_OPTIMIZATION_COMB_METHOD
@@ -12,7 +11,7 @@
     "    Z = " FE25519_STR "\n" \
     "    T = " FE25519_STR
 #define ED25519_TO_STR(p) \
-    FE25519_TO_STR(p->X), FE25519_TO_STR(p->Y), FE25519_TO_STR(p->Z), FE25519_TO_STR(p->T)
+    FE25519_TO_STR((p)->X), FE25519_TO_STR((p)->Y), FE25519_TO_STR((p)->Z), FE25519_TO_STR((p)->T)
 
 static const point_ed25519 ed25519_basepoint = {
 #if FE3C_64BIT
@@ -34,18 +33,17 @@ static inline int ed25519_is_on_curve(const point_ed25519 * p) {
     fe25519 x, y, z;
     fe25519 lhs;
     fe25519 rhs;
-    fe25519 xy, tz;
 
-    /* Set x ::= X^2, y ::= Y^2, Z ::= Z^2 */
+    /* Set x := X^2, y := Y^2, Z := Z^2 */
     fe_square(x, p->X);
     fe_square(y, p->Y);
     fe_square(z, p->Z);
 
-    /* Set lhs ::= (Y^2 - X^2) Z^2 (left-hand side of the homogenous curve equation) */
+    /* Set lhs := (Y^2 - X^2) Z^2 (left-hand side of the homogenous curve equation) */
     fe_sub(lhs, y, x);
     fe_mul(lhs, lhs, z);
 
-    /* Set rhs ::= d X^2 Y^2 + Z^4 (right-hand side of the homogenous curve equation) */
+    /* Set rhs := d X^2 Y^2 + Z^4 (right-hand side of the homogenous curve equation) */
     fe_mul(rhs, x, y);
     fe_mul(rhs, rhs, ed25519_d);
     fe_square(z, z);
@@ -55,14 +53,18 @@ static inline int ed25519_is_on_curve(const point_ed25519 * p) {
     fe_sub(y, rhs, lhs);
     fe_strong_reduce(y, y);
 
-    /* The function is used only for sanity checking - we may as well check that T
-     * is consistent */
+    return fe_equal(fe_zero, y);
+}
+
+static inline int ed25519_valid_extended_projective(const point_ed25519 * p) {
+
+    /* Check the consistency of the extended projective coordinate */
+    fe448 xy, tz;
     fe_mul(xy, p->X, p->Y);
     fe_mul(tz, p->T, p->Z);
     fe_strong_reduce(xy, xy);
     fe_strong_reduce(tz, tz);
-
-    return fe_equal(fe_zero, y) & fe_equal(tz, xy);
+    return fe_equal(tz, xy);
 }
 #endif /* FE3C_ENABLE_SANITY_CHECKS */
 
@@ -117,60 +119,75 @@ static void ed25519_encode(u8 * buf, const point * pgen) {
      * significant bit of the last byte */
     FE3C_SANITY_CHECK((buf[31] >> 7) == 0, "buf[31] = 0x%x", buf[31]);
     buf[31] |= fe_lsb(x) << 7;
+
+    /* Zeroize intermediate results to not leak any secrets via projective coordinates
+     * (particularities of the representative of an equivalence class) */
+    purge_secrets(z_inv, sizeof(z_inv));
 }
 
-static void ed25519_point_double(point_ed25519 * r, const point_ed25519 * p) {
+static void ed25519_point_double(point_ed25519 * r, const point_ed25519 * p, int set_extended_coordinate) {
+
+    FE3C_SANITY_CHECK(ed25519_is_on_curve(p), ED25519_STR, ED25519_TO_STR(p));
 
     /* TODO: Reuse some old variables to reduce stack usage */
     fe25519 A, B, C, E, F, G, H;
 
-    /* A ::= X1^2 */
+    /* A := X1^2 */
     fe_square(A, p->X);
-    /* B ::= Y1^2*/
+    /* B := Y1^2*/
     fe_square(B, p->Y);
 
-    /* C ::= 2*Z1^2 */
+    /* C := 2*Z1^2 */
     fe_square(C, p->Z);
     fe_add(C, C, C);
 
-    /* H ::= A+B */
+    /* H := A+B */
     fe_add(H, A, B);
 
-    /* E ::= H-(X1+Y1)^2 */
+    /* E := H-(X1+Y1)^2 */
     fe_add(E, p->X, p->Y);
     fe_square(E, E);
     fe_sub(E, H, E);
 
-    /* G ::= A-B */
+    /* G := A-B */
     fe_sub(G, A, B);
 
-    /* F ::= C+G */
+    /* F := C+G */
     fe_add(F, C, G);
 
-    /* X3 ::= E*F */
+    /* X3 := E*F */
     fe_mul(r->X, E, F);
-    /* Y3 ::= G*H */
+    /* Y3 := G*H */
     fe_mul(r->Y, G, H);
-    /* T3 ::= E*H */
-    fe_mul(r->T, E, H);
-    /* Z3 ::= F*G */
+    /* Z3 := F*G */
     fe_mul(r->Z, F, G);
+
+    /* When scheduled to be followed by another doubling we can skip setting the extended coordinate T
+     * which is not needed for doubling */
+    if (set_extended_coordinate) {
+
+        /* T3 := E*H */
+        fe_mul(r->T, E, H);
+    }
 }
 
 static inline int ed25519_is_ok_order(const point_ed25519 * p) {
 
-    /* TODO: Check against predefined table of low-order points */
+    /* TODO: Check against predefined table of low-order points (or reject even mixed-order points
+     * by checking that L times the point gives the group identity) */
     point_ed25519 q;
     point_ed25519 e;
     ed25519_identity(&e);
 
     /* Double the point three times to obtain cofactor (8) times the point */
-    ed25519_point_double(&q, p);
-    ed25519_point_double(&q, &q);
-    ed25519_point_double(&q, &q);
+    ed25519_point_double(&q, p, 0);
+    ed25519_point_double(&q, &q, 0);
+    /* Do not assume that the ed25519_points_equal implementation ignores the extended coordinate
+     * and set it in the doubling procedure */
+    ed25519_point_double(&q, &q, 1);
 
     /* Check if equal to the identity */
-    return 1 - ed25519_points_equal((point *) &q, (point *) &e);
+    return 1 - ed25519_points_equal((const point *) &q, (const point *) &e);
 }
 
 static int ed25519_decode(point * pgen, const u8 * buf) {
@@ -200,7 +217,7 @@ static int ed25519_decode(point * pgen, const u8 * buf) {
 
     fe25519 u;
     fe25519 v;
-    /* Set u ::= y^2 */
+    /* Set u := y^2 */
     fe_square(u, p->Y);
 
     /* Copy y^2 to v */
@@ -208,9 +225,9 @@ static int ed25519_decode(point * pgen, const u8 * buf) {
     /* Subtract one to obtain u = y^2 - 1 */
     fe_sub(u, u, fe_one);
     fe_strong_reduce(u, u);
-    /* Set v ::= d y^2 */
+    /* Set v := d y^2 */
     fe_mul(v, v, ed25519_d);
-    /* Set v ::= d y^2 + 1 */
+    /* Set v := d y^2 + 1 */
     fe_add(v, v, fe_one);
 
     /* So as to not allocate any more variables on the stack reuse p->T
@@ -221,7 +238,7 @@ static int ed25519_decode(point * pgen, const u8 * buf) {
     /* Raise p->T to (p-5)/8 */
     fe_exp_p_minus_5_over_8(p->T, p->T);
 
-    /* Set p->X ::= u (u v)^{(p-5)/8} */
+    /* Set p->X := u (u v)^{(p-5)/8} */
     fe_mul(p->X, u, p->T);
 
     /* Now we must consider the three cases:
@@ -238,12 +255,12 @@ static int ed25519_decode(point * pgen, const u8 * buf) {
     fe_strong_reduce(p->T, p->T);
     /* Check if we need to multiply by the square root of -1 */
     int multiply_by_i = 1 - fe_equal(p->T, u);
-    /* Set p->T ::= i x */
+    /* Set p->T := i x */
     fe_mul(p->T, p->X, fe_i);
 
     /* At this point we have p->X equal to x as calculated by (u/v)^{(p+3)/8}, and v equal to i x.
      * If multiply_by_i is one, then we have excluded case 1. (v x^2 is definitely not equal to u).
-     * In such a case we want to set p->X ::= i x: */
+     * In such a case we want to set p->X := i x: */
     fe_conditional_move(p->X, p->T, multiply_by_i);
 
     /* At this point p->X p->X v must be equal to u if we have a valid decoding (since p->X is either
@@ -262,6 +279,11 @@ static int ed25519_decode(point * pgen, const u8 * buf) {
      * the only points with x=0 (i.e. (0, 1) and (0, -1)) are of low order and so we reject
      * them anyway, we skip this check. */
 
+    /* If decoding failed, set the result to identity to ensure we have a valid point and not
+     * rely on any other code properly handling invalid ones */
+    fe_conditional_move(p->X, fe_zero, 1 - success);
+    fe_conditional_move(p->Y, fe_one, 1 - success);
+
     /* Set Z to one (normalized projective representation) */
     fe_copy(p->Z, fe_one);
     /* Set the extended coordinate T to the correct value */
@@ -276,45 +298,47 @@ static void ed25519_points_add(point_ed25519 * r, const point_ed25519 * p, const
 
     FE3C_SANITY_CHECK(ed25519_is_on_curve(p), ED25519_STR, ED25519_TO_STR(p));
     FE3C_SANITY_CHECK(ed25519_is_on_curve(q), ED25519_STR, ED25519_TO_STR(q));
+    FE3C_SANITY_CHECK(ed25519_valid_extended_projective(p), ED25519_STR, ED25519_TO_STR(p));
+    FE3C_SANITY_CHECK(ed25519_valid_extended_projective(q), ED25519_STR, ED25519_TO_STR(q));
 
     /* TODO: Reuse some old variables to reduce stack usage */
     fe25519 A, B, C, D, E, F, G, H;
 
-    /* A ::= (Y1-X1)*(Y2-X2) */
+    /* A := (Y1-X1)*(Y2-X2) */
     fe_sub(E, p->Y, p->X);
     fe_sub(F, q->Y, q->X);
     fe_mul(A, E, F);
 
-    /* B ::= (Y1+X1)*(Y2+X2) */
+    /* B := (Y1+X1)*(Y2+X2) */
     fe_add(G, p->Y, p->X);
     fe_add(H, q->Y, q->X);
     fe_mul(B, G, H);
 
-    /* C ::= T1*2*d*T2 */
+    /* C := T1*2*d*T2 */
     fe_mul(C, p->T, q->T);
     fe_mul(C, C, ed25519_d);
     fe_add(C, C, C);
 
-    /* D ::= Z1*2*Z2 */
+    /* D := Z1*2*Z2 */
     fe_mul(D, p->Z, q->Z);
     fe_add(D, D, D);
 
-    /* E ::= B-A */
+    /* E := B-A */
     fe_sub(E, B, A);
-    /* F ::= D-C */
+    /* F := D-C */
     fe_sub(F, D, C);
-    /* G ::= D+C */
+    /* G := D+C */
     fe_add(G, D, C);
-    /* H ::= B+A */
+    /* H := B+A */
     fe_add(H, B, A);
 
-    /* X3 ::= E*F */
+    /* X3 := E*F */
     fe_mul(r->X, E, F);
-    /* Y3 ::= G*H */
+    /* Y3 := G*H */
     fe_mul(r->Y, G, H);
-    /* T3 ::= E*H */
+    /* T3 := E*H */
     fe_mul(r->T, E, H);
-    /* Z3 ::= F*G */
+    /* Z3 := F*G */
     fe_mul(r->Z, F, G);
 }
 
@@ -327,19 +351,17 @@ static inline void ed25519_scalar_multiply(point_ed25519 * r, const point_ed2551
     ed25519_identity(&R[0]);
     R[1] = *p;
 
-    /* Do a simple Montgomery ladder for now */
+    /* Do a simple Montgomery ladder */
     for (int i = 255; i >= 0; i--) {
 
         /* Recover the ith bit of the scalar */
         int bit = ( s[i >> 3] >> (i & 0x7) ) & 1;
         ed25519_points_add(&R[1 - bit], &R[1 - bit], &R[bit]);
-        ed25519_point_double(&R[bit], &R[bit]);
+        ed25519_point_double(&R[bit], &R[bit], 1);
     }
 
     *r = R[0];
     purge_secrets(&R[1], sizeof(R[1]));
-
-    /* TODO: Study different implementations */
 }
 #endif /* !FE3C_OPTIMIZATION_COMB_METHOD */
 
@@ -423,14 +445,15 @@ static void ed25519_multiply_basepoint(point * rgen, const u8 * s) {
         /* We let the loop index run twice as fast and skip every other entry of naf,
          * but correct for it in the j index (j = i / 2) */
         ed25519_comb_read_precomp(&p, i >> 1, naf[i]);
-        ed25519_points_add_precomp(r, r, &p);
+        /* For the last iteration skip setting the extended coordinate */
+        ed25519_points_add_precomp(r, r, &p, i < 62);
     }
 
     /* Compute 2^{tw} Q = 2^4 Q */
-    ed25519_point_double(r, r);
-    ed25519_point_double(r, r);
-    ed25519_point_double(r, r);
-    ed25519_point_double(r, r);
+    ed25519_point_double(r, r, 0);
+    ed25519_point_double(r, r, 0);
+    ed25519_point_double(r, r, 0);
+    ed25519_point_double(r, r, 1);
 
     /* Do the second iteration of the outermost loop, i.e. iterate over even indices of the recoding
      * (see explanation above). */
@@ -439,7 +462,8 @@ static void ed25519_multiply_basepoint(point * rgen, const u8 * s) {
         /* We let the loop index run twice as fast and skip every other entry of naf,
          * but correct for it in the j index (j = i / 2) */
         ed25519_comb_read_precomp(&p, i >> 1, naf[i]);
-        ed25519_points_add_precomp(r, r, &p);
+        /* For the last iteration skip setting the extended coordinate */
+        ed25519_points_add_precomp(r, r, &p, i < 62);
     }
 
     /* At this point Q := 2^{tw} Q is a no-op since 2^{tw} Q = 2^0 Q */
@@ -471,17 +495,17 @@ static void ed25519_double_scalar_multiply(point * rgen, const u8 * s, const u8 
     point_ed25519 * r = (point_ed25519 *) rgen;
     const point_ed25519 * p = (const point_ed25519 *) pgen;
 
-    point_ed25519 G[16];
+    point_ed25519 G[15];
     G[0] = ed25519_basepoint;                    /* [0]A + [1]B */
-    ed25519_point_double(&G[ 1], &G[ 0]);        /* [0]A + [2]B */
+    ed25519_point_double(&G[ 1], &G[ 0], 1);     /* [0]A + [2]B */
     ed25519_points_add(&G[ 2], &G[ 1], &G[ 0]);  /* [0]A + [3]B */
     G[3] = *p;                                   /* [1]A + [0]B */
     ed25519_points_add(&G[ 4], &G[ 3], &G[ 0]);  /* [1]A + [1]B */
     ed25519_points_add(&G[ 5], &G[ 3], &G[ 1]);  /* [1]A + [2]B */
     ed25519_points_add(&G[ 6], &G[ 3], &G[ 2]);  /* [1]A + [3]B */
-    ed25519_point_double(&G[ 7], &G[ 3]);        /* [2]A + [0]B */
+    ed25519_point_double(&G[ 7], &G[ 3], 1);     /* [2]A + [0]B */
     ed25519_points_add(&G[ 8], &G[ 7], &G[ 0]);  /* [2]A + [1]B */
-    ed25519_point_double(&G[ 9], &G[ 4]);        /* [2]A + [2]B */
+    ed25519_point_double(&G[ 9], &G[ 4], 1);     /* [2]A + [2]B */
     ed25519_points_add(&G[10], &G[ 7], &G[ 2]);  /* [2]A + [3]B */
     ed25519_points_add(&G[11], &G[ 7], &G[ 3]);  /* [3]A + [0]B */
     ed25519_points_add(&G[12], &G[11], &G[ 0]);  /* [3]A + [1]B */
@@ -501,8 +525,8 @@ static void ed25519_double_scalar_multiply(point * rgen, const u8 * s, const u8 
 
     for (int i = 127; i >= 0; i--) {
 
-        ed25519_point_double(r, r);
-        ed25519_point_double(r, r);
+        ed25519_point_double(r, r, 0);
+        ed25519_point_double(r, r, 1);
 
         /* Recode the scalars on the fly into base-4 representation */
         u8 ss = (array_bit(s, 2*i + 1) << 1) | array_bit(s, 2*i);
@@ -534,7 +558,6 @@ static void ed25519_double_scalar_multiply(point * rgen, const u8 * s, const u8 
         ed25519_conditional_move(&t, &G[12], byte_equal(index, 13));
         ed25519_conditional_move(&t, &G[13], byte_equal(index, 14));
         ed25519_conditional_move(&t, &G[14], byte_equal(index, 15));
-        ed25519_conditional_move(&t, &G[15], byte_equal(index, 16));
 
         ed25519_points_add(r, r, &t);
     }
