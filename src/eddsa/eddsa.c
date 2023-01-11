@@ -35,9 +35,10 @@ void eddsa_sign(const eddsa_sign_request * req) {
     u8 ephemeral_scalar[2 * curve->b_in_bytes];
     u8 hash_commit_key_message[2 * curve->b_in_bytes];
 
-    /* Buffers for encoded elliptic curve points */
-    u8 encoded_public_key[curve->b_in_bytes];
+    /* Buffers for the encoded elliptic curve points */
+    u8 encoded_public_key_buffer[curve->b_in_bytes];
     u8 encoded_commitment[curve->b_in_bytes];
+    const u8 * encoded_public_key;
 
     /* Recover pointers to the virtual method tables for the group and the
      * scalars of that group (allow polymorphism) */
@@ -52,13 +53,22 @@ void eddsa_sign(const eddsa_sign_request * req) {
     iov[0].iov_len = curve->b_in_bytes;
     h(hash_secret_key, iov, 1);
 
-    /* Prune the buffer before generating the public key as specified by RFC 8032
-     * sections 5.1.5 (Ed25519) and 5.2.5 (Ed448) */
-    curve->prune_buffer(hash_secret_key);
-    /* Recover the public key */
-    point public_key;
-    gops->multiply_basepoint(&public_key, hash_secret_key);
-    gops->encode(encoded_public_key, &public_key);
+    if (req->public_key == NULL) {
+
+        /* Prune the buffer before generating the public key as specified by RFC 8032
+         * sections 5.1.5 (Ed25519) and 5.2.5 (Ed448) */
+        curve->prune_buffer(hash_secret_key);
+        /* Recover the public key */
+        point public_key;
+        gops->multiply_basepoint(&public_key, hash_secret_key);
+        gops->encode(encoded_public_key_buffer, &public_key);
+        encoded_public_key = encoded_public_key_buffer;
+
+    } else {
+
+        /* Public key cached by the application */
+        encoded_public_key = req->public_key;
+    }
 
     /* Hash the second half of the digest output concatenated with the message. Conditionally
      * prepend the dom string */

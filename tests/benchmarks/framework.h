@@ -19,6 +19,7 @@ typedef struct bench_params {
     callback_start_stopwatch start_stopwatch;
     callback_stop_stopwatch stop_stopwatch;
     callback_handle_result handle_result;
+    int cache_public_key;
 } bench_params;
 
 void run_benchmark(const bench_params * params);

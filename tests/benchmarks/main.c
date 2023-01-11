@@ -26,6 +26,7 @@ int main(int argc, char * argv[]) {
     params.context_length = 0;
     params.expiry_time = 10;
     params.stop_flag = &s_stop_test;
+    params.cache_public_key = 1;
 
     printf("--- Running %s with message_length=%d, context_length=%d (expiry_time=%d)\n", \
         argv[0], params.message_length, params.context_length, params.expiry_time);

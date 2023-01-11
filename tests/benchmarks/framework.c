@@ -34,6 +34,7 @@ void run_benchmark(const bench_params * params) {
         .signature = signature,
         .message = message,
         .secret_key = secret_key,
+        .public_key = params->cache_public_key ? public_key : NULL,
         .context = context,
         .message_length = message_length,
         .context_length = context_length,

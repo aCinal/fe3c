@@ -48,6 +48,13 @@ typedef struct eddsa_sign_request {
     const u8 * secret_key;
 
     /**
+     * @brief Public key encoded according to RFC 8032 cached by the application to speed up the signing procedure
+     * @see eddsa_derive_public_key
+     * @warning When not NULL, the application is responsible for consistency between the secret and public keys
+     */
+    const u8 * public_key;
+
+    /**
      * @brief Pointer to context, can be NULL if context_length=0
      */
     const u8 * context;
