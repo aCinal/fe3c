@@ -2,7 +2,7 @@
 #include <fe3c/eddsa.h>
 #include <curves/curves.h>
 
-TEST_GROUP(EDDSA_TAMING_THE_MANY_EDDSAS) {
+TEST_GROUP(EDDSA_TAMING_ED25519) {
 
     /* Test vectors published by Konstantinos Chalkias, François Garillot, and Valeria Nikolaenko
      * in "Taming the many EdDSAs" (DOI: 10.1007/978-3-030-64357-7_4). Notation corresponds to
@@ -12,7 +12,7 @@ TEST_GROUP(EDDSA_TAMING_THE_MANY_EDDSAS) {
      * of the paper authors). */
 };
 
-TEST(EDDSA_TAMING_THE_MANY_EDDSAS, Test0) {
+TEST(EDDSA_TAMING_ED25519, Test0) {
 
     /* Conditions satisified by the test vector:
      *
@@ -55,7 +55,7 @@ TEST(EDDSA_TAMING_THE_MANY_EDDSAS, Test0) {
     CHECK_EQUAL(0, verified);
 }
 
-TEST(EDDSA_TAMING_THE_MANY_EDDSAS, Test1) {
+TEST(EDDSA_TAMING_ED25519, Test1) {
 
     /* Conditions satisified by the test vector:
      *
@@ -98,7 +98,7 @@ TEST(EDDSA_TAMING_THE_MANY_EDDSAS, Test1) {
     CHECK_EQUAL(0, verified);
 }
 
-TEST(EDDSA_TAMING_THE_MANY_EDDSAS, Test2) {
+TEST(EDDSA_TAMING_ED25519, Test2) {
 
     /* Conditions satisified by the test vector:
      *
@@ -141,7 +141,7 @@ TEST(EDDSA_TAMING_THE_MANY_EDDSAS, Test2) {
     CHECK_EQUAL(0, verified);
 }
 
-TEST(EDDSA_TAMING_THE_MANY_EDDSAS, Test3) {
+TEST(EDDSA_TAMING_ED25519, Test3) {
 
     /* Conditions satisified by the test vector:
      *
@@ -184,7 +184,7 @@ TEST(EDDSA_TAMING_THE_MANY_EDDSAS, Test3) {
     CHECK_EQUAL(1, verified);
 }
 
-TEST(EDDSA_TAMING_THE_MANY_EDDSAS, Test4) {
+TEST(EDDSA_TAMING_ED25519, Test4) {
 
     /* Conditions satisified by the test vector:
      *
@@ -227,14 +227,14 @@ TEST(EDDSA_TAMING_THE_MANY_EDDSAS, Test4) {
     CHECK_EQUAL(0, verified);
 }
 
-TEST(EDDSA_TAMING_THE_MANY_EDDSAS, Test5) {
+TEST(EDDSA_TAMING_ED25519, Test5) {
 
     /* Conditions satisified by the test vector:
      *
      *                  S:        0 < S < L
      *          A's order:        mixed
      *          R's order:        L
-     * 8(SB) = 8R + 8(hA):        ok
+     * 8(SB) = 8R + 8(hA):        ok (unless 8h is prereduced modulo L)
      *        SB = R + hA:        nok
      */
 
@@ -270,7 +270,7 @@ TEST(EDDSA_TAMING_THE_MANY_EDDSAS, Test5) {
     CHECK_EQUAL(0, verified);
 }
 
-TEST(EDDSA_TAMING_THE_MANY_EDDSAS, Test6) {
+TEST(EDDSA_TAMING_ED25519, Test6) {
 
     /* Conditions satisified by the test vector:
      *
@@ -313,7 +313,7 @@ TEST(EDDSA_TAMING_THE_MANY_EDDSAS, Test6) {
     CHECK_EQUAL(0, verified);
 }
 
-TEST(EDDSA_TAMING_THE_MANY_EDDSAS, Test7) {
+TEST(EDDSA_TAMING_ED25519, Test7) {
 
     /* Conditions satisified by the test vector:
      *
@@ -357,7 +357,7 @@ TEST(EDDSA_TAMING_THE_MANY_EDDSAS, Test7) {
     CHECK_EQUAL(0, verified);
 }
 
-TEST(EDDSA_TAMING_THE_MANY_EDDSAS, Test8) {
+TEST(EDDSA_TAMING_ED25519, Test8) {
 
     /* Conditions satisified by the test vector:
      *
@@ -372,6 +372,7 @@ TEST(EDDSA_TAMING_THE_MANY_EDDSAS, Test8) {
      * the signature either way because of non-canonical encoding and small order.
      */
 
+    /* TODO: Double check the paper. R.y = p-1 in this case which is canonical */
     const u8 message[] = \
         "\x9b\xed\xc2\x67\x42\x37\x25\xd4" \
         "\x73\x88\x86\x31\xeb\xf4\x59\x88" \
@@ -404,7 +405,7 @@ TEST(EDDSA_TAMING_THE_MANY_EDDSAS, Test8) {
     CHECK_EQUAL(0, verified);
 }
 
-TEST(EDDSA_TAMING_THE_MANY_EDDSAS, Test9) {
+TEST(EDDSA_TAMING_ED25519, Test9) {
 
     /* Conditions satisified by the test vector:
      *
@@ -419,6 +420,7 @@ TEST(EDDSA_TAMING_THE_MANY_EDDSAS, Test9) {
      * the signature either way because of non-canonical encoding and small order.
      */
 
+    /* TODO: Double check the paper. R.y = p-1 in this case which is canonical */
     const u8 message[] = \
         "\x9b\xed\xc2\x67\x42\x37\x25\xd4" \
         "\x73\x88\x86\x31\xeb\xf4\x59\x88" \
@@ -451,7 +453,7 @@ TEST(EDDSA_TAMING_THE_MANY_EDDSAS, Test9) {
     CHECK_EQUAL(0, verified);
 }
 
-TEST(EDDSA_TAMING_THE_MANY_EDDSAS, Test10) {
+TEST(EDDSA_TAMING_ED25519, Test10) {
 
     /* Conditions satisified by the test vector:
      *
@@ -466,6 +468,7 @@ TEST(EDDSA_TAMING_THE_MANY_EDDSAS, Test10) {
      * the signature either way because of non-canonical encoding and small order.
      */
 
+    /* TODO: Double check the paper. A.y = p-1 in this case which is canonical */
     const u8 message[] = \
         "\xe9\x6b\x70\x21\xeb\x39\xc1\xa1" \
         "\x63\xb6\xda\x4e\x30\x93\xdc\xd3" \
@@ -498,7 +501,7 @@ TEST(EDDSA_TAMING_THE_MANY_EDDSAS, Test10) {
     CHECK_EQUAL(0, verified);
 }
 
-TEST(EDDSA_TAMING_THE_MANY_EDDSAS, Test11) {
+TEST(EDDSA_TAMING_ED25519, Test11) {
 
     /* Conditions satisified by the test vector:
      *
@@ -513,6 +516,7 @@ TEST(EDDSA_TAMING_THE_MANY_EDDSAS, Test11) {
      * the signature either way because of non-canonical encoding and small order.
      */
 
+    /* TODO: Double check the paper. A.y = p-1 in this case which is canonical */
     const u8 message[] = \
         "\x39\xa5\x91\xf5\x32\x1b\xbe\x07" \
         "\xfd\x5a\x23\xdc\x2f\x39\xd0\x25" \
