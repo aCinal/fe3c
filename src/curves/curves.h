@@ -13,8 +13,8 @@ extern "C" {
 
 typedef struct curve {
     hash hash_function;
-    group_ops * gops;
-    scalar_ops * sops;
+    const group_ops * gops;
+    const scalar_ops * sops;
     void (* prune_buffer)(u8 * buffer);
     const char * dom_string;
     size_t dom_string_length;

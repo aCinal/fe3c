@@ -563,7 +563,7 @@ static void ed25519_double_scalar_multiply(point * rgen, const u8 * s, const u8 
     }
 }
 
-group_ops ed25519_group_ops = {
+const group_ops ed25519_group_ops = {
     .points_equal = ed25519_points_equal,
     .encode = ed25519_encode,
     .decode = ed25519_decode,

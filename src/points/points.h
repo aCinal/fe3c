@@ -90,11 +90,11 @@ typedef struct group_ops {
 } group_ops;
 
 #if FE3C_SUPPORT_CURVE_ED25519
-extern group_ops ed25519_group_ops;
+extern const group_ops ed25519_group_ops;
 #endif /* FE3C_SUPPORT_CURVE_ED25519 */
 
 #if FE3C_SUPPORT_CURVE_ED448
-extern group_ops ed448_group_ops;
+extern const group_ops ed448_group_ops;
 #endif /* FE3C_SUPPORT_CURVE_ED448 */
 
 #ifdef __cplusplus

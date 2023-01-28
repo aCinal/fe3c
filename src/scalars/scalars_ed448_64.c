@@ -596,7 +596,7 @@ static void ed448_scalars_muladd(u8 * r, const u8 * aa, const u8 * bb, const u8 
     purge_secrets(&mask, sizeof(mask));
 }
 
-scalar_ops ed448_scalar_ops = {
+const scalar_ops ed448_scalar_ops = {
     .is_canonical = ed448_scalar_is_canonical,
     .reduce = ed448_scalar_reduce,
     .muladd = ed448_scalars_muladd

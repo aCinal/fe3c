@@ -32,11 +32,11 @@ typedef struct scalar_ops {
 } scalar_ops;
 
 #if FE3C_SUPPORT_CURVE_ED25519
-extern scalar_ops ed25519_scalar_ops;
+extern const scalar_ops ed25519_scalar_ops;
 #endif /* FE3C_SUPPORT_CURVE_ED25519 */
 
 #if FE3C_SUPPORT_CURVE_ED448
-extern scalar_ops ed448_scalar_ops;
+extern const scalar_ops ed448_scalar_ops;
 #endif /* FE3C_SUPPORT_CURVE_ED448 */
 
 #endif /* __FE3C_SCALARS_SCALARS_H */

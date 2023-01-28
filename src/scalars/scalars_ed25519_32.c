@@ -636,7 +636,7 @@ static void ed25519_scalars_muladd(u8 * r, const u8 * aa, const u8 * bb, const u
     purge_secrets(t, sizeof(t));
 }
 
-scalar_ops ed25519_scalar_ops = {
+const scalar_ops ed25519_scalar_ops = {
     .is_canonical = ed25519_scalar_is_canonical,
     .reduce = ed25519_scalar_reduce,
     .muladd = ed25519_scalars_muladd

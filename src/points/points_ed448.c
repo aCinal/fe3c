@@ -688,7 +688,7 @@ static void ed448_double_scalar_multiply(point * rgen, const u8 * s, const u8 * 
     }
 }
 
-group_ops ed448_group_ops = {
+const group_ops ed448_group_ops = {
     .points_equal = ed448_points_equal,
     .encode = ed448_encode,
     .decode = ed448_decode,

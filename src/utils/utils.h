@@ -24,21 +24,21 @@ static inline int byte_equal(u8 x, u8 y) {
 /* Provide constant-time and otherwise secure implementations of common libc functions */
 
 #if FE3C_OPTIMIZATION_SKIP_ZEROIZATION
-#define purge_secrets(...)
+    #define purge_secrets(...)
 #else
-/**
- * @brief Clear secret data in memory so that erroneous accesses to the same stack space later do not reveal anything
- * @param secrets Buffer to be cleared
- * @param size Size of the buffer
- */
-static inline void purge_secrets(void * secrets, size_t size) {
+    /**
+     * @brief Clear secret data in memory so that erroneous accesses to the same stack space later do not reveal anything
+     * @param secrets Buffer to be cleared
+     * @param size Size of the buffer
+     */
+    static inline void purge_secrets(void * secrets, size_t size) {
 
-    /* TODO: Use memset_s when available (when using C11) */
-    volatile u8 * p = (volatile u8 *) secrets;
-    while (size -- > 0) {
-        *p++ = 0;
+        /* TODO: Use memset_s when available (when using C11) */
+        volatile u8 * p = (volatile u8 *) secrets;
+        while (size -- > 0) {
+            *p++ = 0;
+        }
     }
-}
 #endif /* FE3C_OPTIMIZATION_SKIP_ZEROIZATION */
 
 #if FE3C_ENABLE_SANITY_CHECKS

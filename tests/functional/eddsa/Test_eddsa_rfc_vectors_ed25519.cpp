@@ -15,7 +15,7 @@ TEST(EDDSA_RFC_VECTORS_ED25519, Test1_DerivePublicKey) {
         "\xd7\x5a\x98\x01\x82\xb1\x0a\xb7\xd5\x4b\xfe\xd3\xc9\x64\x07\x3a" \
         "\x0e\xe1\x72\xf3\xda\xa6\x23\x25\xaf\x02\x1a\x68\xf7\x07\x51\x1a";
 
-    u8 public_key[eddsa_get_signature_length(EDDSA_CURVE_ED25519)];
+    u8 public_key[eddsa_get_public_key_length(EDDSA_CURVE_ED25519)];
 
     eddsa_derive_public_key(public_key, secret_key, EDDSA_CURVE_ED25519);
     MEMCMP_EQUAL(expected_public_key, public_key, eddsa_get_public_key_length(EDDSA_CURVE_ED25519));
@@ -86,7 +86,7 @@ TEST(EDDSA_RFC_VECTORS_ED25519, Test2_DerivePublicKey) {
         "\x3d\x40\x17\xc3\xe8\x43\x89\x5a\x92\xb7\x0a\xa7\x4d\x1b\x7e\xbc" \
         "\x9c\x98\x2c\xcf\x2e\xc4\x96\x8c\xc0\xcd\x55\xf1\x2a\xf4\x66\x0c";
 
-    u8 public_key[eddsa_get_signature_length(EDDSA_CURVE_ED25519)];
+    u8 public_key[eddsa_get_public_key_length(EDDSA_CURVE_ED25519)];
 
     eddsa_derive_public_key(public_key, secret_key, EDDSA_CURVE_ED25519);
     MEMCMP_EQUAL(expected_public_key, public_key, eddsa_get_public_key_length(EDDSA_CURVE_ED25519));
@@ -157,7 +157,7 @@ TEST(EDDSA_RFC_VECTORS_ED25519, Test3_DerivePublicKey) {
         "\xfc\x51\xcd\x8e\x62\x18\xa1\xa3\x8d\xa4\x7e\xd0\x02\x30\xf0\x58" \
         "\x08\x16\xed\x13\xba\x33\x03\xac\x5d\xeb\x91\x15\x48\x90\x80\x25";
 
-    u8 public_key[eddsa_get_signature_length(EDDSA_CURVE_ED25519)];
+    u8 public_key[eddsa_get_public_key_length(EDDSA_CURVE_ED25519)];
 
     eddsa_derive_public_key(public_key, secret_key, EDDSA_CURVE_ED25519);
     MEMCMP_EQUAL(expected_public_key, public_key, eddsa_get_public_key_length(EDDSA_CURVE_ED25519));
@@ -228,7 +228,7 @@ TEST(EDDSA_RFC_VECTORS_ED25519, Test1024_DerivePublicKey) {
         "\x27\x81\x17\xfc\x14\x4c\x72\x34\x0f\x67\xd0\xf2\x31\x6e\x83\x86" \
         "\xce\xff\xbf\x2b\x24\x28\xc9\xc5\x1f\xef\x7c\x59\x7f\x1d\x42\x6e";
 
-    u8 public_key[eddsa_get_signature_length(EDDSA_CURVE_ED25519)];
+    u8 public_key[eddsa_get_public_key_length(EDDSA_CURVE_ED25519)];
 
     eddsa_derive_public_key(public_key, secret_key, EDDSA_CURVE_ED25519);
     MEMCMP_EQUAL(expected_public_key, public_key, eddsa_get_public_key_length(EDDSA_CURVE_ED25519));
@@ -427,7 +427,7 @@ TEST(EDDSA_RFC_VECTORS_ED25519, TestShaAbc_DerivePublicKey) {
         "\xec\x17\x2b\x93\xad\x5e\x56\x3b\xf4\x93\x2c\x70\xe1\x24\x50\x34" \
         "\xc3\x54\x67\xef\x2e\xfd\x4d\x64\xeb\xf8\x19\x68\x34\x67\xe2\xbf";
 
-    u8 public_key[eddsa_get_signature_length(EDDSA_CURVE_ED25519)];
+    u8 public_key[eddsa_get_public_key_length(EDDSA_CURVE_ED25519)];
 
     eddsa_derive_public_key(public_key, secret_key, EDDSA_CURVE_ED25519);
     MEMCMP_EQUAL(expected_public_key, public_key, eddsa_get_public_key_length(EDDSA_CURVE_ED25519));
@@ -506,7 +506,7 @@ TEST(EDDSA_RFC_VECTORS_ED25519, TestCtxFoo_DerivePublicKey) {
         "\xdf\xc9\x42\x5e\x4f\x96\x8f\x7f\x0c\x29\xf0\x25\x9c\xf5\xf9\xae" \
         "\xd6\x85\x1c\x2b\xb4\xad\x8b\xfb\x86\x0c\xfe\xe0\xab\x24\x82\x92";
 
-    u8 public_key[eddsa_get_signature_length(EDDSA_CURVE_ED25519)];
+    u8 public_key[eddsa_get_public_key_length(EDDSA_CURVE_ED25519)];
 
     eddsa_derive_public_key(public_key, secret_key, EDDSA_CURVE_ED25519);
     MEMCMP_EQUAL(expected_public_key, public_key, eddsa_get_public_key_length(EDDSA_CURVE_ED25519));
@@ -579,7 +579,7 @@ TEST(EDDSA_RFC_VECTORS_ED25519, TestCtxBar_DerivePublicKey) {
         "\xdf\xc9\x42\x5e\x4f\x96\x8f\x7f\x0c\x29\xf0\x25\x9c\xf5\xf9\xae" \
         "\xd6\x85\x1c\x2b\xb4\xad\x8b\xfb\x86\x0c\xfe\xe0\xab\x24\x82\x92";
 
-    u8 public_key[eddsa_get_signature_length(EDDSA_CURVE_ED25519)];
+    u8 public_key[eddsa_get_public_key_length(EDDSA_CURVE_ED25519)];
 
     eddsa_derive_public_key(public_key, secret_key, EDDSA_CURVE_ED25519);
     MEMCMP_EQUAL(expected_public_key, public_key, eddsa_get_public_key_length(EDDSA_CURVE_ED25519));
@@ -652,7 +652,7 @@ TEST(EDDSA_RFC_VECTORS_ED25519, TestCtxFoo2_DerivePublicKey) {
         "\xdf\xc9\x42\x5e\x4f\x96\x8f\x7f\x0c\x29\xf0\x25\x9c\xf5\xf9\xae" \
         "\xd6\x85\x1c\x2b\xb4\xad\x8b\xfb\x86\x0c\xfe\xe0\xab\x24\x82\x92";
 
-    u8 public_key[eddsa_get_signature_length(EDDSA_CURVE_ED25519)];
+    u8 public_key[eddsa_get_public_key_length(EDDSA_CURVE_ED25519)];
 
     eddsa_derive_public_key(public_key, secret_key, EDDSA_CURVE_ED25519);
     MEMCMP_EQUAL(expected_public_key, public_key, eddsa_get_public_key_length(EDDSA_CURVE_ED25519));
@@ -725,7 +725,7 @@ TEST(EDDSA_RFC_VECTORS_ED25519, TestCtxFoo3_DerivePublicKey) {
         "\x0f\x1d\x12\x74\x94\x3b\x91\x41\x58\x89\x15\x2e\x89\x3d\x80\xe9" \
         "\x32\x75\xa1\xfc\x0b\x65\xfd\x71\xb4\xb0\xdd\xa1\x0a\xd7\xd7\x72";
 
-    u8 public_key[eddsa_get_signature_length(EDDSA_CURVE_ED25519)];
+    u8 public_key[eddsa_get_public_key_length(EDDSA_CURVE_ED25519)];
 
     eddsa_derive_public_key(public_key, secret_key, EDDSA_CURVE_ED25519);
     MEMCMP_EQUAL(expected_public_key, public_key, eddsa_get_public_key_length(EDDSA_CURVE_ED25519));
@@ -798,7 +798,7 @@ TEST(EDDSA_RFC_VECTORS_ED25519, TestPhAbc_DerivePublicKey) {
         "\xec\x17\x2b\x93\xad\x5e\x56\x3b\xf4\x93\x2c\x70\xe1\x24\x50\x34" \
         "\xc3\x54\x67\xef\x2e\xfd\x4d\x64\xeb\xf8\x19\x68\x34\x67\xe2\xbf";
 
-    u8 public_key[eddsa_get_signature_length(EDDSA_CURVE_ED25519)];
+    u8 public_key[eddsa_get_public_key_length(EDDSA_CURVE_ED25519)];
 
     eddsa_derive_public_key(public_key, secret_key, EDDSA_CURVE_ED25519);
     MEMCMP_EQUAL(expected_public_key, public_key, eddsa_get_public_key_length(EDDSA_CURVE_ED25519));

@@ -42,8 +42,8 @@ void eddsa_sign(const eddsa_sign_request * req) {
 
     /* Recover pointers to the virtual method tables for the group and the
      * scalars of that group (allow polymorphism) */
-    scalar_ops * sops = curve->sops;
-    group_ops * gops = curve->gops;
+    const scalar_ops * sops = curve->sops;
+    const group_ops * gops = curve->gops;
     /* Recover the hash function associated with the curve, e.g.
      * SHA-512 for Ed25519 */
     hash h = curve->hash_function;
@@ -53,11 +53,12 @@ void eddsa_sign(const eddsa_sign_request * req) {
     iov[0].iov_len = curve->b_in_bytes;
     h(hash_secret_key, iov, 1);
 
+    /* Prune the buffer before generating the public key as specified by RFC 8032
+     * sections 5.1.5 (Ed25519) and 5.2.5 (Ed448) */
+    curve->prune_buffer(hash_secret_key);
+
     if (req->public_key == NULL) {
 
-        /* Prune the buffer before generating the public key as specified by RFC 8032
-         * sections 5.1.5 (Ed25519) and 5.2.5 (Ed448) */
-        curve->prune_buffer(hash_secret_key);
         /* Recover the public key */
         point public_key;
         gops->multiply_basepoint(&public_key, hash_secret_key);
@@ -83,7 +84,6 @@ void eddsa_sign(const eddsa_sign_request * req) {
     iov[4].iov_base = req->message;
     iov[4].iov_len = req->message_length;
     h(ephemeral_scalar, iov, 5);
-
     sops->reduce(ephemeral_scalar);
 
     /* Compute the public commitment */
@@ -149,8 +149,8 @@ int eddsa_verify(const eddsa_verify_request * req) {
 
     /* Recover pointers to the virtual method tables for the group and the
      * scalars of that group (allow polymorphism) */
-    scalar_ops * sops = curve->sops;
-    group_ops * gops = curve->gops;
+    const scalar_ops * sops = curve->sops;
+    const group_ops * gops = curve->gops;
     /* Recover the hash function associated with the curve, e.g.
      * SHA-512 for Ed25519 */
     hash h = curve->hash_function;
@@ -224,7 +224,7 @@ void eddsa_derive_public_key(u8 * public_key, const u8 * secret_key, eddsa_curve
     curve->prune_buffer(digest);
 
     /* Recover the pointer to the virtual method table for the group */
-    group_ops * gops = curve->gops;
+    const group_ops * gops = curve->gops;
 
     /* Multiply the base point by the scalar */
     point public_key_point;
