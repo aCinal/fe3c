@@ -620,6 +620,7 @@ static void ed448_double_scalar_multiply(point * rgen, const u8 * s, const u8 * 
     point_ed448 * r = (point_ed448 *) rgen;
     const point_ed448 * p = (const point_ed448 *) pgen;
 
+#if FE3C_OPTIMIZATION_BASE_FOUR_SHAMIR_TRICK
     point_ed448 G[15];
     G[0] = ed448_basepoint;                    /* [0]A + [1]B */
     ed448_point_double(&G[ 1], &G[ 0], 1);     /* [0]A + [2]B */
@@ -686,6 +687,37 @@ static void ed448_double_scalar_multiply(point * rgen, const u8 * s, const u8 * 
 
         ed448_points_add(r, r, &t);
     }
+#else
+    /* To reduce stack usage, only store pointers to the public key A
+     * and the basepoint B, and allocate only one point (A+B) */
+    point_ed448 sum;
+    ed448_points_add(&sum, p, &ed448_basepoint);
+    const point_ed448 * G[3];
+    G[0] = &ed448_basepoint;  /* [0]A + [1]B */
+    G[1] = p;                 /* [1]A + [0]B */
+    G[2] = &sum;              /* [1]A + [1]B */
+
+    ed448_identity(r);
+
+    for (int i = 447; i >= 0; i--) {
+
+        ed448_point_double(r, r, 1);
+
+        u8 index = (array_bit(h, i) << 1) | array_bit(s, i);
+
+        /* Access all elements of the array to prevent cache-based timing
+         * attacks. Note that for most applications constant-time signature
+         * verification is not needed. It is for the few that care that we
+         * do this. */
+        point_ed448 t;
+        ed448_identity(&t);
+        ed448_conditional_move(&t, G[0], byte_equal(index, 1));
+        ed448_conditional_move(&t, G[1], byte_equal(index, 2));
+        ed448_conditional_move(&t, G[2], byte_equal(index, 3));
+
+        ed448_points_add(r, r, &t);
+    }
+#endif /* !FE3C_OPTIMIZATION_BASE_FOUR_SHAMIR_TRICK */
 }
 
 const group_ops ed448_group_ops = {

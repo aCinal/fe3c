@@ -15,6 +15,7 @@ add_benchmark_test(
     PREPROCESSOR_DEFINITIONS  FE3C_64BIT
                               FE3C_OPTIMIZATION_FAST_SQUARING
                               FE3C_OPTIMIZATION_COMB_METHOD
+                              FE3C_OPTIMIZATION_BASE_FOUR_SHAMIR
 )
 
 add_benchmark_test(
@@ -22,6 +23,7 @@ add_benchmark_test(
     PREPROCESSOR_DEFINITIONS  FE3C_32BIT
                               FE3C_OPTIMIZATION_FAST_SQUARING
                               FE3C_OPTIMIZATION_COMB_METHOD
+                              FE3C_OPTIMIZATION_BASE_FOUR_SHAMIR
 )
 
 add_benchmark_test(
@@ -29,6 +31,7 @@ add_benchmark_test(
     PREPROCESSOR_DEFINITIONS  FE3C_64BIT
                               FE3C_OPTIMIZATION_FAST_SQUARING
                               FE3C_OPTIMIZATION_COMB_METHOD
+                              FE3C_OPTIMIZATION_BASE_FOUR_SHAMIR
                               FE3C_OPTIMIZATION_SKIP_ZEROIZATION
 )
 
@@ -37,5 +40,6 @@ add_benchmark_test(
     PREPROCESSOR_DEFINITIONS  FE3C_32BIT
                               FE3C_OPTIMIZATION_FAST_SQUARING
                               FE3C_OPTIMIZATION_COMB_METHOD
+                              FE3C_OPTIMIZATION_BASE_FOUR_SHAMIR
                               FE3C_OPTIMIZATION_SKIP_ZEROIZATION
 )
