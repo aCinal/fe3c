@@ -95,6 +95,36 @@ add_functional_test(
 )
 
 add_functional_test(
+    NAME                      eddsa_rfc_vectors_ed25519_64_optimized
+    UT_SOURCE                 Test_eddsa_rfc_vectors_ed25519.cpp
+    UUT_SOURCES               ${FE3C_SOURCE_DIR}/eddsa/eddsa.c
+                              ${FE3C_SOURCE_DIR}/curves/curves.c
+                              ${FE3C_SOURCE_DIR}/curves/curve_ed25519.c
+                              ${FE3C_SOURCE_DIR}/points/points_ed25519.c
+                              ${FE3C_SOURCE_DIR}/scalars/scalars_ed25519_64.c
+                              ${FE3C_SOURCE_DIR}/hash_functions/hash_function_sha512.c
+    PREPROCESSOR_DEFINITIONS  FE3C_64BIT FE3C_SUPPORT_CURVE_ED25519
+                              FE3C_OPTIMIZATION_FAST_SQUARING
+                              FE3C_OPTIMIZATION_COMB_METHOD
+                              FE3C_OPTIMIZATION_BASE_FOUR_SHAMIR_TRICK
+)
+
+add_functional_test(
+    NAME                      eddsa_rfc_vectors_ed25519_32_optimized
+    UT_SOURCE                 Test_eddsa_rfc_vectors_ed25519.cpp
+    UUT_SOURCES               ${FE3C_SOURCE_DIR}/eddsa/eddsa.c
+                              ${FE3C_SOURCE_DIR}/curves/curves.c
+                              ${FE3C_SOURCE_DIR}/curves/curve_ed25519.c
+                              ${FE3C_SOURCE_DIR}/points/points_ed25519.c
+                              ${FE3C_SOURCE_DIR}/scalars/scalars_ed25519_32.c
+                              ${FE3C_SOURCE_DIR}/hash_functions/hash_function_sha512.c
+    PREPROCESSOR_DEFINITIONS  FE3C_32BIT FE3C_SUPPORT_CURVE_ED25519
+                              FE3C_OPTIMIZATION_FAST_SQUARING
+                              FE3C_OPTIMIZATION_COMB_METHOD
+                              FE3C_OPTIMIZATION_BASE_FOUR_SHAMIR_TRICK
+)
+
+add_functional_test(
     NAME                      eddsa_rfc_vectors_ed448_64_optimized
     UT_SOURCE                 Test_eddsa_rfc_vectors_ed448.cpp
     UUT_SOURCES               ${FE3C_SOURCE_DIR}/eddsa/eddsa.c
@@ -106,7 +136,7 @@ add_functional_test(
     PREPROCESSOR_DEFINITIONS  FE3C_64BIT FE3C_SUPPORT_CURVE_ED448
                               FE3C_OPTIMIZATION_FAST_SQUARING
                               FE3C_OPTIMIZATION_COMB_METHOD
-                              FE3C_OPTIMIZATION_BASE_FOUR_SHAMIR
+                              FE3C_OPTIMIZATION_BASE_FOUR_SHAMIR_TRICK
 )
 
 add_functional_test(
@@ -121,7 +151,7 @@ add_functional_test(
     PREPROCESSOR_DEFINITIONS  FE3C_32BIT FE3C_SUPPORT_CURVE_ED448
                               FE3C_OPTIMIZATION_FAST_SQUARING
                               FE3C_OPTIMIZATION_COMB_METHOD
-                              FE3C_OPTIMIZATION_BASE_FOUR_SHAMIR
+                              FE3C_OPTIMIZATION_BASE_FOUR_SHAMIR_TRICK
 )
 
 add_functional_test(

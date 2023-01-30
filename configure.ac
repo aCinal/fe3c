@@ -108,8 +108,8 @@ AC_ARG_ENABLE([base-four-shamir],
                      [test "x$enableval" != "xyes"],
                      [AC_MSG_ERROR([bad value ${enableval} for --enable-base-four-shamir])])],
               [])
-AM_CONDITIONAL([FE3C_OPTIMIZATION_BASE_FOUR_SHAMIR], [test "x$optimization_base_four_shamir" = "xyes"])
-AS_IF([test "x$optimization_base_four_shamir" = "xyes"], AC_DEFINE([FE3C_OPTIMIZATION_BASE_FOUR_SHAMIR]), [])
+AM_CONDITIONAL([FE3C_OPTIMIZATION_BASE_FOUR_SHAMIR_TRICK], [test "x$optimization_base_four_shamir" = "xyes"])
+AS_IF([test "x$optimization_base_four_shamir" = "xyes"], AC_DEFINE([FE3C_OPTIMIZATION_BASE_FOUR_SHAMIR_TRICK]), [])
 
 optimization_skip_zeroization="no"
 AC_ARG_ENABLE([zeroization],
