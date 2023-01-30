@@ -1,6 +1,5 @@
 #include <CppUTest/TestHarness.h>
 #include <fe3c/eddsa.h>
-#include <curves/curves.h>
 
 TEST_GROUP(EDDSA_FAIL_CASES_ED448) {
 
