@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+
+function execute_tests {
+    for component_path in $(ls); do
+        # Only consider directories and ignore the CMakeFiles directory
+        if [[ -d ${component_path} && ${component_path} != "CMakeFiles" ]]; then
+            for artifact in $(ls ${component_path}); do
+                executable_path=${component_path}/${artifact}
+                # Only consider regular executable files (note that directories are also executable, i.e. searchable)
+                if [[ -f ${executable_path} && -x ${executable_path} ]]; then
+                    ./${executable_path} || { echo "Failure in test: ${executable_path}!" && exit 1; }
+                fi
+            done
+        fi
+    done
+}
+
+cmake -S . -B build &&
+cd build &&
+make && execute_tests &&
+echo "All tests ok"

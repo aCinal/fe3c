@@ -51,7 +51,6 @@ void run_benchmark(const bench_params * params) {
     elapsed = params->stop_stopwatch(stopwatch_start);
     params->handle_result(curve_id, message_length, 0, iterations, elapsed);
 
-
     eddsa_verify_request verify_req = {
         .signature = signature,
         .message = message,

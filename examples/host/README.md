@@ -1,8 +1,10 @@
-# Fe3C example application
+# Fe3C example host application
+
+A simple command-line tool for signature generation and verification.
 
 ## Build
 
-To build the example application make sure you have built and installed the `libcementite` library first, and then run:
+To build the example host application make sure you have built and installed the `libcementite` library first, and then run:
 
 ```bash
 make

@@ -1,0 +1,37 @@
+menu "cementite (fe3c)"
+
+    config FE3C_SUPPORT_CURVE_ED25519
+        bool "Enable support for the Ed25519 curve"
+        default y
+        help
+            Enable support for the Ed25519 curve.
+
+    config FE3C_SUPPORT_CURVE_ED448
+        bool "Enable support for the Ed448 curve"
+        default n
+        help
+            Enable support for the Ed448 curve.
+
+    config FE3C_OPTIMIZATION_SKIP_ZEROIZATION
+        bool "Skip secret zeroization"
+        default n
+        help
+            Disable zeroization of intermediate results on stack, which may marginally increase
+            performance and reduce code footprint, but decreases security in systems where stack
+            is shared with unsafe code, which may read data left behind by crypto operations.
+
+    config FE3C_OPTIMIZATION_COMB_METHOD
+        bool "Use comb method for scalar multiplication"
+        default y
+        help
+            Enable comb method of scalar multiplication, which will increase data footprint,
+            but will hugely increase performance.
+
+    config FE3C_OPTIMIZATION_FAST_SQUARING
+        bool "Use optimized squaring in the field"
+        default y
+        help
+            Use a dedicated routine for squaring in the field instead of reusing the multiplication
+            code.
+
+endmenu  # cementite (fe3c)

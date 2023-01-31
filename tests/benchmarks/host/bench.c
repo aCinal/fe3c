@@ -1,4 +1,4 @@
-#include "framework.h"
+#include "../framework.h"
 #include <fe3c/eddsa.h>
 #include <unistd.h>
 #include <signal.h>
@@ -28,17 +28,36 @@ int main(int argc, char * argv[]) {
     params.stop_flag = &s_stop_test;
     params.cache_public_key = 1;
 
-    printf("--- Running %s with message_length=%d, context_length=%d (expiry_time=%d)\n", \
-        argv[0], params.message_length, params.context_length, params.expiry_time);
-
     /* Install a SIGARLM handler */
     signal(SIGALRM, sigalrm_handler);
 
-    params.curve_id = EDDSA_CURVE_ED25519;
-    run_benchmark(&params);
+    if (eddsa_is_curve_supported(EDDSA_CURVE_ED25519)) {
 
-    params.curve_id = EDDSA_CURVE_ED448;
-    run_benchmark(&params);
+        printf("[+] Running Ed25519 benchmark with message_length=%d, context_length=%d (expiry_time=%d)\n", \
+            params.message_length, params.context_length, params.expiry_time);
+
+        params.curve_id = EDDSA_CURVE_ED25519;
+        run_benchmark(&params);
+
+    } else {
+
+        printf("[-] Curve Ed25519 is not supported in the current build\n");
+    }
+
+    if (eddsa_is_curve_supported(EDDSA_CURVE_ED448)) {
+
+        printf("[+] Running Ed448 benchmark with message_length=%d, context_length=%d (expiry_time=%d)\n", \
+            params.message_length, params.context_length, params.expiry_time);
+
+        params.curve_id = EDDSA_CURVE_ED448;
+        run_benchmark(&params);
+
+    } else {
+
+        printf("[-] Curve Ed448 is not supported in the current build\n");
+    }
+
+    printf("[+] Benchmarking complete\n");
 
     return 0;
 }
@@ -87,7 +106,7 @@ static void bench_linux_handle_result(eddsa_curve curve_id, size_t message_lengt
     double sigs_per_sec = iterations / elapsed;
 
     printf(
-        "%s %s (msg len: %u): %d signatures in %lf s (%lf s/signature, %lf %s)\n", \
+        "[+]   %s %s (msg len: %u): %d signatures in %lf s (%lf s/signature, %lf %s)\n", \
         curve_id == EDDSA_CURVE_ED25519 ?
             "Ed25519" :
             "Ed448  ",
@@ -107,6 +126,7 @@ static void bench_linux_handle_result(eddsa_curve curve_id, size_t message_lengt
 
 static void sigalrm_handler(int signo) {
 
+    (void) signo;
     /* Break out of the benchmark loop */
     s_stop_test = 1;
 }

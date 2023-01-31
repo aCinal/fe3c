@@ -22,7 +22,7 @@ function(add_functional_test)
             "UT_SOURCE='${ftest_UT_SOURCE}'")
     endif()
 
-    set(FUNCTIONAL_TESTS_SOURCE_DIR ${CMAKE_SOURCE_DIR}/functional)
+    set(FUNCTIONAL_TESTS_SOURCE_DIR ${CMAKE_SOURCE_DIR})
     # Build the test group
     add_executable(
         ${ftest_NAME}

@@ -1,0 +1,38 @@
+menu "fe3c example application"
+
+    choice EXAMPLE_WIFI_MODE
+        prompt "Wi-Fi mode"
+        default EXAMPLE_WIFI_MODE_SOFTAP
+        help
+            Run the example application as an access point (SoftAP) or as a station
+            connected to an existing network.
+        config EXAMPLE_WIFI_MODE_SOFTAP
+            bool "SoftAP"
+        config EXAMPLE_WIFI_MODE_STA
+            bool "Station"
+    endchoice
+
+    config EXAMPLE_WIFI_SSID
+        string "Wi-Fi SSID"
+        default "Fe3CExample"
+        help
+            SSID (network name) of the:
+            - SoftAP run on the ESP32, if the SoftAP mode has been selected,
+            - access point the ESP32 will connect to, if the Station mode has been selected.
+
+    config EXAMPLE_WIFI_PASS
+        string "Wi-Fi Password"
+        default "password"
+        help
+            Wi-Fi password (WPA or WPA2) to the:
+            - SoftAP run on the ESP32, if the SoftAP mode has been selected,
+            - access point the ESP32 will connect to, if the Station mode has been selected.
+
+    config EXAMPLE_WIFI_MAX_CONNECT_RETRIES
+        int "Number of connection retries before giving up"
+        depends on EXAMPLE_WIFI_MODE_STA
+        default 3
+        help
+            Set the maximum number of retries to the access point before giving up.
+
+endmenu  # fe3c example application
