@@ -85,6 +85,9 @@ void stack_dimensioning_for_curve(eddsa_curve curve_id) {
     assert(pdPASS == ret);
     /* Wait for the child task to finish */
     xSemaphoreTake(context.sem, portMAX_DELAY);
+
+    /* Destroy the semaphore */
+    vSemaphoreDelete(context.sem);
 }
 
 static void stack_measurement_task(void * args) {
