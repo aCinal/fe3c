@@ -24,6 +24,7 @@ static esp_err_t verify_handler(httpd_req_t * http_req);
 static eddsa_curve get_curve_from_query(httpd_req_t * http_req);
 static void bad_request(httpd_req_t * http_req);
 static void unsupported_curve(httpd_req_t * http_req);
+static esp_err_t read_request_body(httpd_req_t * http_req, u8 * buffer, size_t length);
 
 static const char * TAG = "example";
 static u8 * secret_keys[EDDSA_NUMBER_OF_SUPPORTED_CURVES];
@@ -263,13 +264,8 @@ static esp_err_t put_secret_key_handler(httpd_req_t * http_req) {
     }
 
     /* Read the secret key */
-    int ret = httpd_req_recv(http_req, (char *) secret_keys[curve], eddsa_get_secret_key_length(curve));
-    if (unlikely(ret <= 0)) {
+    if (unlikely(ESP_OK != read_request_body(http_req, secret_keys[curve], eddsa_get_secret_key_length(curve)))) {
 
-        if (ret == HTTPD_SOCK_ERR_TIMEOUT) {
-
-            httpd_resp_send_408(http_req);
-        }
         /* In case of error, returning ESP_FAIL will ensure that the underlying
          * socket is closed */
         return ESP_FAIL;
@@ -341,13 +337,8 @@ static esp_err_t sign_handler(httpd_req_t * http_req) {
         assert(message);
 
         /* Read the message */
-        int ret = httpd_req_recv(http_req, (char *) message, http_req->content_len);
-        if (unlikely(ret <= 0)) {
+        if (unlikely(ESP_OK != read_request_body(http_req, message, http_req->content_len))) {
 
-            if (ret == HTTPD_SOCK_ERR_TIMEOUT) {
-
-                httpd_resp_send_408(http_req);
-            }
             free(message);
             /* In case of error, returning ESP_FAIL will ensure that the underlying
              * socket is closed */
@@ -418,13 +409,8 @@ static esp_err_t verify_handler(httpd_req_t * http_req) {
     u8 * payload = malloc(http_req->content_len);
     assert(payload);
     /* Read the signature and the message in one go */
-    int ret = httpd_req_recv(http_req, (char *) payload, http_req->content_len);
-    if (unlikely(ret <= 0)) {
+    if (unlikely(ESP_OK != read_request_body(http_req, payload, http_req->content_len))) {
 
-        if (ret == HTTPD_SOCK_ERR_TIMEOUT) {
-
-            httpd_resp_send_408(http_req);
-        }
         free(payload);
         /* In case of error, returning ESP_FAIL will ensure that the underlying
          * socket is closed */
@@ -507,4 +493,29 @@ static void unsupported_curve(httpd_req_t * http_req) {
 
     ESP_ERROR_CHECK(httpd_resp_set_status(http_req, HTTPD_404));
     httpd_resp_send(http_req, "Unsupported curve", HTTPD_RESP_USE_STRLEN);
+}
+
+static esp_err_t read_request_body(httpd_req_t * http_req, u8 * buffer, size_t length) {
+
+    while (length > 0) {
+
+        int received = httpd_req_recv(http_req, (char *) buffer, length);
+        if (unlikely(received <= 0)) {
+
+            if (received == HTTPD_SOCK_ERR_TIMEOUT) {
+
+                httpd_resp_send_408(http_req);
+            }
+            /* In case of error, returning ESP_FAIL will ensure that the underlying
+             * socket is closed */
+            return ESP_FAIL;
+
+        }
+
+        /* Retry if failed to receive everything in one go */
+        buffer += received;
+        length -= received;
+    }
+
+    return ESP_OK;
 }
