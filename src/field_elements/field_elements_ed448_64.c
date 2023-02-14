@@ -1,32 +1,20 @@
-
-#ifndef __FE3C_FIELD_ELEMENTS_FIELD_ELEMENTS_ED448_64_H
-#define __FE3C_FIELD_ELEMENTS_FIELD_ELEMENTS_ED448_64_H
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-#include <field_elements/field_elements.h>
+#include <field_elements/field_elements_ed448.h>
 #include <utils/utils.h>
 
 #if !FE3C_64BIT
-    #error "Build system inconsistency detected! field_elements_ed448_64.h in use despite FE3C_64BIT not being set"
+    #error "Build system inconsistency detected! field_elements_ed448_64.c in use despite FE3C_64BIT not being set"
 #endif /* !FE3C_64BIT */
 
 #define LOW_56_BITS_MASK  0xffffffffffffffULL
-#define FE448_STR "0x%lx, 0x%lx, 0x%lx, 0x%lx, 0x%lx, 0x%lx, 0x%lx, 0x%lx"
-#define FE448_TO_STR(x) \
-    x[0], x[1], x[2], x[3], \
-    x[4], x[5], x[6], x[7]
 
 /* Elliptic curve constant d = -39081 */
-static const fe448 ed448_d = { 0xffffffffff6756, 0xffffffffffffff, 0xffffffffffffff, 0xffffffffffffff, 0xfffffffffffffe, 0xffffffffffffff, 0xffffffffffffff, 0xffffffffffffff };
+const fe448 ed448_d = { 0xffffffffff6756, 0xffffffffffffff, 0xffffffffffffff, 0xffffffffffffff, 0xfffffffffffffe, 0xffffffffffffff, 0xffffffffffffff, 0xffffffffffffff };
 /* Twisted elliptic curve constant d' = d-1 */
-static const fe448 ed448twist_d = { 0xffffffffff6755, 0xffffffffffffff, 0xffffffffffffff, 0xffffffffffffff, 0xfffffffffffffe, 0xffffffffffffff, 0xffffffffffffff, 0xffffffffffffff };
+const fe448 ed448twist_d = { 0xffffffffff6755, 0xffffffffffffff, 0xffffffffffffff, 0xffffffffffffff, 0xfffffffffffffe, 0xffffffffffffff, 0xffffffffffffff, 0xffffffffffffff };
 /* Additive identity in the field */
-static const fe448 fe_zero = { 0, 0, 0, 0, 0, 0, 0, 0 };
+const fe448 fe448_zero = { 0, 0, 0, 0, 0, 0, 0, 0 };
 /* Multiplicative identity in the field */
-static const fe448 fe_one = { 1, 0, 0, 0, 0, 0, 0, 0 };
+const fe448 fe448_one = { 1, 0, 0, 0, 0, 0, 0, 0 };
 
 static inline u64 _load_56(const u8 src[7]) {
 
@@ -72,7 +60,7 @@ static inline void _store_64(u8 dst[8], u64 src) {
  * @param r Destination field element
  * @param a Source field element
  */
-static inline void fe_copy(fe448 r, const fe448 a) {
+void fe448_copy(fe448 r, const fe448 a) {
 
     r[0] = a[0];
     r[1] = a[1];
@@ -89,7 +77,7 @@ static inline void fe_copy(fe448 r, const fe448 a) {
  * @param a Field element to check
  * @return 1 if a is in canonical form, 0 otherwise
  */
-static inline int fe_is_canonical(const fe448 a) {
+static inline int fe448_is_canonical(const fe448 a) {
 
     int canonical = 1;
     canonical &= (a[0] <  0xffffffffffffffULL);
@@ -110,7 +98,7 @@ static inline int fe_is_canonical(const fe448 a) {
  * @return 1 if a = b, 0 otherwise
  * @note The elements should be reduced by the caller first
  */
-static inline int fe_equal(const fe448 a, const fe448 b) {
+int fe448_equal(const fe448 a, const fe448 b) {
 
     fe_limb_type sum = 0;
 
@@ -145,7 +133,7 @@ static inline int fe_equal(const fe448 a, const fe448 b) {
  * @param[in] move Flag deciding on the branch, if set to 0, r ::= r, and if set to 1, r ::= a
  * @note If move is set to anything other than 0 or 1, the results are undefined
  */
-static inline void fe_conditional_move(fe448 r, const fe448 a, int move) {
+void fe448_conditional_move(fe448 r, const fe448 a, int move) {
 
     /* Set the mask to 0x0000000000000000 if move is 0 or to 0xFFFFFFFFFFFFFFFF if it is 1 */
     const fe_limb_type mask = (fe_limb_type)( -(i64) move );
@@ -201,7 +189,7 @@ static inline void fe_conditional_move(fe448 r, const fe448 a, int move) {
  * @param[in] a Field element to be reduced
  * @note Note that the result need to be in canonical form, i.e. between 0 and p-1, it need only be less than 2p
  */
-static inline void fe_weak_reduce(fe448 r, const fe448 a) {
+void fe448_weak_reduce(fe448 r, const fe448 a) {
 
     /* Do a "relaxed" reduction (to borrow terminology form Michael Scott's "Slothful reduction" paper)
      * - this ensures the result is less than 2p (where p = 2^448 - 2^224 - 1) */
@@ -283,9 +271,9 @@ static inline void fe_weak_reduce(fe448 r, const fe448 a) {
  * @param[in] a Field element to be reduced
  * @note The result is guaranteed to be in canonical form, i.e. between 0 and p-1
  */
-static inline void fe_strong_reduce(fe448 r, const fe448 a) {
+void fe448_strong_reduce(fe448 r, const fe448 a) {
 
-    fe_weak_reduce(r, a);
+    fe448_weak_reduce(r, a);
     /* After the weak reduction r is congruent to a and less than 2p */
 
     /* Compute r-p and conditionally use it as a result if r is larger than p */
@@ -317,7 +305,7 @@ static inline void fe_strong_reduce(fe448 r, const fe448 a) {
     t[7] -= (1ULL << 56);
     /* Check the highest bit of t[7] for underflow. If the highest bit is set then
      * underflow occurred and so we return r, otherwise we set r ::= t and return that */
-    fe_conditional_move(r, t, (t[7] >> 63) ^ 1);
+    fe448_conditional_move(r, t, (t[7] >> 63) ^ 1);
 }
 
 /**
@@ -325,7 +313,7 @@ static inline void fe_strong_reduce(fe448 r, const fe448 a) {
  * @param[out] r The result of negation
  * @param[in] a Element to be negated
  */
-static inline void fe_neg(fe448 r, const fe448 a) {
+void fe448_neg(fe448 r, const fe448 a) {
 
     /* Check against underflow */
     FE3C_SANITY_CHECK(a[0] <= 0x3fffffffffffffcULL, FE448_STR, FE448_TO_STR(a));
@@ -354,7 +342,7 @@ static inline void fe_neg(fe448 r, const fe448 a) {
  * @param[in] a Operand
  * @param[in] b Operand
  */
-static inline void fe_add(fe448 r, const fe448 a, const fe448 b) {
+void fe448_add(fe448 r, const fe448 a, const fe448 b) {
 
     r[0] = a[0] + b[0];
     r[1] = a[1] + b[1];
@@ -372,7 +360,7 @@ static inline void fe_add(fe448 r, const fe448 a, const fe448 b) {
  * @param[in] a Minuend
  * @param[in] b Subtrahend
  */
-static inline void fe_sub(fe448 r, const fe448 a, const fe448 b) {
+void fe448_sub(fe448 r, const fe448 a, const fe448 b) {
 
     /* Check against underflow */
     FE3C_SANITY_CHECK(b[0] <= 0x3fffffffffffffcULL, FE448_STR, FE448_TO_STR(b));
@@ -393,7 +381,7 @@ static inline void fe_sub(fe448 r, const fe448 a, const fe448 b) {
     r[5] = a[5] + 0x3fffffffffffffcULL - b[5];
     r[6] = a[6] + 0x3fffffffffffffcULL - b[6];
     r[7] = a[7] + 0x3fffffffffffffcULL - b[7];
-    /* We could also call fe_neg() followed by fe_add(), but this would require
+    /* We could also call fe448_neg() followed by fe448_add(), but this would require
      * an intermediate fe variable to support aliasing */
 }
 
@@ -403,7 +391,7 @@ static inline void fe_sub(fe448 r, const fe448 a, const fe448 b) {
  * @param[in] a Operand
  * @param[in] b Operand
  */
-static inline void fe_mul(fe448 r, const fe448 a, const fe448 b) {
+void fe448_mul(fe448 r, const fe448 a, const fe448 b) {
 
     /* Note that we are using the so-called "golden-ratio prime" which facilitates fast
      * Karatsuba multiplication. Let S = 2^224. Then:
@@ -462,7 +450,7 @@ static inline void fe_mul(fe448 r, const fe448 a, const fe448 b) {
      *           = (g + (2^448 - 2^224 - 1)e + 2^224 e + e + 2^224 f) mod (2^448 - 2^224 - 1)
      *           = (g + 2^224 (e + f) + e) mod (2^448 - 2^224 - 1)
      *
-     * (cf. comments in fe_weak_reduce()). In our case the e term corresponds to the
+     * (cf. comments in fe448_weak_reduce()). In our case the e term corresponds to the
      * partial products mikj where i+j>3.
      */
 
@@ -561,10 +549,10 @@ static inline void fe_mul(fe448 r, const fe448 a, const fe448 b) {
  * @param[out] r Result of the squaring, i.e. the product r = a a
  * @param[in] a Field element to square
  */
-static inline void fe_square(fe448 r, const fe448 a) {
+void fe448_square(fe448 r, const fe448 a) {
 
 #if !FE3C_OPTIMIZATION_FAST_SQUARING
-    fe_mul(r, a, a);
+    fe448_mul(r, a, a);
 #else
     u128 a0 = a[0];
     u128 a1 = a[1];
@@ -603,7 +591,7 @@ static inline void fe_square(fe448 r, const fe448 a) {
     u128 r2 =                             m3*m3;
     u128 r3 = 0;
     /* Add at the 2^224 "level" the terms which exceeded 2^448 which are currently held in r0-r3.
-     * See comments in fe_mul() for a more detailed explanation. */
+     * See comments in fe448_mul() for a more detailed explanation. */
     u128 r4 = r0 + m0*m0;
     u128 r5 = r1 + m0*m1 + m1*m0;
     u128 r6 = r2 + m0*m2 + m1*m1 + m2*m0;
@@ -684,10 +672,10 @@ static inline void fe_square(fe448 r, const fe448 a) {
  * @param[out] buffer Output buffer for the encoded field element
  * @param[in] a Field element to encode
  */
-static inline void fe_encode(u8 * buffer, fe448 a) {
+void fe448_encode(u8 * buffer, fe448 a) {
 
     /* Canonicalize the element first */
-    fe_strong_reduce(a, a);
+    fe448_strong_reduce(a, a);
 
     /* Store the temporary results of bit operations in separate variables (mapped to separate
      * registers) to allow for greater instruction-level parallelism */
@@ -731,7 +719,7 @@ static inline void fe_encode(u8 * buffer, fe448 a) {
  * @return 1 if decoding succeeded, 0 otherwise
  */
 __attribute__((warn_unused_result))
-static inline int fe_decode(fe448 r, const u8 * buffer) {
+int fe448_decode(fe448 r, const u8 * buffer) {
 
     r[0] = _load_56(&buffer[0 * 7]);
     r[1] = _load_56(&buffer[1 * 7]);
@@ -745,11 +733,5 @@ static inline int fe_decode(fe448 r, const u8 * buffer) {
     /* Check that the last byte is cleared (except for possibly the highest bit)
      * and that the rest of the bytes (which we have just parsed into limbs)
      * encode a canonical integer (i.e. smaller than p) */
-    return fe_is_canonical(r) & ( (buffer[56] & 0x7F) == 0 );
+    return fe448_is_canonical(r) & ( (buffer[56] & 0x7F) == 0 );
 }
-
-#ifdef __cplusplus
-}
-#endif
-
-#endif /* __FE3C_FIELD_ELEMENTS_FIELD_ELEMENTS_ED448_64_H */

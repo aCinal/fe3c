@@ -1,37 +1,25 @@
-
-#ifndef __FE3C_FIELD_ELEMENTS_FIELD_ELEMENTS_ED25519_32_H
-#define __FE3C_FIELD_ELEMENTS_FIELD_ELEMENTS_ED25519_32_H
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-#include <field_elements/field_elements.h>
+#include <field_elements/field_elements_ed25519.h>
 #include <utils/utils.h>
 
 #if !FE3C_32BIT
-    #error "Build system inconsistency detected! field_elements_ed25519_32.h in use despite FE3C_32BIT not being set"
+    #error "Build system inconsistency detected! field_elements_ed25519_32.c in use despite FE3C_32BIT not being set"
 #endif /* !FE3C_32BIT */
 
 /* Use a mixed-radix representation, the first (0th) limb is 26-bits long, the next is 25-bits long, the one after
  * that - 26-bits long - and so on. */
 #define LOW_25_BITS_MASK  0x1ffffffU
 #define LOW_26_BITS_MASK  0x3ffffffU
-#define FE25519_STR "0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x"
-#define FE25519_TO_STR(x) \
-    x[0], x[1], x[2], x[3], x[4], \
-    x[5], x[6], x[7], x[8], x[9]
 
 /* Elliptic curve constant d = -121665/121666 */
-static const fe25519 ed25519_d = {
+const fe25519 ed25519_d = {
     0x35978a3, 0xd37284, 0x3156ebd, 0x6a0a0e, 0x1c029, 0x179e898, 0x3a03cbb, 0x1ce7198, 0x2e2b6ff, 0x1480db3
 };
 /* Additive identity in the field */
-static const fe25519 fe_zero = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+const fe25519 fe25519_zero = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 /* Multiplicative identity in the field */
-static const fe25519 fe_one = { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+const fe25519 fe25519_one = { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 /* "Positive" (even) square root of -1 in the field */
-static const fe25519 fe_i = {
+const fe25519 fe25519_i = {
     0x20ea0b0, 0x186c9d2, 0x8f189d, 0x35697f, 0xbd0c60, 0x1fbd7a7, 0x2804c9e, 0x1e16569, 0x4fc1d, 0xae0c92
 };
 
@@ -71,7 +59,7 @@ static inline void _store_32(u8 dst[4], u32 src) {
  * @param r Destination field element
  * @param a Source field element
  */
-static inline void fe_copy(fe25519 r, const fe25519 a) {
+void fe25519_copy(fe25519 r, const fe25519 a) {
 
     r[0] = a[0];
     r[1] = a[1];
@@ -90,7 +78,7 @@ static inline void fe_copy(fe25519 r, const fe25519 a) {
  * @param a Field element to check
  * @return 1 if a is in canonical form, 0 otherwise
  */
-static inline int fe_is_canonical(const fe25519 a) {
+static inline int fe25519_is_canonical(const fe25519 a) {
 
     int canonical = 1;
     canonical &= (a[0] <  0x3ffffed);
@@ -113,7 +101,7 @@ static inline int fe_is_canonical(const fe25519 a) {
  * @return 1 if a = b, 0 otherwise
  * @note The elements should be reduced by the caller first
  */
-static inline int fe_equal(const fe25519 a, const fe25519 b) {
+int fe25519_equal(const fe25519 a, const fe25519 b) {
 
     fe_limb_type sum = 0;
 
@@ -149,7 +137,7 @@ static inline int fe_equal(const fe25519 a, const fe25519 b) {
  * @param[in] move Flag deciding on the branch, if set to 0, r ::= r, and if set to 1, r ::= a
  * @note If move is set to anything other than 0 or 1, the results are undefined
  */
-static inline void fe_conditional_move(fe25519 r, const fe25519 a, int move) {
+void fe25519_conditional_move(fe25519 r, const fe25519 a, int move) {
 
     /* Set the mask to 0x00000000 if move is 0 or to 0xFFFFFFFF if it is 1 */
     const fe_limb_type mask = (fe_limb_type)( -(i32) move );
@@ -213,7 +201,7 @@ static inline void fe_conditional_move(fe25519 r, const fe25519 a, int move) {
  * @param[in] a Field element to be reduced
  * @note Note that the result need to be in canonical form, i.e. between 0 and p-1, it need only be less than 2p
  */
-static inline void fe_weak_reduce(fe25519 r, const fe25519 a) {
+void fe25519_weak_reduce(fe25519 r, const fe25519 a) {
 
     /* Do a "relaxed" reduction (to borrow terminology form Michael Scott's "Slothful reduction" paper)
      * - this ensures the result is less than 2p (where p = 2^255 - 19) */
@@ -292,9 +280,9 @@ static inline void fe_weak_reduce(fe25519 r, const fe25519 a) {
  * @param[in] a Field element to be reduced
  * @note The result is guaranteed to be in canonical form, i.e. between 0 and p-1
  */
-static inline void fe_strong_reduce(fe25519 r, const fe25519 a) {
+void fe25519_strong_reduce(fe25519 r, const fe25519 a) {
 
-    fe_weak_reduce(r, a);
+    fe25519_weak_reduce(r, a);
     /* After the weak reduction r is congruent to a and less than 2p */
 
     /* Compute r-p and conditionally use it as a result if r is larger than p */
@@ -330,7 +318,7 @@ static inline void fe_strong_reduce(fe25519 r, const fe25519 a) {
 
     /* Check the highest bit of t[4] for underflow. If the highest bit is set then
      * underflow occurred and so we return r, otherwise we set r ::= t and return that */
-    fe_conditional_move(r, t, (t[9] >> 31) ^ 1);
+    fe25519_conditional_move(r, t, (t[9] >> 31) ^ 1);
 }
 
 /**
@@ -338,7 +326,7 @@ static inline void fe_strong_reduce(fe25519 r, const fe25519 a) {
  * @param[out] r The result of negation
  * @param[in] a Element to be negated
  */
-static inline void fe_neg(fe25519 r, const fe25519 a) {
+void fe25519_neg(fe25519 r, const fe25519 a) {
 
     /* Check against underflow */
     FE3C_SANITY_CHECK(a[0] <= 0x7ffffda, FE25519_STR, FE25519_TO_STR(a));
@@ -371,7 +359,7 @@ static inline void fe_neg(fe25519 r, const fe25519 a) {
  * @param[in] a Operand
  * @param[in] b Operand
  */
-static inline void fe_add(fe25519 r, const fe25519 a, const fe25519 b) {
+void fe25519_add(fe25519 r, const fe25519 a, const fe25519 b) {
 
     r[0] = a[0] + b[0];
     r[1] = a[1] + b[1];
@@ -391,7 +379,7 @@ static inline void fe_add(fe25519 r, const fe25519 a, const fe25519 b) {
  * @param[in] a Minuend
  * @param[in] b Subtrahend
  */
-static inline void fe_sub(fe25519 r, const fe25519 a, const fe25519 b) {
+void fe25519_sub(fe25519 r, const fe25519 a, const fe25519 b) {
 
     /* Check against underflow */
     FE3C_SANITY_CHECK(b[0] <= 0x7ffffda, FE25519_STR, FE25519_TO_STR(b));
@@ -416,7 +404,7 @@ static inline void fe_sub(fe25519 r, const fe25519 a, const fe25519 b) {
     r[7] = a[7] + 0x3fffffe - b[7];
     r[8] = a[8] + 0x7fffffe - b[8];
     r[9] = a[9] + 0x3fffffe - b[9];
-    /* We could also call fe_neg() followed by fe_add(), but this would require
+    /* We could also call fe25519_neg() followed by fe25519_add(), but this would require
      * an intermediate fe variable to support aliasing */
 }
 
@@ -426,7 +414,7 @@ static inline void fe_sub(fe25519 r, const fe25519 a, const fe25519 b) {
  * @param[in] a Operand
  * @param[in] b Operand
  */
-static inline void fe_mul(fe25519 r, const fe25519 a, const fe25519 b) {
+void fe25519_mul(fe25519 r, const fe25519 a, const fe25519 b) {
 
     u64 r0, r1, r2, r3, r4, r5, r6, r7, r8, r9;
 
@@ -542,7 +530,7 @@ static inline void fe_mul(fe25519 r, const fe25519 a, const fe25519 b) {
 
     r9 += a0*b9 + a1*b8 + a2*b7 + a3*b6 + a4*b5 + a5*b4 + a6*b3 + a7*b2 + a8*b1 + a9*b0;
     /* The result may have exceeded 2^255, do another round just as in
-     * fe_weak_reduce() */
+     * fe25519_weak_reduce() */
     r0 += 19 * (r9 >> 25);
     r9 &= LOW_25_BITS_MASK;
     r1 += r0 >> 26;  r0 &= LOW_26_BITS_MASK;
@@ -574,10 +562,10 @@ static inline void fe_mul(fe25519 r, const fe25519 a, const fe25519 b) {
  * @param[out] r Result of the squaring, i.e. the product r = a a
  * @param[in] a Field element to square
  */
-static inline void fe_square(fe25519 r, const fe25519 a) {
+void fe25519_square(fe25519 r, const fe25519 a) {
 
 #if !FE3C_OPTIMIZATION_FAST_SQUARING
-    fe_mul(r, a, a);
+    fe25519_mul(r, a, a);
 #else
     u64 r0, r1, r2, r3, r4, r5, r6, r7, r8, r9;
 
@@ -600,7 +588,7 @@ static inline void fe_square(fe25519 r, const fe25519 a) {
     /* Start with the lowest-weight terms */
     r0 = a0*a0;
     /* Bring down the overflow from above the 2^255 cutoff point. Note that terms which are products of two odd-numbered limbs
-     * are multiplied by two - see comments in fe_mul() for a detailed explanation of this. */
+     * are multiplied by two - see comments in fe25519_mul() for a detailed explanation of this. */
     r0 += 19 * ( 2*a1*a9 + a2*a8 + 2*a3*a7 + a4*a6 + 2*a5*a5 + a6*a4 + 2*a7*a3 + a8*a2 + 2*a9*a1 );
     /* Any overflow in r0 put in r1 and clear it in r0 */
     r1 = r0 >> 26;  r0 &= LOW_26_BITS_MASK;
@@ -641,7 +629,7 @@ static inline void fe_square(fe25519 r, const fe25519 a) {
 
     r9 += a0*a9 + a1*a8 + a2*a7 + a3*a6 + a4*a5 + a5*a4 + a6*a3 + a7*a2 + a8*a1 + a9*a0;
     /* The result may have exceeded 2^255, do another round just as in
-     * fe_weak_reduce() */
+     * fe25519_weak_reduce() */
     r0 += 19 * (r9 >> 25);
     r9 &= LOW_25_BITS_MASK;
     r1 += r0 >> 26;  r0 &= LOW_26_BITS_MASK;
@@ -674,10 +662,10 @@ static inline void fe_square(fe25519 r, const fe25519 a) {
  * @param[out] buffer Output buffer for the encoded field element
  * @param[in] a Field element to encode
  */
-static inline void fe_encode(u8 * buffer, fe25519 a) {
+void fe25519_encode(u8 * buffer, fe25519 a) {
 
     /* Canonicalize the element first */
-    fe_strong_reduce(a, a);
+    fe25519_strong_reduce(a, a);
 
     /* Store the temporary results of bit operations in separate variables (mapped to separate
      * registers) to allow for greater instruction-level parallelism. Let A[i] denote the limb
@@ -737,7 +725,7 @@ static inline void fe_encode(u8 * buffer, fe25519 a) {
  * @return 1 if decoding succeeded, 0 otherwise
  */
 __attribute__((warn_unused_result))
-static inline int fe_decode(fe25519 r, const u8 * buffer) {
+int fe25519_decode(fe25519 r, const u8 * buffer) {
 
     r[0] = ( _load_32(&buffer[ 0]) >> 0 ) & LOW_26_BITS_MASK;
     /* Do not offset by 8 now (another 32 bits) since we have dropped 6 bits from buffer[3]. Offset
@@ -755,11 +743,5 @@ static inline int fe_decode(fe25519 r, const u8 * buffer) {
     /* Note that the last bit gets naturally ignored as required by RFC 8032 */
     r[9] = ( _load_32(&buffer[28]) >> 6 ) & LOW_25_BITS_MASK;
 
-    return fe_is_canonical(r);
+    return fe25519_is_canonical(r);
 }
-
-#ifdef __cplusplus
-}
-#endif
-
-#endif /* __FE3C_FIELD_ELEMENTS_FIELD_ELEMENTS_ED25519_32_H */

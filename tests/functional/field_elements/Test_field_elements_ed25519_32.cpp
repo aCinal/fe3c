@@ -11,7 +11,7 @@ TEST(FIELD_ELEMENTS_ED25519_32, CmovFlagCleared_NoOp) {
     fe25519 output = { 10, 9, 8, 7, 6, 5, 4, 3, 2, 1 };
     /* Expect output to remain untouched */
     fe25519 expected = { 10, 9, 8, 7, 6, 5, 4, 3, 2, 1 };
-    fe_conditional_move(output, input, 0);
+    fe25519_conditional_move(output, input, 0);
     MEMCMP_EQUAL(expected, output, sizeof(fe25519));
 }
 
@@ -21,7 +21,7 @@ TEST(FIELD_ELEMENTS_ED25519_32, CmovFlagSet_DoMove) {
     fe25519 output = { 10, 9, 8, 7, 6, 5, 4, 3, 2, 1 };
     /* Expect a move to take place */
     fe25519 expected = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
-    fe_conditional_move(output, input, 1);
+    fe25519_conditional_move(output, input, 1);
     MEMCMP_EQUAL(expected, output, sizeof(fe25519));
 }
 
@@ -30,7 +30,7 @@ TEST(FIELD_ELEMENTS_ED25519_32, StrongReduce_ElementInOkRange_NoOp) {
     fe25519 input = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
     fe25519 expected = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
     fe25519 output;
-    fe_strong_reduce(output, input);
+    fe25519_strong_reduce(output, input);
     MEMCMP_EQUAL(expected, output, sizeof(fe25519));
 }
 
@@ -39,7 +39,7 @@ TEST(FIELD_ELEMENTS_ED25519_32, WeakReduce_ElementInOkRange_NoOp) {
     fe25519 input = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
     fe25519 expected = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
     fe25519 output;
-    fe_weak_reduce(output, input);
+    fe25519_weak_reduce(output, input);
     MEMCMP_EQUAL(expected, output, sizeof(fe25519));
 }
 
@@ -48,7 +48,7 @@ TEST(FIELD_ELEMENTS_ED25519_32, StrongReduce_ElementInOkRangeWithOverflowInLimb_
     fe25519 input = { 1, 2, 3, 4, 5, 6, 7, 8, 0x4000000, 10 };
     fe25519 expected = { 1, 2, 3, 4, 5, 6, 7, 8, 0, 11 };
     fe25519 output;
-    fe_strong_reduce(output, input);
+    fe25519_strong_reduce(output, input);
     MEMCMP_EQUAL(expected, output, sizeof(fe25519));
 }
 
@@ -57,7 +57,7 @@ TEST(FIELD_ELEMENTS_ED25519_32, WeakReduce_ElementInOkRangeWithOverflowInLimb_No
     fe25519 input = { 1, 2, 3, 4, 5, 6, 7, 8, 0x4000000, 10 };
     fe25519 expected = { 1, 2, 3, 4, 5, 6, 7, 8, 0, 11 };
     fe25519 output;
-    fe_weak_reduce(output, input);
+    fe25519_weak_reduce(output, input);
     MEMCMP_EQUAL(expected, output, sizeof(fe25519));
 }
 
@@ -66,7 +66,7 @@ TEST(FIELD_ELEMENTS_ED25519_32, StrongReduce_ElementEqualToModulus_NormalizeToZe
     fe25519 input = { 0x3ffffed, 0x1ffffff, 0x3ffffff, 0x1ffffff, 0x3ffffff, 0x1ffffff, 0x3ffffff, 0x1ffffff, 0x3ffffff, 0x1ffffff };
     fe25519 expected = {};
     fe25519 output;
-    fe_strong_reduce(output, input);
+    fe25519_strong_reduce(output, input);
     MEMCMP_EQUAL(expected, output, sizeof(fe25519));
 }
 
@@ -75,7 +75,7 @@ TEST(FIELD_ELEMENTS_ED25519_32, WeakReduce_ElementEqualToModulus_NoOp) {
     fe25519 input = { 0x3ffffed, 0x1ffffff, 0x3ffffff, 0x1ffffff, 0x3ffffff, 0x1ffffff, 0x3ffffff, 0x1ffffff, 0x3ffffff, 0x1ffffff };
     fe25519 expected = { 0x3ffffed, 0x1ffffff, 0x3ffffff, 0x1ffffff, 0x3ffffff, 0x1ffffff, 0x3ffffff, 0x1ffffff, 0x3ffffff, 0x1ffffff };
     fe25519 output;
-    fe_weak_reduce(output, input);
+    fe25519_weak_reduce(output, input);
     MEMCMP_EQUAL(expected, output, sizeof(fe25519));
 }
 
@@ -84,7 +84,7 @@ TEST(FIELD_ELEMENTS_ED25519_32, StrongReduce_ElementEqualToTwiceTheModulus_Norma
     fe25519 input = { 0x7ffffda, 0x3fffffe, 0x7fffffe, 0x3fffffe, 0x7fffffe, 0x3fffffe, 0x7fffffe, 0x3fffffe, 0x7fffffe, 0x3fffffe };
     fe25519 expected = {};
     fe25519 output;
-    fe_strong_reduce(output, input);
+    fe25519_strong_reduce(output, input);
     MEMCMP_EQUAL(expected, output, sizeof(fe25519));
 }
 
@@ -93,7 +93,7 @@ TEST(FIELD_ELEMENTS_ED25519_32, WeakReduce_ElementEqualToTwiceTheModulus_ReduceT
     fe25519 input = { 0x7ffffda, 0x3fffffe, 0x7fffffe, 0x3fffffe, 0x7fffffe, 0x3fffffe, 0x7fffffe, 0x3fffffe, 0x7fffffe, 0x3fffffe };
     fe25519 expected = { 0x3ffffed, 0x1ffffff, 0x3ffffff, 0x1ffffff, 0x3ffffff, 0x1ffffff, 0x3ffffff, 0x1ffffff, 0x3ffffff, 0x1ffffff };
     fe25519 output;
-    fe_weak_reduce(output, input);
+    fe25519_weak_reduce(output, input);
     MEMCMP_EQUAL(expected, output, sizeof(fe25519));
 }
 
@@ -102,7 +102,7 @@ TEST(FIELD_ELEMENTS_ED25519_32, StrongReduce_ElementEqualToFourTimesTheModulus_N
     fe25519 input = { 0xfffffb4, 0x7fffffc, 0xffffffc, 0x7fffffc, 0xffffffc, 0x7fffffc, 0xffffffc, 0x7fffffc, 0xffffffc, 0x7fffffc };
     fe25519 expected = {};
     fe25519 output;
-    fe_strong_reduce(output, input);
+    fe25519_strong_reduce(output, input);
     MEMCMP_EQUAL(expected, output, sizeof(fe25519));
 }
 
@@ -111,7 +111,7 @@ TEST(FIELD_ELEMENTS_ED25519_32, WeakReduce_ElementEqualToFourTimesTheModulus_Red
     fe25519 input = { 0xfffffb4, 0x7fffffc, 0xffffffc, 0x7fffffc, 0xffffffc, 0x7fffffc, 0xffffffc, 0x7fffffc, 0xffffffc, 0x7fffffc };
     fe25519 expected = { 0x3ffffed, 0x1ffffff, 0x3ffffff, 0x1ffffff, 0x3ffffff, 0x1ffffff, 0x3ffffff, 0x1ffffff, 0x3ffffff, 0x1ffffff };
     fe25519 output;
-    fe_weak_reduce(output, input);
+    fe25519_weak_reduce(output, input);
     MEMCMP_EQUAL(expected, output, sizeof(fe25519));
 }
 
@@ -120,7 +120,7 @@ TEST(FIELD_ELEMENTS_ED25519_32, StrongReduce_ElementEqualToOneMoreThanTheModulus
     fe25519 input = { 0x3ffffed + 1, 0x1ffffff, 0x3ffffff, 0x1ffffff, 0x3ffffff, 0x1ffffff, 0x3ffffff, 0x1ffffff, 0x3ffffff, 0x1ffffff };
     fe25519 expected = { 1 };
     fe25519 output;
-    fe_strong_reduce(output, input);
+    fe25519_strong_reduce(output, input);
     MEMCMP_EQUAL(expected, output, sizeof(fe25519));
 }
 
@@ -129,7 +129,7 @@ TEST(FIELD_ELEMENTS_ED25519_32, WeakReduce_ElementEqualToOneMoreThanTheModulus_N
     fe25519 input = { 0x3ffffed, 0x1ffffff, 0x3ffffff, 0x1ffffff, 0x3ffffff, 0x1ffffff, 0x3ffffff, 0x1ffffff, 0x3ffffff, 0x1ffffff };
     fe25519 expected = { 0x3ffffed, 0x1ffffff, 0x3ffffff, 0x1ffffff, 0x3ffffff, 0x1ffffff, 0x3ffffff, 0x1ffffff, 0x3ffffff, 0x1ffffff };
     fe25519 output;
-    fe_weak_reduce(output, input);
+    fe25519_weak_reduce(output, input);
     MEMCMP_EQUAL(expected, output, sizeof(fe25519));
 }
 
@@ -138,7 +138,7 @@ TEST(FIELD_ELEMENTS_ED25519_32, StrongReduce_ElementEqualToOneLessThanTheModulus
     fe25519 input = { 0x3ffffed - 1, 0x1ffffff, 0x3ffffff, 0x1ffffff, 0x3ffffff, 0x1ffffff, 0x3ffffff, 0x1ffffff, 0x3ffffff, 0x1ffffff };
     fe25519 expected = { 0x3ffffed - 1, 0x1ffffff, 0x3ffffff, 0x1ffffff, 0x3ffffff, 0x1ffffff, 0x3ffffff, 0x1ffffff, 0x3ffffff, 0x1ffffff };
     fe25519 output;
-    fe_strong_reduce(output, input);
+    fe25519_strong_reduce(output, input);
     MEMCMP_EQUAL(expected, output, sizeof(fe25519));
 }
 
@@ -147,7 +147,7 @@ TEST(FIELD_ELEMENTS_ED25519_32, WeakReduce_ElementEqualToOneLessThanTheModulus_N
     fe25519 input = { 0x3ffffed - 1, 0x1ffffff, 0x3ffffff, 0x1ffffff, 0x3ffffff, 0x1ffffff, 0x3ffffff, 0x1ffffff, 0x3ffffff, 0x1ffffff };
     fe25519 expected = { 0x3ffffed - 1, 0x1ffffff, 0x3ffffff, 0x1ffffff, 0x3ffffff, 0x1ffffff, 0x3ffffff, 0x1ffffff, 0x3ffffff, 0x1ffffff };
     fe25519 output;
-    fe_weak_reduce(output, input);
+    fe25519_weak_reduce(output, input);
     MEMCMP_EQUAL(expected, output, sizeof(fe25519));
 }
 
@@ -156,7 +156,7 @@ TEST(FIELD_ELEMENTS_ED25519_32, StrongReduce_ElementWithLargeOverflowInHighLimb_
     fe25519 input = { 0x3ffffed, 0x1ffffff, 0x3ffffff, 0x1ffffff, 0x3ffffff, 0x1ffffff, 0x3ffffff, 0x1ffffff, 0x3ffffff, 0x1ffffff + 0xffffff };
     fe25519 expected = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0xffffff };
     fe25519 output;
-    fe_strong_reduce(output, input);
+    fe25519_strong_reduce(output, input);
     MEMCMP_EQUAL(expected, output, sizeof(fe25519));
 }
 
@@ -178,7 +178,7 @@ TEST(FIELD_ELEMENTS_ED25519_32, StrongReduce_ElementWithOverflowInEachLimb_Norma
         0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff
     };
     fe25519 output;
-    fe_strong_reduce(output, input);
+    fe25519_strong_reduce(output, input);
     MEMCMP_EQUAL(expected, output, sizeof(fe25519));
 }
 
@@ -189,7 +189,7 @@ TEST(FIELD_ELEMENTS_ED25519_32, StrongReduce_ElementWithMaxOverflowInEachLimb_No
     };
     fe25519 expected = { 0x97f, 0x3f, 0x7f, 0x3f, 0x7f, 0x3f, 0x7f, 0x3f, 0x7f, 0x3f };
     fe25519 output;
-    fe_strong_reduce(output, input);
+    fe25519_strong_reduce(output, input);
     MEMCMP_EQUAL(expected, output, sizeof(fe25519));
 }
 
@@ -197,7 +197,7 @@ TEST(FIELD_ELEMENTS_ED25519_32, Equal_ElementsEqual_ReturnTrue) {
 
     fe25519 input1 = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
     fe25519 input2 = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
-    int equal = fe_equal(input1, input2);
+    int equal = fe25519_equal(input1, input2);
     CHECK_EQUAL(1, equal);
 }
 
@@ -205,7 +205,7 @@ TEST(FIELD_ELEMENTS_ED25519_32, Equal_ElementsDifferent_ReturnFalse) {
 
     fe25519 input1 = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
     fe25519 input2 = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 11 };
-    int equal = fe_equal(input1, input2);
+    int equal = fe25519_equal(input1, input2);
     CHECK_EQUAL(0, equal);
 }
 
@@ -224,11 +224,11 @@ TEST(FIELD_ELEMENTS_ED25519_32, Equal_ElementsCongruentButNotEqual_ReturnFalse) 
         0x1ffffff + 10,
     };
     fe25519 input2 = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
-    int equal = fe_equal(input1, input2);
+    int equal = fe25519_equal(input1, input2);
     CHECK_EQUAL(0, equal);
     /* Do a reduction of input1 and check again */
-    fe_strong_reduce(input1, input1);
-    equal = fe_equal(input1, input2);
+    fe25519_strong_reduce(input1, input1);
+    equal = fe25519_equal(input1, input2);
     MEMCMP_EQUAL(input1, input2, sizeof(fe25519));
     CHECK_EQUAL(1, equal);
 }
@@ -239,7 +239,7 @@ TEST(FIELD_ELEMENTS_ED25519_32, Add_OnePlusOne_EqualsTwo) {
     fe25519 input2 = { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
     fe25519 expected = { 2, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
     fe25519 output;
-    fe_add(output, input1, input2);
+    fe25519_add(output, input1, input2);
     MEMCMP_EQUAL(expected, output, sizeof(fe25519));
 }
 
@@ -249,7 +249,7 @@ TEST(FIELD_ELEMENTS_ED25519_32, Add_ModulusPlusModulus_EqualsTwoModuli) {
     fe25519 input2 = { 0x3ffffed, 0x1ffffff, 0x3ffffff, 0x1ffffff, 0x3ffffff, 0x1ffffff, 0x3ffffff, 0x1ffffff, 0x3ffffff, 0x1ffffff };
     fe25519 expected = { 0x7ffffda, 0x3fffffe, 0x7fffffe, 0x3fffffe, 0x7fffffe, 0x3fffffe, 0x7fffffe, 0x3fffffe, 0x7fffffe, 0x3fffffe };
     fe25519 output;
-    fe_add(output, input1, input2);
+    fe25519_add(output, input1, input2);
 
     MEMCMP_EQUAL(expected, output, sizeof(fe25519));
 }
@@ -260,10 +260,10 @@ TEST(FIELD_ELEMENTS_ED25519_32, Sub_ModulusMinusModulus_CongruentToZero) {
     fe25519 input2 = { 0x3ffffed, 0x1ffffff, 0x3ffffff, 0x1ffffff, 0x3ffffff, 0x1ffffff, 0x3ffffff, 0x1ffffff, 0x3ffffff, 0x1ffffff };
     fe25519 canonical = {};
     fe25519 output;
-    fe_sub(output, input1, input2);
+    fe25519_sub(output, input1, input2);
     /* Expect subtraction to result in a non-canonical form, e.g. for a - b we may expect to get a + 2p - b */
     /* Do a reduction and check the canonical form */
-    fe_strong_reduce(output, output);
+    fe25519_strong_reduce(output, output);
     MEMCMP_EQUAL(canonical, output, sizeof(fe25519));
 }
 
@@ -273,10 +273,10 @@ TEST(FIELD_ELEMENTS_ED25519_32, Sub_OneMinusTwo_CongruentToModulusMinusOne) {
     fe25519 input2 = { 2, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
     fe25519 canonical = { 0x3ffffed - 1, 0x1ffffff, 0x3ffffff, 0x1ffffff, 0x3ffffff, 0x1ffffff, 0x3ffffff, 0x1ffffff, 0x3ffffff, 0x1ffffff };
     fe25519 output;
-    fe_sub(output, input1, input2);
+    fe25519_sub(output, input1, input2);
     /* Expect subtraction to result in a non-canonical form, e.g. for a - b we may expect to get a + 2p - b */
     /* Do a reduction and check the canonical form */
-    fe_strong_reduce(output, output);
+    fe25519_strong_reduce(output, output);
     MEMCMP_EQUAL(canonical, output, sizeof(fe25519));
 }
 
@@ -287,9 +287,9 @@ TEST(FIELD_ELEMENTS_ED25519_32, Mul_ModulusPlusOneTimesTwo_CongruentToTwo) {
     fe25519 canonical = { 2, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
     fe25519 output;
     /* Expect multiplication to result in a non-canonical form */
-    fe_mul(output, input1, input2);
+    fe25519_mul(output, input1, input2);
     /* Do a reduction and check the canonical form */
-    fe_strong_reduce(output, output);
+    fe25519_strong_reduce(output, output);
     MEMCMP_EQUAL(canonical, output, sizeof(fe25519));
 }
 
@@ -300,9 +300,9 @@ TEST(FIELD_ELEMENTS_ED25519_32, Mul_ModulusTimesModulus_CongruentToZero) {
     fe25519 canonical = {};
     fe25519 output;
     /* Expect multiplication to result in a non-canonical form */
-    fe_mul(output, input1, input2);
+    fe25519_mul(output, input1, input2);
     /* Do a reduction and check the canonical form */
-    fe_strong_reduce(output, output);
+    fe25519_strong_reduce(output, output);
     MEMCMP_EQUAL(canonical, output, sizeof(fe25519));
 }
 
@@ -313,9 +313,9 @@ TEST(FIELD_ELEMENTS_ED25519_32, Mul_TwiceTheModulusTimesFourTimesTheModulusPlusF
     fe25519 canonical = {};
     fe25519 output;
     /* Expect multiplication to result in a non-canonical form */
-    fe_mul(output, input1, input2);
+    fe25519_mul(output, input1, input2);
     /* Do a reduction and check the canonical form */
-    fe_strong_reduce(output, output);
+    fe25519_strong_reduce(output, output);
     MEMCMP_EQUAL(canonical, output, sizeof(fe25519));
 }
 
@@ -324,8 +324,8 @@ TEST(FIELD_ELEMENTS_ED25519_32, Mul_FourModuliSquared_CongruentToZero) {
     fe25519 input = { 0xfffffb4, 0x7fffffc, 0xffffffc, 0x7fffffc, 0xffffffc, 0x7fffffc, 0xffffffc, 0x7fffffc, 0xffffffc, 0x7fffffc };
     fe25519 canonical = {};
     fe25519 output;
-    fe_mul(output, input, input);
-    fe_strong_reduce(output, output);
+    fe25519_mul(output, input, input);
+    fe25519_strong_reduce(output, output);
     MEMCMP_EQUAL(canonical, output, sizeof(fe25519));
 }
 
@@ -335,7 +335,7 @@ TEST(FIELD_ELEMENTS_ED25519_32, Mul_ZeroTimesAnything_EqualToZero) {
     fe25519 input2 = { 14, 0, 0, 0, 123, 0, 0, 1, 2, 3 };
     fe25519 expected = {};
     fe25519 output;
-    fe_mul(output, input1, input2);
+    fe25519_mul(output, input1, input2);
     MEMCMP_EQUAL(expected, output, sizeof(fe25519));
 }
 
@@ -348,7 +348,7 @@ TEST(FIELD_ELEMENTS_ED25519_32, Mul_StabilityTest_RemainBoundedAndProduceCorrect
 
     for (int i = 0; i < 1024; i++) {
 
-        fe_mul(accumulator, accumulator, input);
+        fe25519_mul(accumulator, accumulator, input);
 
         /* Check that the result is always bounded by 2*p */
         CHECK_TRUE(accumulator[0] <  0x7ffffda);
@@ -374,7 +374,7 @@ TEST(FIELD_ELEMENTS_ED25519_32, Mul_StabilityTest2_RemainBoundedAndProduceCorrec
 
     for (int i = 0; i < 1024; i++) {
 
-        fe_mul(input, input, input);
+        fe25519_mul(input, input, input);
 
         /* Check that the result is always bounded by 2*p */
         CHECK_TRUE(input[0] <  0x7ffffda);
@@ -399,9 +399,9 @@ TEST(FIELD_ELEMENTS_ED25519_32, Invert_Canonical_CorrectlyInvert) {
     fe25519 product;
     fe25519 expected_product = { 1 };
 
-    fe_invert(output, input);
-    fe_mul(product, input, output);
-    fe_strong_reduce(product, product);
+    fe25519_invert(output, input);
+    fe25519_mul(product, input, output);
+    fe25519_strong_reduce(product, product);
 
     MEMCMP_EQUAL(expected_product, product, sizeof(fe25519));
 }
@@ -424,9 +424,9 @@ TEST(FIELD_ELEMENTS_ED25519_32, Invert_NonCanonical_CorrectlyInvert) {
     fe25519 product;
     fe25519 expected_product = { 1 };
 
-    fe_invert(output, input);
-    fe_mul(product, input, output);
-    fe_strong_reduce(product, product);
+    fe25519_invert(output, input);
+    fe25519_mul(product, input, output);
+    fe25519_strong_reduce(product, product);
 
     MEMCMP_EQUAL(expected_product, product, sizeof(fe25519));
 }
@@ -436,7 +436,7 @@ TEST(FIELD_ELEMENTS_ED25519_32, I_SquareI_GetMinusOne) {
     fe25519 output;
     fe25519 canonical = { 0x3ffffed - 1, 0x1ffffff, 0x3ffffff, 0x1ffffff, 0x3ffffff, 0x1ffffff, 0x3ffffff, 0x1ffffff, 0x3ffffff, 0x1ffffff };
 
-    fe_square(output, fe_i);
-    fe_strong_reduce(output, output);
+    fe25519_square(output, fe25519_i);
+    fe25519_strong_reduce(output, output);
     MEMCMP_EQUAL(canonical, output, sizeof(fe25519));
 }

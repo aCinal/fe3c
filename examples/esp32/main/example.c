@@ -509,7 +509,6 @@ static esp_err_t read_request_body(httpd_req_t * http_req, u8 * buffer, size_t l
             /* In case of error, returning ESP_FAIL will ensure that the underlying
              * socket is closed */
             return ESP_FAIL;
-
         }
 
         /* Retry if failed to receive everything in one go */

@@ -11,7 +11,7 @@ TEST(FIELD_ELEMENTS_ED448_32, CmovFlagCleared_NoOp) {
     fe448 output = { 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1 };
     /* Expect output to remain untouched */
     fe448 expected = { 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1 };
-    fe_conditional_move(output, input, 0);
+    fe448_conditional_move(output, input, 0);
     MEMCMP_EQUAL(expected, output, sizeof(fe448));
 }
 
@@ -21,7 +21,7 @@ TEST(FIELD_ELEMENTS_ED448_32, CmovFlagSet_DoMove) {
     fe448 output = { 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1 };
     /* Expect a move to take place */
     fe448 expected = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16 };
-    fe_conditional_move(output, input, 1);
+    fe448_conditional_move(output, input, 1);
     MEMCMP_EQUAL(expected, output, sizeof(fe448));
 }
 
@@ -30,7 +30,7 @@ TEST(FIELD_ELEMENTS_ED448_32, StrongReduce_ElementInOkRange_NoOp) {
     fe448 input = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16 };
     fe448 expected = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16 };
     fe448 output;
-    fe_strong_reduce(output, input);
+    fe448_strong_reduce(output, input);
     MEMCMP_EQUAL(expected, output, sizeof(fe448));
 }
 
@@ -39,7 +39,7 @@ TEST(FIELD_ELEMENTS_ED448_32, WeakReduce_ElementInOkRange_NoOp) {
     fe448 input = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16 };
     fe448 expected = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16 };
     fe448 output;
-    fe_weak_reduce(output, input);
+    fe448_weak_reduce(output, input);
     MEMCMP_EQUAL(expected, output, sizeof(fe448));
 }
 
@@ -48,7 +48,7 @@ TEST(FIELD_ELEMENTS_ED448_32, StrongReduce_ElementInOkRangeWithOverflowInLimb_No
     fe448 input = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, (1 << 28), 16 };
     fe448 expected = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 0, 17 };
     fe448 output;
-    fe_strong_reduce(output, input);
+    fe448_strong_reduce(output, input);
     MEMCMP_EQUAL(expected, output, sizeof(fe448));
 }
 
@@ -57,7 +57,7 @@ TEST(FIELD_ELEMENTS_ED448_32, WeakReduce_ElementInOkRangeWithOverflowInLimb_Norm
     fe448 input = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, (1 << 28), 16 };
     fe448 expected = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 0, 17 };
     fe448 output;
-    fe_weak_reduce(output, input);
+    fe448_weak_reduce(output, input);
     MEMCMP_EQUAL(expected, output, sizeof(fe448));
 }
 
@@ -71,7 +71,7 @@ TEST(FIELD_ELEMENTS_ED448_32, StrongReduce_ElementEqualToModulus_NormalizeToZero
     };
     fe448 expected = {};
     fe448 output;
-    fe_strong_reduce(output, input);
+    fe448_strong_reduce(output, input);
     MEMCMP_EQUAL(expected, output, sizeof(fe448));
 }
 
@@ -90,7 +90,7 @@ TEST(FIELD_ELEMENTS_ED448_32, WeakReduce_ElementEqualToModulus_NoOp) {
         0xfffffff, 0xfffffff, 0xfffffff, 0xfffffff
     };
     fe448 output;
-    fe_weak_reduce(output, input);
+    fe448_weak_reduce(output, input);
     MEMCMP_EQUAL(expected, output, sizeof(fe448));
 }
 
@@ -104,7 +104,7 @@ TEST(FIELD_ELEMENTS_ED448_32, StrongReduce_ElementEqualToTwiceTheModulus_Normali
     };
     fe448 expected = {};
     fe448 output;
-    fe_strong_reduce(output, input);
+    fe448_strong_reduce(output, input);
     MEMCMP_EQUAL(expected, output, sizeof(fe448));
 }
 
@@ -123,7 +123,7 @@ TEST(FIELD_ELEMENTS_ED448_32, WeakReduce_ElementEqualToTwiceTheModulus_ReduceToM
         0xfffffff, 0xfffffff, 0xfffffff, 0xfffffff
     };
     fe448 output;
-    fe_weak_reduce(output, input);
+    fe448_weak_reduce(output, input);
     MEMCMP_EQUAL(expected, output, sizeof(fe448));
 }
 
@@ -137,7 +137,7 @@ TEST(FIELD_ELEMENTS_ED448_32, StrongReduce_ElementEqualToFourTimesTheModulus_Nor
     };
     fe448 expected = {};
     fe448 output;
-    fe_strong_reduce(output, input);
+    fe448_strong_reduce(output, input);
     MEMCMP_EQUAL(expected, output, sizeof(fe448));
 }
 
@@ -156,7 +156,7 @@ TEST(FIELD_ELEMENTS_ED448_32, WeakReduce_ElementEqualToFourTimesTheModulus_Reduc
         0xfffffff, 0xfffffff, 0xfffffff, 0xfffffff
     };
     fe448 output;
-    fe_weak_reduce(output, input);
+    fe448_weak_reduce(output, input);
     MEMCMP_EQUAL(expected, output, sizeof(fe448));
 }
 
@@ -170,14 +170,14 @@ TEST(FIELD_ELEMENTS_ED448_32, StrongReduce_ElementEqualToOneMoreThanTheModulus_R
     };
     fe448 expected = { 1 };
     fe448 output;
-    fe_strong_reduce(output, input);
+    fe448_strong_reduce(output, input);
     MEMCMP_EQUAL(expected, output, sizeof(fe448));
 }
 
 TEST(FIELD_ELEMENTS_ED448_32, WeakReduce_ElementEqualToOneMoreThanTheModulus_HandleOverflowsButDoNotReduce) {
 
     /* Note that in 28-bit reduced-radix representation the least-significant limb is fully occupied by ones when representing the field modulus.
-     * The correct behaviour of fe_weak_reduce() in this case is to distribute the overflows, i.e. normalize the reduced-radix representation,
+     * The correct behaviour of fe448_weak_reduce() in this case is to distribute the overflows, i.e. normalize the reduced-radix representation,
      * but do not reduce the number modulo the field modulus. */
     fe448 input = {
         0xfffffff + 1, 0xfffffff, 0xfffffff, 0xfffffff,
@@ -192,7 +192,7 @@ TEST(FIELD_ELEMENTS_ED448_32, WeakReduce_ElementEqualToOneMoreThanTheModulus_Han
         0xfffffff, 0xfffffff, 0xfffffff, 0xfffffff
     };
     fe448 output;
-    fe_weak_reduce(output, input);
+    fe448_weak_reduce(output, input);
     MEMCMP_EQUAL(expected, output, sizeof(fe448));
 }
 
@@ -211,7 +211,7 @@ TEST(FIELD_ELEMENTS_ED448_32, StrongReduce_ElementEqualToOneLessThanTheModulus_N
         0xfffffff,     0xfffffff, 0xfffffff, 0xfffffff
     };
     fe448 output;
-    fe_strong_reduce(output, input);
+    fe448_strong_reduce(output, input);
     MEMCMP_EQUAL(expected, output, sizeof(fe448));
 }
 
@@ -230,7 +230,7 @@ TEST(FIELD_ELEMENTS_ED448_32, WeakReduce_ElementEqualToOneLessThanTheModulus_NoO
         0xfffffff,     0xfffffff, 0xfffffff, 0xfffffff
     };
     fe448 output;
-    fe_weak_reduce(output, input);
+    fe448_weak_reduce(output, input);
     MEMCMP_EQUAL(expected, output, sizeof(fe448));
 }
 
@@ -244,7 +244,7 @@ TEST(FIELD_ELEMENTS_ED448_32, StrongReduce_ElementWithLargeOverflowInHighLimb_No
     };
     fe448 expected = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0xffffff };
     fe448 output;
-    fe_strong_reduce(output, input);
+    fe448_strong_reduce(output, input);
     MEMCMP_EQUAL(expected, output, sizeof(fe448));
 }
 
@@ -263,7 +263,7 @@ TEST(FIELD_ELEMENTS_ED448_32, StrongReduce_ElementWithOverflowInEachLimb_Normali
         0xffffff, 0xffffff, 0xffffff, 0xffffff
     };
     fe448 output;
-    fe_strong_reduce(output, input);
+    fe448_strong_reduce(output, input);
     MEMCMP_EQUAL(expected, output, sizeof(fe448));
 }
 
@@ -282,7 +282,7 @@ TEST(FIELD_ELEMENTS_ED448_32, StrongReduce_ElementWithMaxOverflowInEachLimb_Norm
         0xf, 0xf, 0xf, 0xf
     };
     fe448 output;
-    fe_strong_reduce(output, input);
+    fe448_strong_reduce(output, input);
     MEMCMP_EQUAL(expected, output, sizeof(fe448));
 }
 
@@ -290,7 +290,7 @@ TEST(FIELD_ELEMENTS_ED448_32, Equal_ElementsEqual_ReturnTrue) {
 
     fe448 input1 = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16 };
     fe448 input2 = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16 };
-    int equal = fe_equal(input1, input2);
+    int equal = fe448_equal(input1, input2);
     CHECK_EQUAL(1, equal);
 }
 
@@ -298,7 +298,7 @@ TEST(FIELD_ELEMENTS_ED448_32, Equal_ElementsDifferent_ReturnFalse) {
 
     fe448 input1 = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 17 };
     fe448 input2 = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16 };
-    int equal = fe_equal(input1, input2);
+    int equal = fe448_equal(input1, input2);
     CHECK_EQUAL(0, equal);
 }
 
@@ -311,11 +311,11 @@ TEST(FIELD_ELEMENTS_ED448_32, Equal_ElementsCongruentButNotEqual_ReturnFalse) {
         0xfffffff + 13, 0xfffffff + 14, 0xfffffff + 15, 0xfffffff + 16
     };
     fe448 input2 = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16 };
-    int equal = fe_equal(input1, input2);
+    int equal = fe448_equal(input1, input2);
     CHECK_EQUAL(0, equal);
     /* Do a reduction of input1 and check again */
-    fe_strong_reduce(input1, input1);
-    equal = fe_equal(input1, input2);
+    fe448_strong_reduce(input1, input1);
+    equal = fe448_equal(input1, input2);
     MEMCMP_EQUAL(input1, input2, sizeof(fe448));
     CHECK_EQUAL(1, equal);
 }
@@ -326,7 +326,7 @@ TEST(FIELD_ELEMENTS_ED448_32, Add_OnePlusOne_EqualsTwo) {
     fe448 input2 = { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
     fe448 expected = { 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
     fe448 output;
-    fe_add(output, input1, input2);
+    fe448_add(output, input1, input2);
     MEMCMP_EQUAL(expected, output, sizeof(fe448));
 }
 
@@ -351,7 +351,7 @@ TEST(FIELD_ELEMENTS_ED448_32, Add_ModulusPlusModulus_EqualsTwoModuli) {
         0x1ffffffe, 0x1ffffffe, 0x1ffffffe, 0x1ffffffe
     };
     fe448 output;
-    fe_add(output, input1, input2);
+    fe448_add(output, input1, input2);
 
     MEMCMP_EQUAL(expected, output, sizeof(fe448));
 }
@@ -372,10 +372,10 @@ TEST(FIELD_ELEMENTS_ED448_32, Sub_ModulusMinusModulus_CongruentToZero) {
     };
     fe448 canonical = {};
     fe448 output;
-    fe_sub(output, input1, input2);
+    fe448_sub(output, input1, input2);
     /* Expect subtraction to result in a non-canonical form, e.g. for a - b we may expect to get a + 2p - b */
     /* Do a reduction and check the canonical form */
-    fe_strong_reduce(output, output);
+    fe448_strong_reduce(output, output);
     MEMCMP_EQUAL(canonical, output, sizeof(fe448));
 }
 
@@ -390,10 +390,10 @@ TEST(FIELD_ELEMENTS_ED448_32, Sub_OneMinusTwo_CongruentToModulusMinusOne) {
         0xfffffff,     0xfffffff, 0xfffffff, 0xfffffff
     };
     fe448 output;
-    fe_sub(output, input1, input2);
+    fe448_sub(output, input1, input2);
     /* Expect subtraction to result in a non-canonical form, e.g. for a - b we may expect to get a + 2p - b */
     /* Do a reduction and check the canonical form */
-    fe_strong_reduce(output, output);
+    fe448_strong_reduce(output, output);
     MEMCMP_EQUAL(canonical, output, sizeof(fe448));
 }
 
@@ -409,9 +409,9 @@ TEST(FIELD_ELEMENTS_ED448_32, Mul_ModulusPlusOneTimesTwo_CongruentToTwo) {
     fe448 canonical = { 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
     fe448 output;
     /* Expect multiplication to result in a non-canonical form */
-    fe_mul(output, input1, input2);
+    fe448_mul(output, input1, input2);
     /* Do a reduction and check the canonical form */
-    fe_strong_reduce(output, output);
+    fe448_strong_reduce(output, output);
     MEMCMP_EQUAL(canonical, output, sizeof(fe448));
 }
 
@@ -432,9 +432,9 @@ TEST(FIELD_ELEMENTS_ED448_32, Mul_ModulusTimesModulus_CongruentToZero) {
     fe448 canonical = {};
     fe448 output;
     /* Expect multiplication to result in a non-canonical form */
-    fe_mul(output, input1, input2);
+    fe448_mul(output, input1, input2);
     /* Do a reduction and check the canonical form */
-    fe_strong_reduce(output, output);
+    fe448_strong_reduce(output, output);
     MEMCMP_EQUAL(canonical, output, sizeof(fe448));
 }
 
@@ -455,9 +455,9 @@ TEST(FIELD_ELEMENTS_ED448_32, Mul_TwiceTheModulusTimesFourTimesTheModulusPlusFiv
     fe448 canonical = {};
     fe448 output;
     /* Expect multiplication to result in a non-canonical form */
-    fe_mul(output, input1, input2);
+    fe448_mul(output, input1, input2);
     /* Do a reduction and check the canonical form */
-    fe_strong_reduce(output, output);
+    fe448_strong_reduce(output, output);
     MEMCMP_EQUAL(canonical, output, sizeof(fe448));
 }
 
@@ -471,8 +471,8 @@ TEST(FIELD_ELEMENTS_ED448_32, Mul_ThreeModuliSquared_CongruentToZero) {
     };
     fe448 canonical = {};
     fe448 output;
-    fe_mul(output, input, input);
-    fe_strong_reduce(output, output);
+    fe448_mul(output, input, input);
+    fe448_strong_reduce(output, output);
     MEMCMP_EQUAL(canonical, output, sizeof(fe448));
 }
 
@@ -482,7 +482,7 @@ TEST(FIELD_ELEMENTS_ED448_32, Mul_ZeroTimesAnything_EqualToZero) {
     fe448 input2 = { 14, 0, 0, 0, 123, 2, 3, 4, 5, 6, 7, 19, 20, 21, 22, 23 };
     fe448 expected = {};
     fe448 output;
-    fe_mul(output, input1, input2);
+    fe448_mul(output, input1, input2);
     MEMCMP_EQUAL(expected, output, sizeof(fe448));
 }
 
@@ -505,7 +505,7 @@ TEST(FIELD_ELEMENTS_ED448_32, Mul_StabilityTest_RemainBoundedAndProduceCorrectRe
 
     for (int i = 0; i < 1024; i++) {
 
-        fe_mul(accumulator, accumulator, input);
+        fe448_mul(accumulator, accumulator, input);
 
         /* Check that the result is always bounded by 2*p */
         CHECK_TRUE(accumulator[ 0] <  0x1ffffffe);
@@ -547,7 +547,7 @@ TEST(FIELD_ELEMENTS_ED448_32, Mul_StabilityTest2_RemainBoundedAndProduceCorrectR
 
     for (int i = 0; i < 1024; i++) {
 
-        fe_mul(input, input, input);
+        fe448_mul(input, input, input);
 
         /* Check that the result is always bounded by 2*p */
         CHECK_TRUE(input[ 0] <  0x1ffffffe);
@@ -583,9 +583,9 @@ TEST(FIELD_ELEMENTS_ED448_32, Invert_Canonical_CorrectlyInvert) {
     fe448 product;
     fe448 expected_product = { 1 };
 
-    fe_invert(output, input);
-    fe_mul(product, input, output);
-    fe_strong_reduce(product, product);
+    fe448_invert(output, input);
+    fe448_mul(product, input, output);
+    fe448_strong_reduce(product, product);
 
     MEMCMP_EQUAL(expected_product, &product, sizeof(fe448));
 }
@@ -602,9 +602,9 @@ TEST(FIELD_ELEMENTS_ED448_32, Invert_NonCanonical_CorrectlyInvert) {
     fe448 product;
     fe448 expected_product = { 1 };
 
-    fe_invert(output, input);
-    fe_mul(product, input, output);
-    fe_strong_reduce(product, product);
+    fe448_invert(output, input);
+    fe448_mul(product, input, output);
+    fe448_strong_reduce(product, product);
 
     MEMCMP_EQUAL(expected_product, product, sizeof(fe448));
 }

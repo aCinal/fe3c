@@ -47,45 +47,45 @@ static inline int ed448_is_on_curve(const point_ed448 * p) {
     fe448 rhs;
 
     /* Set x := X^2, y := Y^2, Z := Z^2 */
-    fe_square(x, p->X);
-    fe_square(y, p->Y);
-    fe_square(z, p->Z);
+    fe448_square(x, p->X);
+    fe448_square(y, p->Y);
+    fe448_square(z, p->Z);
 
     /* Set lhs := (Y^2 - X^2) Z^2 (left-hand side of the homogenous curve equation) */
-    fe_sub(lhs, y, x);
-    fe_mul(lhs, lhs, z);
+    fe448_sub(lhs, y, x);
+    fe448_mul(lhs, lhs, z);
 
     /* Set rhs := d X^2 Y^2 + Z^4 (right-hand side of the homogenous curve equation) */
-    fe_mul(rhs, x, y);
-    fe_mul(rhs, rhs, ed448twist_d);
-    fe_square(z, z);
-    fe_add(rhs, rhs, z);
+    fe448_mul(rhs, x, y);
+    fe448_mul(rhs, rhs, ed448twist_d);
+    fe448_square(z, z);
+    fe448_add(rhs, rhs, z);
 
     /* Subtract the left-hand side from the right-hand side and check against zero */
-    fe_sub(y, rhs, lhs);
-    fe_strong_reduce(y, y);
+    fe448_sub(y, rhs, lhs);
+    fe448_strong_reduce(y, y);
 
-    return fe_equal(fe_zero, y);
+    return fe448_equal(fe448_zero, y);
 }
 
 static inline int ed448_valid_extended_projective(const point_ed448 * p) {
 
     /* Check the consistency of the extended projective coordinate */
     fe448 xy, tz;
-    fe_mul(xy, p->X, p->Y);
-    fe_mul(tz, p->T, p->Z);
-    fe_strong_reduce(xy, xy);
-    fe_strong_reduce(tz, tz);
-    return fe_equal(tz, xy);
+    fe448_mul(xy, p->X, p->Y);
+    fe448_mul(tz, p->T, p->Z);
+    fe448_strong_reduce(xy, xy);
+    fe448_strong_reduce(tz, tz);
+    return fe448_equal(tz, xy);
 }
 #endif /* FE3C_ENABLE_SANITY_CHECKS */
 
 static inline void ed448_identity(point_ed448 * p) {
 
-    fe_copy(p->X, fe_zero);
-    fe_copy(p->Y, fe_one);
-    fe_copy(p->Z, fe_one);
-    fe_copy(p->T, fe_zero);
+    fe448_copy(p->X, fe448_zero);
+    fe448_copy(p->Y, fe448_one);
+    fe448_copy(p->Z, fe448_one);
+    fe448_copy(p->T, fe448_zero);
 }
 
 static int ed448_points_equal(const point * pgen, const point * qgen) {
@@ -97,18 +97,18 @@ static int ed448_points_equal(const point * pgen, const point * qgen) {
     fe448 rhs;
 
     /* Check X1 Z2 = X2 Z1 */
-    fe_mul(lhs, p->X, q->Z);
-    fe_mul(rhs, q->X, p->Z);
-    fe_strong_reduce(lhs, lhs);
-    fe_strong_reduce(rhs, rhs);
-    int equal = fe_equal(lhs, rhs);
+    fe448_mul(lhs, p->X, q->Z);
+    fe448_mul(rhs, q->X, p->Z);
+    fe448_strong_reduce(lhs, lhs);
+    fe448_strong_reduce(rhs, rhs);
+    int equal = fe448_equal(lhs, rhs);
 
     /* Check Y1 Z2 = Y2 Z1 */
-    fe_mul(lhs, p->Y, q->Z);
-    fe_mul(rhs, q->Y, p->Z);
-    fe_strong_reduce(lhs, lhs);
-    fe_strong_reduce(rhs, rhs);
-    equal &= fe_equal(lhs, rhs);
+    fe448_mul(lhs, p->Y, q->Z);
+    fe448_mul(rhs, q->Y, p->Z);
+    fe448_strong_reduce(lhs, lhs);
+    fe448_strong_reduce(rhs, rhs);
+    equal &= fe448_equal(lhs, rhs);
 
     return equal;
 }
@@ -136,42 +136,42 @@ static void ed448_encode(u8 * buf, const point * pgen) {
 
     fe448 A, B, C, D;
     /* A := X^2 + Y^2 */
-    fe_square(x, p->X);
-    fe_square(y, p->Y);
-    fe_add(A, x, y);
+    fe448_square(x, p->X);
+    fe448_square(y, p->Y);
+    fe448_add(A, x, y);
     /* B := Y^2 - X^2 */
-    fe_sub(B, y, x);
+    fe448_sub(B, y, x);
     /* C := (X + Y)^2 */
-    fe_add(C, p->X, p->Y);
-    fe_square(C, C);
+    fe448_add(C, p->X, p->Y);
+    fe448_square(C, C);
     /* D := C - A = 2XY */
-    fe_weak_reduce(A, A);
-    fe_sub(D, C, A);
+    fe448_weak_reduce(A, A);
+    fe448_sub(D, C, A);
     /* C := 2Z^2 (reuse C since it was only used for doing the Karatsuba's trick) */
-    fe_square(C, p->Z);
-    fe_add(C, C, C);
-    fe_weak_reduce(B, B);
+    fe448_square(C, p->Z);
+    fe448_add(C, C, C);
+    fe448_weak_reduce(B, B);
     /* C := C - B = 2Z^2 - Y^2 + X^2 */
-    fe_sub(C, C, B);
+    fe448_sub(C, C, B);
 
     /* x := C*D = 2XY (2Z^2 - Y^2 + X^2) */
-    fe_mul(x, C, D);
+    fe448_mul(x, C, D);
     /* y := B*A = (Y^2 - X^2)(X^2 + Y^2) */
-    fe_mul(y, B, A);
+    fe448_mul(y, B, A);
     /* z := A*C = (X^2 + Y^2)(2Z^2 - Y^2 + X^2) */
-    fe_mul(z, A, C);
+    fe448_mul(z, A, C);
 
     /* Affinize the point */
-    fe_invert(z, z);
-    fe_mul(x, x, z);
-    fe_mul(y, y, z);
+    fe448_invert(z, z);
+    fe448_mul(x, x, z);
+    fe448_mul(y, y, z);
 
     /* Encode the y-coordinate */
-    fe_encode(buf, y);
+    fe448_encode(buf, y);
     /* Encode the "sign" of the x coordinate (parity) in the most
      * significant bit of the last byte */
     FE3C_SANITY_CHECK(buf[56] == 0, "buf[56] = 0x%x", buf[56]);
-    buf[56] |= fe_lsb(x) << 7;
+    buf[56] |= fe448_lsb(x) << 7;
 
     /* Zeroize intermediate results to not leak any secrets via projective coordinates
      * (particularities of the representative of an equivalence class) */
@@ -190,49 +190,49 @@ static void ed448_point_double(point_ed448 * r, const point_ed448 * p, int set_e
     fe448 A, B, C, E, F, G, H;
 
     /* A := X1^2 */
-    fe_square(A, p->X);
+    fe448_square(A, p->X);
     /* B := Y1^2*/
-    fe_square(B, p->Y);
+    fe448_square(B, p->Y);
 
     /* C := 2*Z1^2 */
-    fe_square(C, p->Z);
-    fe_add(C, C, C);
+    fe448_square(C, p->Z);
+    fe448_add(C, C, C);
 
     /* H := A+B */
-    fe_add(H, A, B);
+    fe448_add(H, A, B);
 
     /* E := H-(X1+Y1)^2 */
-    fe_add(E, p->X, p->Y);
-    fe_square(E, E);
-    fe_sub(E, H, E);
+    fe448_add(E, p->X, p->Y);
+    fe448_square(E, E);
+    fe448_sub(E, H, E);
 
     /* G := A-B */
-    fe_sub(G, A, B);
+    fe448_sub(G, A, B);
 
     /* F := C+G */
-    fe_add(F, C, G);
+    fe448_add(F, C, G);
 
 #if FE3C_32BIT
     /* Note that F is a result of addition of two variables
      * which themselves were produced by additions. This amounts
      * to four carries, which is the most we can handle in our 28-bit
      * representation. Do a weak reduction before proceeding */
-    fe_weak_reduce(F, F);
+    fe448_weak_reduce(F, F);
 #endif /* FE3C_32BIT */
 
     /* X3 := E*F */
-    fe_mul(r->X, E, F);
+    fe448_mul(r->X, E, F);
     /* Y3 := G*H */
-    fe_mul(r->Y, G, H);
+    fe448_mul(r->Y, G, H);
     /* Z3 := F*G */
-    fe_mul(r->Z, F, G);
+    fe448_mul(r->Z, F, G);
 
     /* When scheduled to be followed by another doubling we can skip setting the extended coordinate T
      * which is not needed for doubling */
     if (set_extended_coordinate) {
 
         /* T3 := E*H */
-        fe_mul(r->T, E, H);
+        fe448_mul(r->T, E, H);
     }
 }
 
@@ -260,7 +260,7 @@ static int ed448_decode(point * pgen, const u8 * buf) {
     int success = 1;
     /* Recover the "sign" or "parity" of the x-coordinate */
     int parity = buf[56] >> 7;
-    success &= fe_decode(p->Y, buf);
+    success &= fe448_decode(p->Y, buf);
 
     /* We now need to recover the x-coordinate. Note that the curve equation
      * y^2 + x^2 = 1 + d x^2 y^2 implies that x^2 = u / v, where u = y^2 - 1
@@ -280,45 +280,45 @@ static int ed448_decode(point * pgen, const u8 * buf) {
     fe448 u;
     fe448 v;
     /* Set u := y^2 */
-    fe_square(u, p->Y);
+    fe448_square(u, p->Y);
 
     /* Copy y^2 to v */
-    fe_copy(v, u);
+    fe448_copy(v, u);
     /* Subtract one to obtain u = y^2 - 1 */
-    fe_sub(u, u, fe_one);
-    fe_strong_reduce(u, u);
+    fe448_sub(u, u, fe448_one);
+    fe448_strong_reduce(u, u);
     /* Set v := d y^2 */
-    fe_mul(v, v, ed448_d);
+    fe448_mul(v, v, ed448_d);
     /* Set v := d y^2 - 1 */
-    fe_sub(v, v, fe_one);
+    fe448_sub(v, v, fe448_one);
 
     /* Set p->X to u v */
-    fe_mul(p->X, u, v);
+    fe448_mul(p->X, u, v);
     /* Raise p->X to (p-3)/4 */
-    fe_exp_p_minus_3_over_4(p->X, p->X);
+    fe448_exp_p_minus_3_over_4(p->X, p->X);
     /* Set p->X to u (u v)^{(p-3)/4} */
-    fe_mul(p->X, u, p->X);
+    fe448_mul(p->X, u, p->X);
 
     /* So as to not allocate any more variables on the stack reuse p->Z
      * for temporary storage of intermediate results */
-    fe_square(p->Z, p->X);
-    fe_mul(p->Z, p->Z, v);
+    fe448_square(p->Z, p->X);
+    fe448_mul(p->Z, p->Z, v);
 
     /* Check that v * x^2 = u */
-    success &= fe_equal(p->Z, u);
+    success &= fe448_equal(p->Z, u);
 
     /* We must still take into account the encoded sign of x. Set v equal to -x and conditionally
      * move it into p->X, if the parity of x is incorrect now */
-    fe_neg(v, p->X);
-    fe_conditional_move(p->X, v, parity ^ fe_lsb(p->X));
+    fe448_neg(v, p->X);
+    fe448_conditional_move(p->X, v, parity ^ fe448_lsb(p->X));
     /* RFC 8032 dictates that if x0, i.e. parity, is one and x=0, decoding fails, but since
      * the only points with x=0 (i.e. (0, 1) and (0, -1)) are of low order and so we reject
      * them anyway, we skip this check. */
 
     /* If decoding failed, set the result to identity to ensure we have a valid point and not
      * rely on any other code properly handling invalid ones */
-    fe_conditional_move(p->X, fe_zero, 1 - success);
-    fe_conditional_move(p->Y, fe_one, 1 - success);
+    fe448_conditional_move(p->X, fe448_zero, 1 - success);
+    fe448_conditional_move(p->Y, fe448_one, 1 - success);
 
     /* Apply the 4-isogeny to move the point onto a twisted curve with the affine equation:
      *
@@ -342,31 +342,31 @@ static int ed448_decode(point * pgen, const u8 * buf) {
 
     fe448 A, B, C, D;
     /* A := X^2 + Y^2 */
-    fe_square(C, p->X);
-    fe_square(D, p->Y);
-    fe_add(A, C, D);
+    fe448_square(C, p->X);
+    fe448_square(D, p->Y);
+    fe448_add(A, C, D);
     /* B := Y^2 - X^2 */
-    fe_sub(B, D, C);
+    fe448_sub(B, D, C);
     /* C := (X + Y)^2 */
-    fe_add(C, p->X, p->Y);
-    fe_square(C, C);
+    fe448_add(C, p->X, p->Y);
+    fe448_square(C, C);
 
-    fe_weak_reduce(A, A);
+    fe448_weak_reduce(A, A);
     /* D := C - A = 2XY */
-    fe_sub(D, C, A);
+    fe448_sub(D, C, A);
     /* Note that we know that Z=1 at this point, which saves us a squaring */
-    fe_add(C, fe_one, fe_one);
+    fe448_add(C, fe448_one, fe448_one);
     /* C := C - A = 2Z^2 - Y^2 - X^2 */
-    fe_sub(C, C, A);
+    fe448_sub(C, C, A);
 
     /* X := D*C = 2XY (2Z^2 - Y^2 - X^2) */
-    fe_mul(p->X, D, C);
+    fe448_mul(p->X, D, C);
     /* Y := B*A = (Y^2 - X^2)(X^2 + Y^2) */
-    fe_mul(p->Y, B, A);
+    fe448_mul(p->Y, B, A);
     /* Z := B*C = (Y^2 - X^2)(2Z^2 - Y^2 - X^2) */
-    fe_mul(p->Z, B, C);
+    fe448_mul(p->Z, B, C);
     /* T := D*A = 2XY (X^2 + Y^2) */
-    fe_mul(p->T, D, A);
+    fe448_mul(p->T, D, A);
 
     /* Check that we have a valid point */
     success &= ed448_is_ok_order(p);
@@ -384,42 +384,42 @@ static void ed448_points_add(point_ed448 * r, const point_ed448 * p, const point
     fe448 A, B, C, D, E, F, G, H;
 
     /* A := (Y1-X1)*(Y2-X2) */
-    fe_sub(E, p->Y, p->X);
-    fe_sub(F, q->Y, q->X);
-    fe_mul(A, E, F);
+    fe448_sub(E, p->Y, p->X);
+    fe448_sub(F, q->Y, q->X);
+    fe448_mul(A, E, F);
 
     /* B := (Y1+X1)*(Y2+X2) */
-    fe_add(G, p->Y, p->X);
-    fe_add(H, q->Y, q->X);
-    fe_mul(B, G, H);
+    fe448_add(G, p->Y, p->X);
+    fe448_add(H, q->Y, q->X);
+    fe448_mul(B, G, H);
 
     /* C := T1*2*d'*T2 */
-    fe_mul(C, p->T, q->T);
-    fe_mul(C, C, ed448twist_d);
-    fe_add(C, C, C);
-    fe_weak_reduce(C, C);
+    fe448_mul(C, p->T, q->T);
+    fe448_mul(C, C, ed448twist_d);
+    fe448_add(C, C, C);
+    fe448_weak_reduce(C, C);
 
     /* D := Z1*2*Z2 */
-    fe_mul(D, p->Z, q->Z);
-    fe_add(D, D, D);
+    fe448_mul(D, p->Z, q->Z);
+    fe448_add(D, D, D);
 
     /* E := B-A */
-    fe_sub(E, B, A);
+    fe448_sub(E, B, A);
     /* F := D-C */
-    fe_sub(F, D, C);
+    fe448_sub(F, D, C);
     /* G := D+C */
-    fe_add(G, D, C);
+    fe448_add(G, D, C);
     /* H := B+A */
-    fe_add(H, B, A);
+    fe448_add(H, B, A);
 
     /* X3 := E*F */
-    fe_mul(r->X, E, F);
+    fe448_mul(r->X, E, F);
     /* Y3 := G*H */
-    fe_mul(r->Y, G, H);
+    fe448_mul(r->Y, G, H);
     /* T3 := E*H */
-    fe_mul(r->T, E, H);
+    fe448_mul(r->T, E, H);
     /* Z3 := F*G */
-    fe_mul(r->Z, F, G);
+    fe448_mul(r->Z, F, G);
 }
 
 #if !FE3C_OPTIMIZATION_COMB_METHOD
@@ -599,16 +599,16 @@ static void ed448_multiply_basepoint(point * rgen, const u8 * sraw) {
 static void ed448_point_negate(point * pgen) {
 
     point_ed448 * p = (point_ed448 *) pgen;
-    fe_neg(p->X, p->X);
-    fe_neg(p->T, p->T);
+    fe448_neg(p->X, p->X);
+    fe448_neg(p->T, p->T);
 }
 
 static inline void ed448_conditional_move(point_ed448 * r, const point_ed448 * p, int move) {
 
-    fe_conditional_move(r->X, p->X, move);
-    fe_conditional_move(r->Y, p->Y, move);
-    fe_conditional_move(r->Z, p->Z, move);
-    fe_conditional_move(r->T, p->T, move);
+    fe448_conditional_move(r->X, p->X, move);
+    fe448_conditional_move(r->Y, p->Y, move);
+    fe448_conditional_move(r->Z, p->Z, move);
+    fe448_conditional_move(r->T, p->T, move);
 }
 
 static void ed448_double_scalar_multiply(point * rgen, const u8 * s, const u8 * h, const point * pgen) {

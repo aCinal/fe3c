@@ -35,45 +35,45 @@ static inline int ed25519_is_on_curve(const point_ed25519 * p) {
     fe25519 rhs;
 
     /* Set x := X^2, y := Y^2, Z := Z^2 */
-    fe_square(x, p->X);
-    fe_square(y, p->Y);
-    fe_square(z, p->Z);
+    fe25519_square(x, p->X);
+    fe25519_square(y, p->Y);
+    fe25519_square(z, p->Z);
 
     /* Set lhs := (Y^2 - X^2) Z^2 (left-hand side of the homogenous curve equation) */
-    fe_sub(lhs, y, x);
-    fe_mul(lhs, lhs, z);
+    fe25519_sub(lhs, y, x);
+    fe25519_mul(lhs, lhs, z);
 
     /* Set rhs := d X^2 Y^2 + Z^4 (right-hand side of the homogenous curve equation) */
-    fe_mul(rhs, x, y);
-    fe_mul(rhs, rhs, ed25519_d);
-    fe_square(z, z);
-    fe_add(rhs, rhs, z);
+    fe25519_mul(rhs, x, y);
+    fe25519_mul(rhs, rhs, ed25519_d);
+    fe25519_square(z, z);
+    fe25519_add(rhs, rhs, z);
 
     /* Subtract the left-hand side from the right-hand side and check against zero */
-    fe_sub(y, rhs, lhs);
-    fe_strong_reduce(y, y);
+    fe25519_sub(y, rhs, lhs);
+    fe25519_strong_reduce(y, y);
 
-    return fe_equal(fe_zero, y);
+    return fe25519_equal(fe25519_zero, y);
 }
 
 static inline int ed25519_valid_extended_projective(const point_ed25519 * p) {
 
     /* Check the consistency of the extended projective coordinate */
     fe448 xy, tz;
-    fe_mul(xy, p->X, p->Y);
-    fe_mul(tz, p->T, p->Z);
-    fe_strong_reduce(xy, xy);
-    fe_strong_reduce(tz, tz);
-    return fe_equal(tz, xy);
+    fe25519_mul(xy, p->X, p->Y);
+    fe25519_mul(tz, p->T, p->Z);
+    fe25519_strong_reduce(xy, xy);
+    fe25519_strong_reduce(tz, tz);
+    return fe25519_equal(tz, xy);
 }
 #endif /* FE3C_ENABLE_SANITY_CHECKS */
 
 static inline void ed25519_identity(point_ed25519 * p) {
 
-    fe_copy(p->X, fe_zero);
-    fe_copy(p->Y, fe_one);
-    fe_copy(p->Z, fe_one);
-    fe_copy(p->T, fe_zero);
+    fe25519_copy(p->X, fe25519_zero);
+    fe25519_copy(p->Y, fe25519_one);
+    fe25519_copy(p->Z, fe25519_one);
+    fe25519_copy(p->T, fe25519_zero);
 }
 
 static int ed25519_points_equal(const point * pgen, const point * qgen) {
@@ -85,18 +85,18 @@ static int ed25519_points_equal(const point * pgen, const point * qgen) {
     fe25519 rhs;
 
     /* Check X1 Z2 = X2 Z1 */
-    fe_mul(lhs, p->X, q->Z);
-    fe_mul(rhs, q->X, p->Z);
-    fe_strong_reduce(lhs, lhs);
-    fe_strong_reduce(rhs, rhs);
-    int equal = fe_equal(lhs, rhs);
+    fe25519_mul(lhs, p->X, q->Z);
+    fe25519_mul(rhs, q->X, p->Z);
+    fe25519_strong_reduce(lhs, lhs);
+    fe25519_strong_reduce(rhs, rhs);
+    int equal = fe25519_equal(lhs, rhs);
 
     /* Check Y1 Z2 = Y2 Z1 */
-    fe_mul(lhs, p->Y, q->Z);
-    fe_mul(rhs, q->Y, p->Z);
-    fe_strong_reduce(lhs, lhs);
-    fe_strong_reduce(rhs, rhs);
-    equal &= fe_equal(lhs, rhs);
+    fe25519_mul(lhs, p->Y, q->Z);
+    fe25519_mul(rhs, q->Y, p->Z);
+    fe25519_strong_reduce(lhs, lhs);
+    fe25519_strong_reduce(rhs, rhs);
+    equal &= fe25519_equal(lhs, rhs);
 
     return equal;
 }
@@ -109,16 +109,16 @@ static void ed25519_encode(u8 * buf, const point * pgen) {
     fe25519 z_inv;
 
     /* Affinize the point */
-    fe_invert(z_inv, p->Z);
-    fe_mul(x, p->X, z_inv);
-    fe_mul(y, p->Y, z_inv);
+    fe25519_invert(z_inv, p->Z);
+    fe25519_mul(x, p->X, z_inv);
+    fe25519_mul(y, p->Y, z_inv);
 
     /* Encode the y-coordinate */
-    fe_encode(buf, y);
+    fe25519_encode(buf, y);
     /* Encode the "sign" of the x-coordinate (parity) in the most
      * significant bit of the last byte */
     FE3C_SANITY_CHECK((buf[31] >> 7) == 0, "buf[31] = 0x%x", buf[31]);
-    buf[31] |= fe_lsb(x) << 7;
+    buf[31] |= fe25519_lsb(x) << 7;
 
     /* Zeroize intermediate results to not leak any secrets via projective coordinates
      * (particularities of the representative of an equivalence class) */
@@ -133,41 +133,41 @@ static void ed25519_point_double(point_ed25519 * r, const point_ed25519 * p, int
     fe25519 A, B, C, E, F, G, H;
 
     /* A := X1^2 */
-    fe_square(A, p->X);
+    fe25519_square(A, p->X);
     /* B := Y1^2*/
-    fe_square(B, p->Y);
+    fe25519_square(B, p->Y);
 
     /* C := 2*Z1^2 */
-    fe_square(C, p->Z);
-    fe_add(C, C, C);
+    fe25519_square(C, p->Z);
+    fe25519_add(C, C, C);
 
     /* H := A+B */
-    fe_add(H, A, B);
+    fe25519_add(H, A, B);
 
     /* E := H-(X1+Y1)^2 */
-    fe_add(E, p->X, p->Y);
-    fe_square(E, E);
-    fe_sub(E, H, E);
+    fe25519_add(E, p->X, p->Y);
+    fe25519_square(E, E);
+    fe25519_sub(E, H, E);
 
     /* G := A-B */
-    fe_sub(G, A, B);
+    fe25519_sub(G, A, B);
 
     /* F := C+G */
-    fe_add(F, C, G);
+    fe25519_add(F, C, G);
 
     /* X3 := E*F */
-    fe_mul(r->X, E, F);
+    fe25519_mul(r->X, E, F);
     /* Y3 := G*H */
-    fe_mul(r->Y, G, H);
+    fe25519_mul(r->Y, G, H);
     /* Z3 := F*G */
-    fe_mul(r->Z, F, G);
+    fe25519_mul(r->Z, F, G);
 
     /* When scheduled to be followed by another doubling we can skip setting the extended coordinate T
      * which is not needed for doubling */
     if (set_extended_coordinate) {
 
         /* T3 := E*H */
-        fe_mul(r->T, E, H);
+        fe25519_mul(r->T, E, H);
     }
 }
 
@@ -197,7 +197,7 @@ static int ed25519_decode(point * pgen, const u8 * buf) {
     int success = 1;
     /* Recover the "sign" or "parity" of the x-coordinate */
     int parity = buf[31] >> 7;
-    success &= fe_decode(p->Y, buf);
+    success &= fe25519_decode(p->Y, buf);
 
     /* We now need to recover the x-coordinate. Note that the curve equation
      * -x^2 + y^2 = 1 + d x^2 y^2 implies that x^2 = u / v, where u = y^2 - 1
@@ -218,28 +218,28 @@ static int ed25519_decode(point * pgen, const u8 * buf) {
     fe25519 u;
     fe25519 v;
     /* Set u := y^2 */
-    fe_square(u, p->Y);
+    fe25519_square(u, p->Y);
 
     /* Copy y^2 to v */
-    fe_copy(v, u);
+    fe25519_copy(v, u);
     /* Subtract one to obtain u = y^2 - 1 */
-    fe_sub(u, u, fe_one);
-    fe_strong_reduce(u, u);
+    fe25519_sub(u, u, fe25519_one);
+    fe25519_strong_reduce(u, u);
     /* Set v := d y^2 */
-    fe_mul(v, v, ed25519_d);
+    fe25519_mul(v, v, ed25519_d);
     /* Set v := d y^2 + 1 */
-    fe_add(v, v, fe_one);
+    fe25519_add(v, v, fe25519_one);
 
     /* So as to not allocate any more variables on the stack reuse p->T
      * for temporary storage of intermediate results */
 
     /* Set p->T to u v */
-    fe_mul(p->T, u, v);
+    fe25519_mul(p->T, u, v);
     /* Raise p->T to (p-5)/8 */
-    fe_exp_p_minus_5_over_8(p->T, p->T);
+    fe25519_exp_p_minus_5_over_8(p->T, p->T);
 
     /* Set p->X := u (u v)^{(p-5)/8} */
-    fe_mul(p->X, u, p->T);
+    fe25519_mul(p->X, u, p->T);
 
     /* Now we must consider the three cases:
      * 1. If v x^2 = u (mod p), then x is the square root
@@ -248,46 +248,46 @@ static int ed25519_decode(point * pgen, const u8 * buf) {
      */
 
     /* Compute v x^2 in p->T */
-    fe_square(p->T, p->X);
-    fe_mul(p->T, p->T, v);
+    fe25519_square(p->T, p->X);
+    fe25519_mul(p->T, p->T, v);
     /* Normalize u and p->T before doing any comparisons */
-    fe_strong_reduce(u, u);
-    fe_strong_reduce(p->T, p->T);
+    fe25519_strong_reduce(u, u);
+    fe25519_strong_reduce(p->T, p->T);
     /* Check if we need to multiply by the square root of -1 */
-    int multiply_by_i = 1 - fe_equal(p->T, u);
+    int multiply_by_i = 1 - fe25519_equal(p->T, u);
     /* Set p->T := i x */
-    fe_mul(p->T, p->X, fe_i);
+    fe25519_mul(p->T, p->X, fe25519_i);
 
     /* At this point we have p->X equal to x as calculated by (u/v)^{(p+3)/8}, and v equal to i x.
      * If multiply_by_i is one, then we have excluded case 1. (v x^2 is definitely not equal to u).
      * In such a case we want to set p->X := i x: */
-    fe_conditional_move(p->X, p->T, multiply_by_i);
+    fe25519_conditional_move(p->X, p->T, multiply_by_i);
 
     /* At this point p->X p->X v must be equal to u if we have a valid decoding (since p->X is either
      * x or i x by now). */
-    fe_mul(v, v, p->X);
-    fe_mul(v, v, p->X);
-    fe_strong_reduce(v, v);
+    fe25519_mul(v, v, p->X);
+    fe25519_mul(v, v, p->X);
+    fe25519_strong_reduce(v, v);
     /* Note that u has already been normalized */
-    success &= fe_equal(v, u);
+    success &= fe25519_equal(v, u);
 
     /* We must still take into account the encoded sign of x. Set v equal to -x and conditionally
      * move it into p->X, if the parity of x is incorrect now */
-    fe_neg(v, p->X);
-    fe_conditional_move(p->X, v, parity ^ fe_lsb(p->X));
+    fe25519_neg(v, p->X);
+    fe25519_conditional_move(p->X, v, parity ^ fe25519_lsb(p->X));
     /* RFC 8032 dictates that if x0, i.e. parity, is one and x=0, decoding fails, but since
      * the only points with x=0 (i.e. (0, 1) and (0, -1)) are of low order and so we reject
      * them anyway, we skip this check. */
 
     /* If decoding failed, set the result to identity to ensure we have a valid point and not
      * rely on any other code properly handling invalid ones */
-    fe_conditional_move(p->X, fe_zero, 1 - success);
-    fe_conditional_move(p->Y, fe_one, 1 - success);
+    fe25519_conditional_move(p->X, fe25519_zero, 1 - success);
+    fe25519_conditional_move(p->Y, fe25519_one, 1 - success);
 
     /* Set Z to one (normalized projective representation) */
-    fe_copy(p->Z, fe_one);
+    fe25519_copy(p->Z, fe25519_one);
     /* Set the extended coordinate T to the correct value */
-    fe_mul(p->T, p->X, p->Y);
+    fe25519_mul(p->T, p->X, p->Y);
     /* Check that we have a valid point */
     success &= ed25519_is_ok_order(p);
 
@@ -305,41 +305,41 @@ static void ed25519_points_add(point_ed25519 * r, const point_ed25519 * p, const
     fe25519 A, B, C, D, E, F, G, H;
 
     /* A := (Y1-X1)*(Y2-X2) */
-    fe_sub(E, p->Y, p->X);
-    fe_sub(F, q->Y, q->X);
-    fe_mul(A, E, F);
+    fe25519_sub(E, p->Y, p->X);
+    fe25519_sub(F, q->Y, q->X);
+    fe25519_mul(A, E, F);
 
     /* B := (Y1+X1)*(Y2+X2) */
-    fe_add(G, p->Y, p->X);
-    fe_add(H, q->Y, q->X);
-    fe_mul(B, G, H);
+    fe25519_add(G, p->Y, p->X);
+    fe25519_add(H, q->Y, q->X);
+    fe25519_mul(B, G, H);
 
     /* C := T1*2*d*T2 */
-    fe_mul(C, p->T, q->T);
-    fe_mul(C, C, ed25519_d);
-    fe_add(C, C, C);
+    fe25519_mul(C, p->T, q->T);
+    fe25519_mul(C, C, ed25519_d);
+    fe25519_add(C, C, C);
 
     /* D := Z1*2*Z2 */
-    fe_mul(D, p->Z, q->Z);
-    fe_add(D, D, D);
+    fe25519_mul(D, p->Z, q->Z);
+    fe25519_add(D, D, D);
 
     /* E := B-A */
-    fe_sub(E, B, A);
+    fe25519_sub(E, B, A);
     /* F := D-C */
-    fe_sub(F, D, C);
+    fe25519_sub(F, D, C);
     /* G := D+C */
-    fe_add(G, D, C);
+    fe25519_add(G, D, C);
     /* H := B+A */
-    fe_add(H, B, A);
+    fe25519_add(H, B, A);
 
     /* X3 := E*F */
-    fe_mul(r->X, E, F);
+    fe25519_mul(r->X, E, F);
     /* Y3 := G*H */
-    fe_mul(r->Y, G, H);
+    fe25519_mul(r->Y, G, H);
     /* T3 := E*H */
-    fe_mul(r->T, E, H);
+    fe25519_mul(r->T, E, H);
     /* Z3 := F*G */
-    fe_mul(r->Z, F, G);
+    fe25519_mul(r->Z, F, G);
 }
 
 #if !FE3C_OPTIMIZATION_COMB_METHOD
@@ -478,16 +478,16 @@ static void ed25519_multiply_basepoint(point * rgen, const u8 * s) {
 static void ed25519_point_negate(point * pgen) {
 
     point_ed25519 * p = (point_ed25519 *) pgen;
-    fe_neg(p->X, p->X);
-    fe_neg(p->T, p->T);
+    fe25519_neg(p->X, p->X);
+    fe25519_neg(p->T, p->T);
 }
 
 static inline void ed25519_conditional_move(point_ed25519 * r, const point_ed25519 * p, int move) {
 
-    fe_conditional_move(r->X, p->X, move);
-    fe_conditional_move(r->Y, p->Y, move);
-    fe_conditional_move(r->Z, p->Z, move);
-    fe_conditional_move(r->T, p->T, move);
+    fe25519_conditional_move(r->X, p->X, move);
+    fe25519_conditional_move(r->Y, p->Y, move);
+    fe25519_conditional_move(r->Z, p->Z, move);
+    fe25519_conditional_move(r->T, p->T, move);
 }
 
 static void ed25519_double_scalar_multiply(point * rgen, const u8 * s, const u8 * h, const point * pgen) {

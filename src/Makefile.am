@@ -19,10 +19,12 @@ libcementite_a_SOURCES += \
 
 if FE3C_32BIT
 libcementite_a_SOURCES += \
-    scalars/scalars_ed448_32.c
+    scalars/scalars_ed448_32.c \
+    field_elements/field_elements_ed448_32.c
 else
 libcementite_a_SOURCES += \
-    scalars/scalars_ed448_64.c
+    scalars/scalars_ed448_64.c \
+    field_elements/field_elements_ed448_64.c
 endif
 
 endif
@@ -35,10 +37,12 @@ libcementite_a_SOURCES += \
 
 if FE3C_32BIT
 libcementite_a_SOURCES += \
-    scalars/scalars_ed25519_32.c
+    scalars/scalars_ed25519_32.c \
+    field_elements/field_elements_ed25519_32.c
 else
 libcementite_a_SOURCES += \
-    scalars/scalars_ed25519_64.c
+    scalars/scalars_ed25519_64.c \
+    field_elements/field_elements_ed25519_64.c
 endif
 
 endif
