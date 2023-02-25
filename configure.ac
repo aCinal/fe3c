@@ -18,8 +18,6 @@ AM_SILENT_RULES([yes])
 AC_PROG_CC
 # Check for the archiver
 AM_PROG_AR
-# Check for ranlib
-AC_PROG_RANLIB
 
 # Check for header files
 AC_CHECK_HEADERS([stdint.h stddef.h])
@@ -41,6 +39,14 @@ AM_CFLAGS="$AM_CFLAGS -Wall -Werror"
 AC_SUBST([AM_CFLAGS])
 AM_CPPFLAGS="$AM_CPPFLAGS"
 AC_SUBST([AM_CPPFLAGS])
+AM_LDFLAGS="$AM_LDFLAGS"
+AC_SUBST([AM_LDFLAGS])
+
+# Use libtool
+LT_INIT([])
+
+# Export the .so version to the Makefiles
+AC_SUBST([FE3C_VERSION_LIBSO], [1:0:0])
 
 # -------------------------------- Supported elliptic curves --------------------------------
 ed25519="no"
