@@ -2,6 +2,8 @@
 #ifndef __FE3C_EDDSA_H
 #define __FE3C_EDDSA_H
 
+#pragma GCC visibility push(default)
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -192,5 +194,7 @@ int eddsa_is_curve_supported(eddsa_curve curve_id);
 #ifdef __cplusplus
 }
 #endif
+
+#pragma GCC visibility pop
 
 #endif /* __FE3C_EDDSA_H */

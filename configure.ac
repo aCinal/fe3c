@@ -4,6 +4,9 @@ AC_INIT([Fe3C], [1.0])
 # Keep the root directory clean and put automake's scripts in a subdirectory
 AC_CONFIG_AUX_DIR([build-aux])
 
+# Use C as the language of choice
+AC_LANG([C])
+
 # Use automake
 # subdir-objects  --> put objects into subdirectories named after the source files
 # foreign         --> not require all the GNU Coding Style files such as NEWS, README, AUTHORS, etc.
@@ -35,18 +38,31 @@ AC_C_BIGENDIAN(
   AC_MSG_WARN([Cannot determine endianness])
 )
 
-AM_CFLAGS="$AM_CFLAGS -Wall -Werror"
-AC_SUBST([AM_CFLAGS])
+# Set common flags
 AM_CPPFLAGS="$AM_CPPFLAGS"
-AC_SUBST([AM_CPPFLAGS])
+AM_CFLAGS="$AM_CFLAGS -Wall -Werror"
 AM_LDFLAGS="$AM_LDFLAGS"
-AC_SUBST([AM_LDFLAGS])
 
 # Use libtool
 LT_INIT([])
 
 # Export the .so version to the Makefiles
 AC_SUBST([FE3C_VERSION_LIBSO], [1:0:0])
+
+# Check if -fvisibility=hidden is supported to reduce .so size
+VISIBILITY_CFLAGS="-fvisibility=hidden"
+AC_CACHE_CHECK([whether -fvisibility=hidden is supported],
+               [fe3c_cv_visibility_hidden_supported],
+               [OLD_CFLAGS="$CFLAGS"
+                CFLAGS="$CFLAGS $VISIBILITY_CFLAGS"
+                AC_LINK_IFELSE([AC_LANG_PROGRAM()],
+                               [fe3c_cv_visibility_hidden_supported=yes],
+                               [fe3c_cv_visibility_hidden_supported=no])
+                CFLAGS="$OLD_CFLAGS"])
+# If failed to link with -fvisibility=hidden, reset VISIBILITY_CFLAGS
+AS_IF([test "x$fe3c_cv_visibility_hidden_supported" != "xyes"],
+      [VISIBILITY_CFLAGS=""])
+AM_CFLAGS="$AM_CFLAGS $VISIBILITY_CFLAGS"
 
 # -------------------------------- Supported elliptic curves --------------------------------
 ed25519="no"
@@ -164,6 +180,12 @@ AS_IF([test "x$sanity_checks" = "xyes"], AC_DEFINE([FE3C_ENABLE_SANITY_CHECKS]),
 # -------------------------------------------------------------------------------------------
 
 AC_CONFIG_FILES([Makefile src/Makefile])
+
+# Export the changed variables to the Makefiles
+AC_SUBST([AM_CFLAGS])
+AC_SUBST([AM_CPPFLAGS])
+AC_SUBST([AM_LDFLAGS])
+
 AC_OUTPUT
 AC_MSG_RESULT([
     $PACKAGE $VERSION
