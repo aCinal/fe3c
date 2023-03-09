@@ -431,11 +431,13 @@ static inline void ed448_scalar_multiply(point_ed448 * r, const point_ed448 * p,
     ed448_identity(&R[0]);
     R[1] = *p;
 
-    /* Do a simple Montgomery ladder */
+    /* Do a simple Montgomery ladder. Note that the input scalar must have been pruned
+     * or reduced modulo the group order, so we can safely skip the top 8 bits of the
+     * buffer and start at bit 447. */
     for (int i = 447; i >= 0; i--) {
 
         /* Recover the ith bit of the scalar */
-        int bit = ( s[i >> 3] >> (i & 0x7) ) & 1;
+        int bit = array_bit(s, i);
         ed448_points_add(&R[1 - bit], &R[1 - bit], &R[bit]);
         ed448_point_double(&R[bit], &R[bit], 1);
     }
@@ -640,8 +642,8 @@ static void ed448_double_scalar_multiply(point * rgen, const u8 * s, const u8 * 
 
     /* Represent the two scalars as arrays of base-4 digits:
      *
-     *                 s = (s223, s222, ..., s2, s1, s0)
-     *                 h = (h223, h222, ..., h2, h1, h0)
+     *                     s = (s222, ..., s2, s1, s0)
+     *                     h = (h222, ..., h2, h1, h0)
      *
      * where si, hi are in { 0, 1, 2, 3 }. At each iteration i add to the
      * accumulator the point [si]B + [hi]A. Use the two base-4 digits to
@@ -649,7 +651,10 @@ static void ed448_double_scalar_multiply(point * rgen, const u8 * s, const u8 * 
      */
     ed448_identity(r);
 
-    for (int i = 223; i >= 0; i--) {
+    /* Iterate from i=222 down to 0. Note that at i=222 we are accessing
+     * the bits 444 and 445 of the scalars, which are the two most
+     * significant bits of any canonical scalar. */
+    for (int i = 222; i >= 0; i--) {
 
         ed448_point_double(r, r, 0);
         ed448_point_double(r, r, 1);
@@ -699,7 +704,9 @@ static void ed448_double_scalar_multiply(point * rgen, const u8 * s, const u8 * 
 
     ed448_identity(r);
 
-    for (int i = 447; i >= 0; i--) {
+    /* Note that canonical scalars have at most 446 bits, which
+     * corresponds to the loop counter initialization */
+    for (int i = 445; i >= 0; i--) {
 
         ed448_point_double(r, r, 1);
 

@@ -351,11 +351,13 @@ static inline void ed25519_scalar_multiply(point_ed25519 * r, const point_ed2551
     ed25519_identity(&R[0]);
     R[1] = *p;
 
-    /* Do a simple Montgomery ladder */
-    for (int i = 255; i >= 0; i--) {
+    /* Do a simple Montgomery ladder. Note that the input scalar must have been pruned, which
+     * results in bit 255 being cleared (and bit 254 being set), or reduced modulo the group order,
+     * in which case bit 255 will also be cleared, so we can safely skip it. */
+    for (int i = 254; i >= 0; i--) {
 
         /* Recover the ith bit of the scalar */
-        int bit = ( s[i >> 3] >> (i & 0x7) ) & 1;
+        int bit = array_bit(s, i);
         ed25519_points_add(&R[1 - bit], &R[1 - bit], &R[bit]);
         ed25519_point_double(&R[bit], &R[bit], 1);
     }
@@ -494,6 +496,7 @@ static void ed25519_double_scalar_multiply(point * rgen, const u8 * s, const u8 
 
     point_ed25519 * r = (point_ed25519 *) rgen;
     const point_ed25519 * p = (const point_ed25519 *) pgen;
+
 #if FE3C_OPTIMIZATION_BASE_FOUR_SHAMIR_TRICK
     point_ed25519 G[15];
     G[0] = ed25519_basepoint;                    /* [0]A + [1]B */
@@ -514,8 +517,8 @@ static void ed25519_double_scalar_multiply(point * rgen, const u8 * s, const u8 
 
     /* Represent the two scalars as arrays of base-4 digits:
      *
-     *                 s = (s127, s126, ..., s2, s1, s0)
-     *                 h = (h127, h126, ..., h2, h1, h0)
+     *                     s = (s126, ..., s2, s1, s0)
+     *                     h = (h126, ..., h2, h1, h0)
      *
      * where si, hi are in { 0, 1, 2, 3 }. At each iteration i add to the
      * accumulator the point [si]B + [hi]A. Use the two base-4 digits to
@@ -523,7 +526,11 @@ static void ed25519_double_scalar_multiply(point * rgen, const u8 * s, const u8 
      */
     ed25519_identity(r);
 
-    for (int i = 127; i >= 0; i--) {
+    /* Iterate from i=126 down to 0. Note that at i=126 we are accessing
+     * the bits 252 and 253 of the scalars, which are the two most
+     * significant bits of any canonical scalar (in fact bit 253 must be
+     * zero, but we do not bother to unroll the loop for that). */
+    for (int i = 126; i >= 0; i--) {
 
         ed25519_point_double(r, r, 0);
         ed25519_point_double(r, r, 1);
@@ -573,7 +580,9 @@ static void ed25519_double_scalar_multiply(point * rgen, const u8 * s, const u8 
 
     ed25519_identity(r);
 
-    for (int i = 255; i >= 0; i--) {
+    /* Note that canonical scalars have at most 253 bits, which
+     * corresponds to the loop counter initialization */
+    for (int i = 252; i >= 0; i--) {
 
         ed25519_point_double(r, r, 1);
 
