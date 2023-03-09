@@ -37,7 +37,10 @@ void eddsa_sign(const eddsa_sign_request * req) {
 
     /* Buffers for the encoded elliptic curve points */
     u8 encoded_public_key_buffer[curve->b_in_bytes];
-    u8 encoded_commitment[curve->b_in_bytes];
+    /* To avoid additional memcpy write the encoded commitment directly
+     * into the signature buffer. To have a more descriptive name, however,
+     * use an aliasing pointer. */
+    u8 * encoded_commitment = req->signature;
     const u8 * encoded_public_key;
 
     /* Recover pointers to the virtual method tables for the group and the
@@ -100,9 +103,6 @@ void eddsa_sign(const eddsa_sign_request * req) {
     iov[5].iov_len = req->message_length;
     h(hash_commit_key_message, iov, 6);
     sops->reduce(hash_commit_key_message);
-
-    /* Write the commitment into the signature */
-    (void) memcpy(req->signature, encoded_commitment, curve->b_in_bytes);
 
     /* Compute H(R|A|M) s + r (notation as in RFC 8032) */
     sops->muladd(&req->signature[curve->b_in_bytes], hash_commit_key_message, hash_secret_key, ephemeral_scalar);
