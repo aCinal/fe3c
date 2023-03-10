@@ -1,6 +1,5 @@
 #include <CppUTest/TestHarness.h>
 #include <fe3c/eddsa.h>
-#include <curves/curves.h>
 
 TEST_GROUP(EDDSA_RFC_VECTORS_ED448) {
 
@@ -977,14 +976,8 @@ TEST(EDDSA_RFC_VECTORS_ED448, TestPhAbc_Sign) {
 
     u8 signature[eddsa_get_signature_length(EDDSA_CURVE_ED448)];
     /* Prehash the message before signing */
-    const curve * curve = curves[EDDSA_CURVE_ED448];
-    u8 prehash[2 * curve->b_in_bytes];
-    hash h = curve->hash_function;
-    struct iovec iov = {
-        .iov_base = message,
-        .iov_len = sizeof(message) - 1
-    };
-    h(prehash, &iov, 1);
+    u8 prehash[eddsa_get_prehash_length(EDDSA_CURVE_ED448)];
+    eddsa_prehash(prehash, message, sizeof(message) - 1, EDDSA_CURVE_ED448);
 
     eddsa_sign_request req = {
         .signature = signature,
@@ -1020,14 +1013,8 @@ TEST(EDDSA_RFC_VECTORS_ED448, TestPhAbc_Verify) {
         "\xd5\xed\x3d\x5d\x01\xc0\xf5\x38\x80";
 
     /* Prehash the message before verification */
-    const curve * curve = curves[EDDSA_CURVE_ED448];
-    u8 prehash[2 * curve->b_in_bytes];
-    hash h = curve->hash_function;
-    struct iovec iov = {
-        .iov_base = message,
-        .iov_len = sizeof(message) - 1
-    };
-    h(prehash, &iov, 1);
+    u8 prehash[eddsa_get_prehash_length(EDDSA_CURVE_ED448)];
+    eddsa_prehash(prehash, message, sizeof(message) - 1, EDDSA_CURVE_ED448);
 
     eddsa_verify_request req = {
         .signature = signature,
@@ -1064,14 +1051,8 @@ TEST(EDDSA_RFC_VECTORS_ED448, TestPhAbcWithContext_Sign) {
 
     u8 signature[eddsa_get_signature_length(EDDSA_CURVE_ED448)];
     /* Prehash the message before signing */
-    const curve * curve = curves[EDDSA_CURVE_ED448];
-    u8 prehash[2 * curve->b_in_bytes];
-    hash h = curve->hash_function;
-    struct iovec iov = {
-        .iov_base = message,
-        .iov_len = sizeof(message) - 1
-    };
-    h(prehash, &iov, 1);
+    u8 prehash[eddsa_get_prehash_length(EDDSA_CURVE_ED448)];
+    eddsa_prehash(prehash, message, sizeof(message) - 1, EDDSA_CURVE_ED448);
 
     eddsa_sign_request req = {
         .signature = signature,
@@ -1107,14 +1088,8 @@ TEST(EDDSA_RFC_VECTORS_ED448, TestPhAbcWithContext_Verify) {
         "\xd5\xed\x3d\x5d\x01\xc0\xf5\x38\x80";
 
     /* Prehash the message before verification */
-    const curve * curve = curves[EDDSA_CURVE_ED448];
-    u8 prehash[2 * curve->b_in_bytes];
-    hash h = curve->hash_function;
-    struct iovec iov = {
-        .iov_base = message,
-        .iov_len = sizeof(message) - 1
-    };
-    h(prehash, &iov, 1);
+    u8 prehash[eddsa_get_prehash_length(EDDSA_CURVE_ED448)];
+    eddsa_prehash(prehash, message, sizeof(message) - 1, EDDSA_CURVE_ED448);
 
     eddsa_verify_request req = {
         .signature = signature,

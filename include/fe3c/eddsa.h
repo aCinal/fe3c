@@ -184,6 +184,24 @@ int eddsa_get_public_key_length(eddsa_curve curve_id);
 int eddsa_get_secret_key_length(eddsa_curve curve_id);
 
 /**
+ * @brief Prehash the message
+ * @param[out] output Prehash of the message
+ * @param[in] input Input message
+ * @param[in] length Input message length
+ * @param[in] curve_id Identifier of the curve
+ * @see eddsa_curve
+ */
+void eddsa_prehash(u8 * output, const u8 * input, size_t length, eddsa_curve curve_id);
+
+/**
+ * @brief Return the prehash length for a given Edwards curve
+ * @param curve_id Identifier of the curve
+ * @return Prehash length for the given curve
+ * @see eddsa_curve
+ */
+int eddsa_get_prehash_length(eddsa_curve curve_id);
+
+/**
  * @brief Check if the library has been compiled to support a given curve
  * @param curve_id Identifier of the curve
  * @return A non-zero value if a curve is supported, zero otherwise

@@ -258,6 +258,35 @@ int eddsa_get_secret_key_length(eddsa_curve curve_id) {
     return curves[curve_id]->b_in_bytes;
 }
 
+void eddsa_prehash(u8 * output, const u8 * input, size_t length, eddsa_curve curve_id) {
+
+    FE3C_SANITY_CHECK(curve_id < EDDSA_NUMBER_OF_SUPPORTED_CURVES, NULL);
+    FE3C_SANITY_CHECK(curves[curve_id], NULL);
+
+    const curve * curve = curves[curve_id];
+    /* Reuse the SHAKE-256 code at the cost of an additional memcpy */
+    u8 raw_hash[2 * curve->b_in_bytes];
+    hash h = curve->hash_function;
+    struct iovec iov = {
+        .iov_base = input,
+        .iov_len = length
+    };
+    h(raw_hash, &iov, 1);
+    /* Only copy the first 64 octets. For Ed25519 and SHA-512 this is a redundant memcpy,
+     * but for Ed448 and SHAKE-256 we got the hash output of 114 octets, so we must
+     * truncate it. */
+    (void) memcpy(output, raw_hash, eddsa_get_prehash_length(curve_id));
+}
+
+int eddsa_get_prehash_length(eddsa_curve curve_id) {
+
+    FE3C_SANITY_CHECK(curve_id < EDDSA_NUMBER_OF_SUPPORTED_CURVES, NULL);
+    FE3C_SANITY_CHECK(curves[curve_id], NULL);
+
+    /* The prehash length is 64 octets for both Ed25519 and Ed448 (see RFC 8032, section 5.2) */
+    return 64;
+}
+
 int eddsa_is_curve_supported(eddsa_curve curve_id) {
 
     return (curve_id < EDDSA_NUMBER_OF_SUPPORTED_CURVES) && (curves[curve_id] != NULL);
