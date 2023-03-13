@@ -493,77 +493,6 @@ static void ed448_double_scalar_multiply(point * rgen, const u8 * s, const u8 * 
     point_ed448 * r = (point_ed448 *) rgen;
     const point_ed448 * p = (const point_ed448 *) pgen;
 
-#if FE3C_OPTIMIZATION_BASE_FOUR_SHAMIR_TRICK
-    point_ed448 G[15];
-    G[0] = ed448_basepoint;                    /* [0]A + [1]B */
-    ed448_point_double(&G[ 1], &G[ 0]);        /* [0]A + [2]B */
-    ed448_points_add(&G[ 2], &G[ 1], &G[ 0]);  /* [0]A + [3]B */
-    G[3] = *p;                                 /* [1]A + [0]B */
-    ed448_points_add(&G[ 4], &G[ 3], &G[ 0]);  /* [1]A + [1]B */
-    ed448_points_add(&G[ 5], &G[ 3], &G[ 1]);  /* [1]A + [2]B */
-    ed448_points_add(&G[ 6], &G[ 3], &G[ 2]);  /* [1]A + [3]B */
-    ed448_point_double(&G[ 7], &G[ 3]);        /* [2]A + [0]B */
-    ed448_points_add(&G[ 8], &G[ 7], &G[ 0]);  /* [2]A + [1]B */
-    ed448_point_double(&G[ 9], &G[ 4]);        /* [2]A + [2]B */
-    ed448_points_add(&G[10], &G[ 7], &G[ 2]);  /* [2]A + [3]B */
-    ed448_points_add(&G[11], &G[ 7], &G[ 3]);  /* [3]A + [0]B */
-    ed448_points_add(&G[12], &G[11], &G[ 0]);  /* [3]A + [1]B */
-    ed448_points_add(&G[13], &G[11], &G[ 1]);  /* [3]A + [2]B */
-    ed448_points_add(&G[14], &G[11], &G[ 2]);  /* [3]A + [3]B */
-
-    /* Represent the two scalars as arrays of base-4 digits:
-     *
-     *                     s = (s222, ..., s2, s1, s0)
-     *                     h = (h222, ..., h2, h1, h0)
-     *
-     * where si, hi are in { 0, 1, 2, 3 }. At each iteration i add to the
-     * accumulator the point [si]B + [hi]A. Use the two base-4 digits to
-     * find the point in the precomputation table.
-     */
-    ed448_identity(r);
-
-    /* Iterate from i=222 down to 0. Note that at i=222 we are accessing
-     * the bits 444 and 445 of the scalars, which are the two most
-     * significant bits of any canonical scalar. */
-    for (int i = 222; i >= 0; i--) {
-
-        ed448_point_double(r, r);
-        ed448_point_double(r, r);
-
-        /* Recode the scalars on the fly into base-4 representation */
-        u8 ss = (array_bit(s, 2*i + 1) << 1) | array_bit(s, 2*i);
-        u8 hh = (array_bit(h, 2*i + 1) << 1) | array_bit(h, 2*i);
-        u8 index = (hh << 2) | ss;
-        /* TODO: Study how we can use NAF here to reduce the amount
-         * of precomputation. The problem with NAF seems to be that
-         * we must additionally precompute the sums [n]A + [k]B where
-         * n and k have different signs. */
-
-        /* Access all elements of the array to prevent cache-based timing
-         * attacks. Note that for most applications constant-time signature
-         * verification is not needed. It is for the few that care that we
-         * do this. */
-        point_ed448 t;
-        ed448_identity(&t);
-        ed448_conditional_move(&t, &G[ 0], byte_equal(index,  1));
-        ed448_conditional_move(&t, &G[ 1], byte_equal(index,  2));
-        ed448_conditional_move(&t, &G[ 2], byte_equal(index,  3));
-        ed448_conditional_move(&t, &G[ 3], byte_equal(index,  4));
-        ed448_conditional_move(&t, &G[ 4], byte_equal(index,  5));
-        ed448_conditional_move(&t, &G[ 5], byte_equal(index,  6));
-        ed448_conditional_move(&t, &G[ 6], byte_equal(index,  7));
-        ed448_conditional_move(&t, &G[ 7], byte_equal(index,  8));
-        ed448_conditional_move(&t, &G[ 8], byte_equal(index,  9));
-        ed448_conditional_move(&t, &G[ 9], byte_equal(index, 10));
-        ed448_conditional_move(&t, &G[10], byte_equal(index, 11));
-        ed448_conditional_move(&t, &G[11], byte_equal(index, 12));
-        ed448_conditional_move(&t, &G[12], byte_equal(index, 13));
-        ed448_conditional_move(&t, &G[13], byte_equal(index, 14));
-        ed448_conditional_move(&t, &G[14], byte_equal(index, 15));
-
-        ed448_points_add(r, r, &t);
-    }
-#else
     /* To reduce stack usage, only store pointers to the public key A
      * and the basepoint B, and allocate only one point (A+B) */
     point_ed448 sum;
@@ -595,7 +524,6 @@ static void ed448_double_scalar_multiply(point * rgen, const u8 * s, const u8 * 
 
         ed448_points_add(r, r, &t);
     }
-#endif /* !FE3C_OPTIMIZATION_BASE_FOUR_SHAMIR_TRICK */
 }
 
 const group_ops ed448_group_ops = {

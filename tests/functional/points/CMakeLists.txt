@@ -78,29 +78,3 @@ add_functional_test(
                               FE3C_OPTIMIZATION_COMB_METHOD
                               FE3C_SMALL_PRECOMPUTATION
 )
-
-add_functional_test(
-    NAME                      points_ed25519_base_four_shamir
-    UT_SOURCE                 Test_points_ed25519.cpp
-    UUT_SOURCES               ${FE3C_SOURCE_DIR}/points/points_ed25519.c
-                              ${FE3C_SOURCE_DIR}/field_elements/field_elements_ed25519_??.c
-    PREPROCESSOR_DEFINITIONS  FE3C_SUPPORT_CURVE_ED25519 FE3C_OPTIMIZATION_BASE_FOUR_SHAMIR_TRICK
-)
-
-add_functional_test(
-    NAME                      points_ed448_base_four_shamir
-    UT_SOURCE                 Test_points_ed448.cpp
-    UUT_SOURCES               ${FE3C_SOURCE_DIR}/points/points_ed448.c
-                              ${FE3C_SOURCE_DIR}/field_elements/field_elements_ed448_??.c
-    PREPROCESSOR_DEFINITIONS  FE3C_SUPPORT_CURVE_ED448 FE3C_OPTIMIZATION_BASE_FOUR_SHAMIR_TRICK
-)
-
-add_functional_test(
-    NAME                      points_ed448_isogeny_base_four_shamir
-    UT_SOURCE                 Test_points_ed448_isogeny.cpp
-    UUT_SOURCES               ${FE3C_SOURCE_DIR}/points/points_ed448_isogeny.c
-                              ${FE3C_SOURCE_DIR}/field_elements/field_elements_ed448_??.c
-    PREPROCESSOR_DEFINITIONS  FE3C_SUPPORT_CURVE_ED448
-                              FE3C_OPTIMIZATION_ED448_ISOGENY
-                              FE3C_OPTIMIZATION_BASE_FOUR_SHAMIR_TRICK
-)

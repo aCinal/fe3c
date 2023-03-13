@@ -170,22 +170,6 @@ AS_IF([test "x$optimization_comb_method" = "xyes"], AC_DEFINE([FE3C_OPTIMIZATION
 
 # -------------------------------------------------------------------------------------------
 
-optimization_base_four_shamir="yes"
-AC_ARG_ENABLE([base-four-shamir],
-              [AS_HELP_STRING([--disable-base-four-shamir],
-                              [Disable base-4 recoding of scalars in double scalar multiplication, which may reduce
-                               stack usage, but also increase verification time])],
-              [AS_IF([test "x$enableval" = "xno"],
-                     [optimization_base_four_shamir="no"],
-
-                     [test "x$enableval" != "xyes"],
-                     [AC_MSG_ERROR([bad value ${enableval} for --enable-base-four-shamir])])],
-              [])
-AM_CONDITIONAL([FE3C_OPTIMIZATION_BASE_FOUR_SHAMIR_TRICK], [test "x$optimization_base_four_shamir" = "xyes"])
-AS_IF([test "x$optimization_base_four_shamir" = "xyes"], AC_DEFINE([FE3C_OPTIMIZATION_BASE_FOUR_SHAMIR_TRICK]), [])
-
-# -------------------------------------------------------------------------------------------
-
 optimization_skip_zeroization="no"
 AC_ARG_ENABLE([zeroization],
               [AS_HELP_STRING([--disable-zeroization],
@@ -270,6 +254,5 @@ AC_MSG_RESULT([
     Optimized field element squaring:       ${optimization_fast_squaring}
     Comb method for scalar multiplication:  ${optimization_comb_method}
     Small precomputation tables:            ${small_precomputation}
-    Base-4 recoding for Shamir's trick:     ${optimization_base_four_shamir}
     Skip secret zeroization on stack:       ${optimization_skip_zeroization}
 ])
