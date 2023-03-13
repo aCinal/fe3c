@@ -14,6 +14,7 @@ const fe448 ed448_d = {
     0xffffffe, 0xfffffff, 0xfffffff, 0xfffffff,
     0xfffffff, 0xfffffff, 0xfffffff, 0xfffffff
 };
+#if FE3C_OPTIMIZATION_ED448_ISOGENY
 /* Twisted elliptic curve constant d' = d-1 */
 const fe448 ed448twist_d = {
     0xfff6755, 0xfffffff, 0xfffffff, 0xfffffff,
@@ -21,6 +22,7 @@ const fe448 ed448twist_d = {
     0xffffffe, 0xfffffff, 0xfffffff, 0xfffffff,
     0xfffffff, 0xfffffff, 0xfffffff, 0xfffffff
 };
+#endif /* FE3C_OPTIMIZATION_ED448_ISOGENY */
 /* Additive identity in the field */
 const fe448 fe448_zero = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 /* Multiplicative identity in the field */

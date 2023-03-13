@@ -1,3 +1,14 @@
+#if FE3C_SMALL_PRECOMPUTATION
+    #error "Build system inconsistency detected! precomputation_ed25519_64.c in use despite FE3C_SMALL_PRECOMPUTATION being set"
+#endif /* FE3C_SMALL_PRECOMPUTATION */
+
+#if !FE3C_64BIT
+    #error "Build system inconsistency detected! precomputation_ed25519_64.c in use despite FE3C_64BIT not being set"
+#endif /* !FE3C_64BIT */
+
+#include <points/comb/comb_ed25519.h>
+
+const ed25519_precomp_internal ed25519_comb_precomp[32][8] = {
     {
         {
             .YplusX = { 0x493c6f58c3b85, 0xdf7181c325f7, 0xf50b0b3e4cb7, 0x5329385a44c32, 0x7cf9d3a33d4b },
@@ -1342,3 +1353,4 @@
             .T2d = { 0x390d042c84266, 0x1efe32a8fdc75, 0x6925ee7ae1238, 0x4af9281d0e832, 0xfef911191df8 }
         },
     }
+};

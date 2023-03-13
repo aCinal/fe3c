@@ -1,6 +1,6 @@
-#if FE3C_OPTIMIZATION_ED448_ISOGENY
-    #error "Build system inconsistency detected! points_ed448.c in use despite FE3C_OPTIMIZATION_ED448_ISOGENY being set"
-#endif /* FE3C_OPTIMIZATION_ED448_ISOGENY */
+#if !FE3C_OPTIMIZATION_ED448_ISOGENY
+    #error "Build system inconsistency detected! points_ed448_isogeny.c in use despite FE3C_OPTIMIZATION_ED448_ISOGENY not being set"
+#endif /* !FE3C_OPTIMIZATION_ED448_ISOGENY */
 
 #include <points/points.h>
 #include <field_elements/field_elements_ed448.h>
@@ -12,25 +12,24 @@
 #define ED448_STR \
     "    X = " FE448_STR "\n" \
     "    Y = " FE448_STR "\n" \
-    "    Z = " FE448_STR
+    "    Z = " FE448_STR "\n" \
+    "    T = " FE448_STR
 #define ED448_TO_STR(p) \
-    FE448_TO_STR((p)->X), FE448_TO_STR((p)->Y), FE448_TO_STR((p)->Z)
+    FE448_TO_STR((p)->X), FE448_TO_STR((p)->Y), FE448_TO_STR((p)->Z), FE448_TO_STR((p)->T)
 
+/* Note that the below basepoint is the basepoint on the 4-isogenous curve: y^2 - x^2 = 1 + (d-1)x^2y^2 */
 static const point_ed448 ed448_basepoint = {
 #if FE3C_64BIT
-    .X = { 0x26a82bc70cc05e, 0x80e18b00938e26, 0xf72ab66511433b, 0xa3d3a46412ae1a, 0xf1767ea6de324, 0x36da9e14657047, 0xed221d15a622bf, 0x4f1970c66bed0d },
-    .Y = { 0x8795bf230fa14, 0x132c4ed7c8ad98, 0x1ce67c39c4fdbd, 0x5a0c2d73ad3ff, 0xa3984087789c1e, 0xc7624bea73736c, 0x248876203756c9, 0x693f46716eb6bc },
+    .X = { 0x0, 0x0, 0x0, 0x80000000000000, 0xfffffffffffffe, 0xffffffffffffff, 0xffffffffffffff, 0x7fffffffffffff },
+    .Y = { 0x6079b4dfdd4a64, 0xc1e3ab470a1c8, 0x44d73f48e5199b, 0x50452714141818, 0x4c74c393d5242c, 0x24080526437050, 0xd48d06c13078ca, 0x8508de14f04286 },
+    .Z = { 1, 0, 0, 0, 0, 0, 0, 0 },
+    .T = { 0xe3c816dc198105, 0x62071833f4e093, 0x4dde98e3421403, 0xa319b57519c985, 0x794be956382384, 0xe1ddc2b86da60f, 0x50e23d5682a9ff, 0x6d3669e173c6a4 }
 #else
-    .X = {
-        0x70cc05e, 0x26a82bc, 0x938e26, 0x80e18b0, 0x511433b, 0xf72ab66, 0x412ae1a, 0xa3d3a46,
-        0xa6de324, 0xf1767e, 0x4657047, 0x36da9e1, 0x5a622bf, 0xed221d1, 0x66bed0d, 0x4f1970c
-    },
-    .Y = {
-        0x230fa14, 0x8795bf, 0x7c8ad98, 0x132c4ed, 0x9c4fdbd, 0x1ce67c3, 0x73ad3ff, 0x5a0c2d,
-        0x7789c1e, 0xa398408, 0xa73736c, 0xc7624be, 0x3756c9, 0x2488762, 0x16eb6bc, 0x693f467
-    },
+    .X = { 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x8000000, 0xffffffe, 0xfffffff, 0xfffffff, 0xfffffff, 0xfffffff, 0xfffffff, 0xfffffff, 0x7ffffff },
+    .Y = { 0xfdd4a64, 0x6079b4d, 0x470a1c8, 0xc1e3ab, 0x8e5199b, 0x44d73f4, 0x4141818, 0x5045271, 0x3d5242c, 0x4c74c39, 0x6437050, 0x2408052, 0x13078ca, 0xd48d06c, 0x4f04286, 0x8508de1 },
+    .Z = { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+    .T = { 0xc198105, 0xe3c816d, 0x3f4e093, 0x6207183, 0x3421403, 0x4dde98e, 0x519c985, 0xa319b57, 0x6382384, 0x794be95, 0x86da60f, 0xe1ddc2b, 0x682a9ff, 0x50e23d5, 0x173c6a4, 0x6d3669e }
 #endif /* FE3C_64BIT */
-    .Z = { 1 }
 };
 
 #if FE3C_ENABLE_SANITY_CHECKS
@@ -40,10 +39,10 @@ static inline int ed448_is_on_curve(const point_ed448 * p) {
     fe448 lhs;
     fe448 rhs;
 
-    /* Check if the point belongs to the untwisted Edwards curve defined
-     * by the equation:
+    /* Check if the point belongs to the 4-isogenous twisted Edwards curve
+     * defined by the equation:
      *
-     *                     x^2 + y^2 = 1 + dx^2y^2
+     *                   y^2 - x^2 = 1 + (d-1)x^2y^2
      *
      * where d = -39081.
      */
@@ -53,13 +52,13 @@ static inline int ed448_is_on_curve(const point_ed448 * p) {
     fe448_square(y, p->Y);
     fe448_square(z, p->Z);
 
-    /* Set lhs := (Y^2 + X^2) Z^2 (left-hand side of the homogenous curve equation) */
-    fe448_add(lhs, y, x);
+    /* Set lhs := (Y^2 - X^2) Z^2 (left-hand side of the homogenous curve equation) */
+    fe448_sub(lhs, y, x);
     fe448_mul(lhs, lhs, z);
 
     /* Set rhs := d X^2 Y^2 + Z^4 (right-hand side of the homogenous curve equation) */
     fe448_mul(rhs, x, y);
-    fe448_mul(rhs, rhs, ed448_d);
+    fe448_mul(rhs, rhs, ed448twist_d);
     fe448_square(z, z);
     fe448_add(rhs, rhs, z);
 
@@ -69,6 +68,17 @@ static inline int ed448_is_on_curve(const point_ed448 * p) {
 
     return fe448_equal(fe448_zero, y);
 }
+
+static inline int ed448_valid_extended_projective(const point_ed448 * p) {
+
+    /* Check the consistency of the extended projective coordinate */
+    fe448 xy, tz;
+    fe448_mul(xy, p->X, p->Y);
+    fe448_mul(tz, p->T, p->Z);
+    fe448_strong_reduce(xy, xy);
+    fe448_strong_reduce(tz, tz);
+    return fe448_equal(tz, xy);
+}
 #endif /* FE3C_ENABLE_SANITY_CHECKS */
 
 static inline void ed448_identity(point_ed448 * p) {
@@ -76,6 +86,7 @@ static inline void ed448_identity(point_ed448 * p) {
     fe448_copy(p->X, fe448_zero);
     fe448_copy(p->Y, fe448_one);
     fe448_copy(p->Z, fe448_one);
+    fe448_copy(p->T, fe448_zero);
 }
 
 static int ed448_points_equal(const point * pgen, const point * qgen) {
@@ -111,9 +122,50 @@ static void ed448_encode(u8 * buf, const point * pgen) {
     fe448 y;
     fe448 z;
 
-    fe448_invert(z, p->Z);
-    fe448_mul(x, p->X, z);
-    fe448_mul(y, p->Y, z);
+    /* Apply the dual isogeny to move the point back onto the untwisted curve:
+     *
+     *         (x, y) -> ( 2xy / (y^2 + x^2) , (y^2 - x^2) / (2 - y^2 + x^2) )
+     *
+     * or in standard projective coordinates:
+     *
+     *   (X, Y, Z)  -> ( 2XY / (Y^2 + X^2) , (Y^2 - X^2) / (2Z^2 - Y^2 + X^2) , Z' )
+     *
+     * To avoid modular division set Z' := (X^2 + Y^2)(2Z^2 - Y^2 + X^2). Then:
+     *
+     *         X' = 2XY (2Z^2 - Y^2 - X^2) and Y' = (Y^2 - X^2)(X^2 + Y^2)
+     */
+
+    fe448 A, B, C, D;
+    /* A := X^2 + Y^2 */
+    fe448_square(x, p->X);
+    fe448_square(y, p->Y);
+    fe448_add(A, x, y);
+    /* B := Y^2 - X^2 */
+    fe448_sub(B, y, x);
+    /* C := (X + Y)^2 */
+    fe448_add(C, p->X, p->Y);
+    fe448_square(C, C);
+    /* D := C - A = 2XY */
+    fe448_weak_reduce(A, A);
+    fe448_sub(D, C, A);
+    /* C := 2Z^2 (reuse C since it was only used for doing the Karatsuba's trick) */
+    fe448_square(C, p->Z);
+    fe448_add(C, C, C);
+    fe448_weak_reduce(B, B);
+    /* C := C - B = 2Z^2 - Y^2 + X^2 */
+    fe448_sub(C, C, B);
+
+    /* x := C*D = 2XY (2Z^2 - Y^2 + X^2) */
+    fe448_mul(x, C, D);
+    /* y := B*A = (Y^2 - X^2)(X^2 + Y^2) */
+    fe448_mul(y, B, A);
+    /* z := A*C = (X^2 + Y^2)(2Z^2 - Y^2 + X^2) */
+    fe448_mul(z, A, C);
+
+    /* Affinize the point */
+    fe448_invert(z, z);
+    fe448_mul(x, x, z);
+    fe448_mul(y, y, z);
 
     /* Encode the y-coordinate */
     fe448_encode(buf, y);
@@ -124,56 +176,82 @@ static void ed448_encode(u8 * buf, const point * pgen) {
 
     /* Zeroize intermediate results to not leak any secrets via projective coordinates
      * (particularities of the representative of an equivalence class) */
+    purge_secrets(A, sizeof(A));
+    purge_secrets(B, sizeof(B));
+    purge_secrets(C, sizeof(C));
+    purge_secrets(D, sizeof(D));
     purge_secrets(z, sizeof(z));
 }
 
-static void ed448_point_double(point_ed448 * r, const point_ed448 * p) {
+static void ed448_point_double(point_ed448 * r, const point_ed448 * p, int set_extended_coordinate) {
 
     FE3C_SANITY_CHECK(ed448_is_on_curve(p), ED448_STR, ED448_TO_STR(p));
 
     /* TODO: Reuse some old variables to reduce stack usage */
-    fe448 B, C, D, E, H, J;
+    fe448 A, B, C, E, F, G, H;
 
-    /* B := (X1+Y1)^2 */
-    fe448_add(B, p->X, p->Y);
-    fe448_square(B, B);
-    /* C := X1^2 */
-    fe448_square(C, p->X);
-    /* D := Y1^2 */
-    fe448_square(D, p->Y);
-    /* E := C+D */
-    fe448_add(E, C, D);
-    fe448_weak_reduce(E, E);
-    /* H := Z1^2 */
-    fe448_square(H, p->Z);
-    /* J := E-2*H */
-    fe448_add(J, H, H);
-    fe448_weak_reduce(J, J);
-    fe448_sub(J, E, J);
+    /* A := X1^2 */
+    fe448_square(A, p->X);
+    /* B := Y1^2*/
+    fe448_square(B, p->Y);
 
-    /* X3 := (B-E)*J */
-    fe448_sub(r->X, B, E);
-    fe448_mul(r->X, r->X, J);
+    /* C := 2*Z1^2 */
+    fe448_square(C, p->Z);
+    fe448_add(C, C, C);
 
-    /* Y3 := E*(C-D) */
-    fe448_sub(r->Y, C, D);
-    fe448_mul(r->Y, E, r->Y);
+    /* H := A+B */
+    fe448_add(H, A, B);
 
-    /* Z3 := E*J */
-    fe448_mul(r->Z, E, J);
+    /* E := H-(X1+Y1)^2 */
+    fe448_add(E, p->X, p->Y);
+    fe448_square(E, E);
+    fe448_sub(E, H, E);
+
+    /* G := A-B */
+    fe448_sub(G, A, B);
+
+    /* F := C+G */
+    fe448_add(F, C, G);
+
+#if FE3C_32BIT
+    /* Note that F is a result of addition of two variables
+     * which themselves were produced by additions. This amounts
+     * to four carries, which is the most we can handle in our 28-bit
+     * representation. Do a weak reduction before proceeding */
+    fe448_weak_reduce(F, F);
+#endif /* FE3C_32BIT */
+
+    /* X3 := E*F */
+    fe448_mul(r->X, E, F);
+    /* Y3 := G*H */
+    fe448_mul(r->Y, G, H);
+    /* Z3 := F*G */
+    fe448_mul(r->Z, F, G);
+
+    /* When scheduled to be followed by another doubling we can skip setting the extended coordinate T
+     * which is not needed for doubling */
+    if (set_extended_coordinate) {
+
+        /* T3 := E*H */
+        fe448_mul(r->T, E, H);
+    }
 }
 
 static inline int ed448_is_ok_order(const point_ed448 * p) {
 
-    point_ed448 q;
+    /* Note that all low-order points on the original untwisted curve are in the
+     * kernel of the 4-isogeny we have used to move to a twisted curve. Therefore
+     * to check for low-order input points we must only check the resulting point
+     * on the isogenous curve against the identity. */
+
+    /* TODO: Reject mixed-order points both for Ed448 and Ed25519. Note that the
+     * check for this would need to be done before applying the 4-isogeny which
+     * clears the cofactor. */
     point_ed448 e;
     ed448_identity(&e);
 
-    /* Double the point twice to map all small-order points to the identity */
-    ed448_point_double(&q, p);
-    ed448_point_double(&q, &q);
-
-    return 1 - ed448_points_equal((const point *) &q, (const point *) &e);
+    /* Check if equal to the identity */
+    return 1 - ed448_points_equal((const point *) p, (const point *) &e);
 }
 
 static int ed448_decode(point * pgen, const u8 * buf) {
@@ -243,8 +321,53 @@ static int ed448_decode(point * pgen, const u8 * buf) {
     fe448_conditional_move(p->X, fe448_zero, 1 - success);
     fe448_conditional_move(p->Y, fe448_one, 1 - success);
 
-    /* Set the Z coordinate to one */
-    fe448_copy(p->Z, fe448_one);
+    /* Apply the 4-isogeny to move the point onto a twisted curve with the affine equation:
+     *
+     *                                y^2 - x^2 = 1 + (d-1)x^2y^2
+     *
+     * since on the twisted curve arithmetic is faster. Note that all low-order points are in the
+     * kernel of this isogeny and so get mapped to the identity element. The map is defined as:
+     *
+     *         (x, y) -> ( 2xy / (y^2 - x^2) , (y^2 + x^2) / (2 - y^2 - x^2) )
+     *
+     * or in standard projective coordinates:
+     *
+     *   (X, Y, Z)  -> ( 2XY / (Y^2 - X^2) , (Y^2 + X^2) / (2Z^2 - Y^2 - X^2) , Z' )
+     *
+     * To avoid modular division set Z' := (Y^2 - X^2)(2Z^2 - Y^2 - X^2). Then:
+     *
+     *                     X' = 2XY (2Z^2 - Y^2 - X^2)
+     *                     Y' = (Y^2 - X^2)(X^2 + Y^2)
+     *                     T' = X'Y'/Z' = 2XY (X^2 + Y^2)
+     */
+
+    fe448 A, B, C, D;
+    /* A := X^2 + Y^2 */
+    fe448_square(C, p->X);
+    fe448_square(D, p->Y);
+    fe448_add(A, C, D);
+    /* B := Y^2 - X^2 */
+    fe448_sub(B, D, C);
+    /* C := (X + Y)^2 */
+    fe448_add(C, p->X, p->Y);
+    fe448_square(C, C);
+
+    fe448_weak_reduce(A, A);
+    /* D := C - A = 2XY */
+    fe448_sub(D, C, A);
+    /* Note that we know that Z=1 at this point, which saves us a squaring */
+    fe448_add(C, fe448_one, fe448_one);
+    /* C := C - A = 2Z^2 - Y^2 - X^2 */
+    fe448_sub(C, C, A);
+
+    /* X := D*C = 2XY (2Z^2 - Y^2 - X^2) */
+    fe448_mul(p->X, D, C);
+    /* Y := B*A = (Y^2 - X^2)(X^2 + Y^2) */
+    fe448_mul(p->Y, B, A);
+    /* Z := B*C = (Y^2 - X^2)(2Z^2 - Y^2 - X^2) */
+    fe448_mul(p->Z, B, C);
+    /* T := D*A = 2XY (X^2 + Y^2) */
+    fe448_mul(p->T, D, A);
 
     /* Check that we have a valid point */
     success &= ed448_is_ok_order(p);
@@ -255,45 +378,47 @@ static void ed448_points_add(point_ed448 * r, const point_ed448 * p, const point
 
     FE3C_SANITY_CHECK(ed448_is_on_curve(p), ED448_STR, ED448_TO_STR(p));
     FE3C_SANITY_CHECK(ed448_is_on_curve(q), ED448_STR, ED448_TO_STR(q));
+    FE3C_SANITY_CHECK(ed448_valid_extended_projective(p), ED448_STR, ED448_TO_STR(p));
+    FE3C_SANITY_CHECK(ed448_valid_extended_projective(q), ED448_STR, ED448_TO_STR(q));
 
+    /* TODO: Reuse some old variables to reduce stack usage */
     fe448 A, B, C, D, E, F, G, H;
 
-    /* A := Z1*Z2 */
-    fe448_mul(A, p->Z, q->Z);
-    /* B := A^2 */
-    fe448_square(B, A);
-    /* C := X1*X2 */
-    fe448_mul(C, p->X, q->X);
-    /* D := Y1*Y2 */
-    fe448_mul(D, p->Y, q->Y);
-    /* E := d*C*D */
-    fe448_mul(E, ed448_d, C);
-    fe448_mul(E, E, D);
-    /* F := B-E */
-    fe448_sub(F, B, E);
-    /* G := B+E */
-    fe448_add(G, B, E);
+    /* A := (Y1-X1)*(Y2-X2) */
+    fe448_sub(E, p->Y, p->X);
+    fe448_sub(F, q->Y, q->X);
+    fe448_mul(A, E, F);
 
-    /* H := (X1+Y1)*(X2+Y2) */
-    /* At this point we can safely use r->Z for temporary storage
-     * even if r is an alias for one of the inputs */
-    fe448_add(r->Z, p->X, p->Y);
-    fe448_add(H, q->X, q->Y);
-    fe448_mul(H, r->Z, H);
+    /* B := (Y1+X1)*(Y2+X2) */
+    fe448_add(G, p->Y, p->X);
+    fe448_add(H, q->Y, q->X);
+    fe448_mul(B, G, H);
 
-    /* X3 := A*F*(H-C-D) */
-    /* Note that we use Karatsuba's trick to obtain
-     * X1*Y1+X2*Y2 as H-C-D. */
-    fe448_sub(r->X, H, C);
-    fe448_sub(r->X, r->X, D);
-    fe448_mul(r->X, r->X, A);
-    fe448_mul(r->X, r->X, F);
+    /* C := T1*2*d'*T2 */
+    fe448_mul(C, p->T, q->T);
+    fe448_mul(C, C, ed448twist_d);
+    fe448_add(C, C, C);
+    fe448_weak_reduce(C, C);
 
-    /* Y3 := A*G*(D-C) */
-    fe448_sub(r->Y, D, C);
-    fe448_mul(r->Y, r->Y, A);
-    fe448_mul(r->Y, r->Y, G);
+    /* D := Z1*2*Z2 */
+    fe448_mul(D, p->Z, q->Z);
+    fe448_add(D, D, D);
 
+    /* E := B-A */
+    fe448_sub(E, B, A);
+    /* F := D-C */
+    fe448_sub(F, D, C);
+    /* G := D+C */
+    fe448_add(G, D, C);
+    /* H := B+A */
+    fe448_add(H, B, A);
+
+    /* X3 := E*F */
+    fe448_mul(r->X, E, F);
+    /* Y3 := G*H */
+    fe448_mul(r->Y, G, H);
+    /* T3 := E*H */
+    fe448_mul(r->T, E, H);
     /* Z3 := F*G */
     fe448_mul(r->Z, F, G);
 }
@@ -315,7 +440,7 @@ static inline void ed448_scalar_multiply(point_ed448 * r, const point_ed448 * p,
         /* Recover the ith bit of the scalar */
         int bit = array_bit(s, i);
         ed448_points_add(&R[1 - bit], &R[1 - bit], &R[bit]);
-        ed448_point_double(&R[bit], &R[bit]);
+        ed448_point_double(&R[bit], &R[bit], 1);
     }
 
     *r = R[0];
@@ -361,10 +486,12 @@ static inline void ed448_map_scalar_to_isogenous_curve(u8 r[57], const u8 s[57])
     r[56] = (u8)(chain << 6) | (r[56] >> 2);
 }
 
-static void ed448_multiply_basepoint(point * rgen, const u8 * s) {
+static void ed448_multiply_basepoint(point * rgen, const u8 * sraw) {
 
     point_ed448 * r = (point_ed448 *) rgen;
-
+    u8 s[57];
+    /* TODO: Combine division by four with NAF-recoding for the comb method variant */
+    ed448_map_scalar_to_isogenous_curve(s, sraw);
 #if !FE3C_OPTIMIZATION_COMB_METHOD
     ed448_scalar_multiply(r, &ed448_basepoint, s);
 #else
@@ -447,10 +574,10 @@ static void ed448_multiply_basepoint(point * rgen, const u8 * s) {
     }
 
     /* Compute 2^{tw} Q = 2^4 Q */
-    ed448_point_double(r, r);
-    ed448_point_double(r, r);
-    ed448_point_double(r, r);
-    ed448_point_double(r, r);
+    ed448_point_double(r, r, 0);
+    ed448_point_double(r, r, 0);
+    ed448_point_double(r, r, 0);
+    ed448_point_double(r, r, 1);
 
     /* Do the second iteration of the outermost loop, i.e. iterate over even indices of the recoding
      * (see explanation above). */
@@ -475,6 +602,7 @@ static void ed448_point_negate(point * pgen) {
 
     point_ed448 * p = (point_ed448 *) pgen;
     fe448_neg(p->X, p->X);
+    fe448_neg(p->T, p->T);
 }
 
 static inline void ed448_conditional_move(point_ed448 * r, const point_ed448 * p, int move) {
@@ -482,6 +610,7 @@ static inline void ed448_conditional_move(point_ed448 * r, const point_ed448 * p
     fe448_conditional_move(r->X, p->X, move);
     fe448_conditional_move(r->Y, p->Y, move);
     fe448_conditional_move(r->Z, p->Z, move);
+    fe448_conditional_move(r->T, p->T, move);
 }
 
 static void ed448_double_scalar_multiply(point * rgen, const u8 * s, const u8 * h, const point * pgen) {
@@ -496,15 +625,15 @@ static void ed448_double_scalar_multiply(point * rgen, const u8 * s, const u8 * 
 #if FE3C_OPTIMIZATION_BASE_FOUR_SHAMIR_TRICK
     point_ed448 G[15];
     G[0] = ed448_basepoint;                    /* [0]A + [1]B */
-    ed448_point_double(&G[ 1], &G[ 0]);        /* [0]A + [2]B */
+    ed448_point_double(&G[ 1], &G[ 0], 1);     /* [0]A + [2]B */
     ed448_points_add(&G[ 2], &G[ 1], &G[ 0]);  /* [0]A + [3]B */
     G[3] = *p;                                 /* [1]A + [0]B */
     ed448_points_add(&G[ 4], &G[ 3], &G[ 0]);  /* [1]A + [1]B */
     ed448_points_add(&G[ 5], &G[ 3], &G[ 1]);  /* [1]A + [2]B */
     ed448_points_add(&G[ 6], &G[ 3], &G[ 2]);  /* [1]A + [3]B */
-    ed448_point_double(&G[ 7], &G[ 3]);        /* [2]A + [0]B */
+    ed448_point_double(&G[ 7], &G[ 3], 1);     /* [2]A + [0]B */
     ed448_points_add(&G[ 8], &G[ 7], &G[ 0]);  /* [2]A + [1]B */
-    ed448_point_double(&G[ 9], &G[ 4]);        /* [2]A + [2]B */
+    ed448_point_double(&G[ 9], &G[ 4], 1);     /* [2]A + [2]B */
     ed448_points_add(&G[10], &G[ 7], &G[ 2]);  /* [2]A + [3]B */
     ed448_points_add(&G[11], &G[ 7], &G[ 3]);  /* [3]A + [0]B */
     ed448_points_add(&G[12], &G[11], &G[ 0]);  /* [3]A + [1]B */
@@ -527,8 +656,8 @@ static void ed448_double_scalar_multiply(point * rgen, const u8 * s, const u8 * 
      * significant bits of any canonical scalar. */
     for (int i = 222; i >= 0; i--) {
 
-        ed448_point_double(r, r);
-        ed448_point_double(r, r);
+        ed448_point_double(r, r, 0);
+        ed448_point_double(r, r, 1);
 
         /* Recode the scalars on the fly into base-4 representation */
         u8 ss = (array_bit(s, 2*i + 1) << 1) | array_bit(s, 2*i);
@@ -579,7 +708,7 @@ static void ed448_double_scalar_multiply(point * rgen, const u8 * s, const u8 * 
      * corresponds to the loop counter initialization */
     for (int i = 445; i >= 0; i--) {
 
-        ed448_point_double(r, r);
+        ed448_point_double(r, r, 1);
 
         u8 index = (array_bit(h, i) << 1) | array_bit(s, i);
 

@@ -11,33 +11,26 @@ set(FE3C_DEFINES
     "FE3C_LILENDIAN"
 )
 
-if (CONFIG_FE3C_SUPPORT_CURVE_ED25519)
-    list(APPEND FE3C_SOURCES "${FE3C_SRC_DIR}/curves/curve_ed25519.c")
-    # TODO: Use target-specific hardware-accelerated hash function
-    list(APPEND FE3C_SOURCES "${FE3C_SRC_DIR}/hash_functions/hash_function_sha512.c")
-    list(APPEND FE3C_SOURCES "${FE3C_SRC_DIR}/points/points_ed25519.c")
-    list(APPEND FE3C_SOURCES "${FE3C_SRC_DIR}/scalars/scalars_ed25519_32.c")
-    list(APPEND FE3C_SOURCES "${FE3C_SRC_DIR}/field_elements/field_elements_ed25519_32.c")
-
-    list(APPEND FE3C_DEFINES "FE3C_SUPPORT_CURVE_ED25519")
+if (CONFIG_FE3C_OPTIMIZATION_COMB_METHOD)
+    list(APPEND FE3C_DEFINES "FE3C_OPTIMIZATION_COMB_METHOD")
 endif()
 
-if (CONFIG_FE3C_SUPPORT_CURVE_ED448)
-    list(APPEND FE3C_SOURCES "${FE3C_SRC_DIR}/curves/curve_ed448.c")
-    list(APPEND FE3C_SOURCES "${FE3C_SRC_DIR}/hash_functions/hash_function_shake256.c")
-    list(APPEND FE3C_SOURCES "${FE3C_SRC_DIR}/points/points_ed448.c")
-    list(APPEND FE3C_SOURCES "${FE3C_SRC_DIR}/scalars/scalars_ed448_32.c")
-    list(APPEND FE3C_SOURCES "${FE3C_SRC_DIR}/field_elements/field_elements_ed448_32.c")
+if (CONFIG_FE3C_SMALL_PRECOMPUTATION)
+    list(APPEND FE3C_DEFINES "FE3C_SMALL_PRECOMPUTATION")
+    set(ed25519_small_precomp_tag "_small")
+    set(ed448_small_precomp_tag "_small")
+endif()
 
-    list(APPEND FE3C_DEFINES "FE3C_SUPPORT_CURVE_ED448")
+if (CONFIG_FE3C_OPTIMIZATION_ED448_ISOGENY)
+    list(APPEND FE3C_DEFINES "FE3C_OPTIMIZATION_ED448_ISOGENY")
+    set(ed448_isogeny_tag "_isogeny")
+else()
+    # No isogeny in use, enforce small precomputation tables
+    set(ed448_small_precomp_tag "_small")
 endif()
 
 if (CONFIG_FE3C_OPTIMIZATION_SKIP_ZEROIZATION)
     list(APPEND FE3C_DEFINES "FE3C_OPTIMIZATION_SKIP_ZEROIZATION")
-endif()
-
-if (CONFIG_FE3C_OPTIMIZATION_COMB_METHOD)
-    list(APPEND FE3C_DEFINES "FE3C_OPTIMIZATION_COMB_METHOD")
 endif()
 
 if (CONFIG_FE3C_OPTIMIZATION_FAST_SQUARING)
@@ -48,8 +41,44 @@ endif()
 # on ESP32. Stack usage is more than twice as high with this optimization and despite the number
 # of iterations being cut by half, each iteration takes much longer resulting in twofold performance
 # degradation
-
 # TODO: Consider removing the optimization for host build as well (performance improvement is only marginal)
+
+if (CONFIG_FE3C_SUPPORT_CURVE_ED25519)
+    list(APPEND FE3C_SOURCES "${FE3C_SRC_DIR}/curves/curve_ed25519.c")
+    # TODO: Use target-specific hardware-accelerated hash function
+    list(APPEND FE3C_SOURCES "${FE3C_SRC_DIR}/hash_functions/hash_function_sha512.c")
+    list(APPEND FE3C_SOURCES "${FE3C_SRC_DIR}/points/points_ed25519.c")
+    list(APPEND FE3C_SOURCES "${FE3C_SRC_DIR}/scalars/scalars_ed25519_32.c")
+    list(APPEND FE3C_SOURCES "${FE3C_SRC_DIR}/field_elements/field_elements_ed25519_32.c")
+
+    if (CONFIG_FE3C_OPTIMIZATION_COMB_METHOD)
+        list(APPEND FE3C_SOURCES "${FE3C_SRC_DIR}/points/comb/comb_ed25519${ed25519_small_precomp_tag}.c")
+        list(
+            APPEND FE3C_SOURCES
+            "${FE3C_SRC_DIR}/points/comb/precomputation/precomputation_ed25519${ed25519_small_precomp_tag}_32.c"
+        )
+    endif()
+
+    list(APPEND FE3C_DEFINES "FE3C_SUPPORT_CURVE_ED25519")
+endif()
+
+if (CONFIG_FE3C_SUPPORT_CURVE_ED448)
+    list(APPEND FE3C_SOURCES "${FE3C_SRC_DIR}/curves/curve_ed448.c")
+    list(APPEND FE3C_SOURCES "${FE3C_SRC_DIR}/hash_functions/hash_function_shake256.c")
+    list(APPEND FE3C_SOURCES "${FE3C_SRC_DIR}/scalars/scalars_ed448_32.c")
+    list(APPEND FE3C_SOURCES "${FE3C_SRC_DIR}/field_elements/field_elements_ed448_32.c")
+    list(APPEND FE3C_SOURCES "${FE3C_SRC_DIR}/points/points_ed448${ed448_isogeny_tag}.c")
+
+    if (CONFIG_FE3C_OPTIMIZATION_COMB_METHOD)
+        list(APPEND FE3C_SOURCES "${FE3C_SRC_DIR}/points/comb/comb_ed448${ed448_small_precomp_tag}.c")
+        list(
+            APPEND FE3C_SOURCES
+            "${FE3C_SRC_DIR}/points/comb/precomputation/precomputation_ed448${ed448_isogeny_tag}${ed448_small_precomp_tag}_32.c"
+        )
+    endif()
+
+    list(APPEND FE3C_DEFINES "FE3C_SUPPORT_CURVE_ED448")
+endif()
 
 idf_component_register(SRCS ${FE3C_SOURCES}
                        INCLUDE_DIRS "${FE3C_ROOT_DIR}/include"

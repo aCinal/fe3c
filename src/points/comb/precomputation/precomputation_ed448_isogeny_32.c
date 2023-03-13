@@ -1,3 +1,18 @@
+#if !FE3C_OPTIMIZATION_ED448_ISOGENY
+    #error "Build system inconsistency detected! precomputation_ed448_isogeny_32.c in use despite FE3C_OPTIMIZATION_ED448_ISOGENY not being set"
+#endif /* !FE3C_OPTIMIZATION_ED448_ISOGENY */
+
+#if FE3C_SMALL_PRECOMPUTATION
+    #error "Build system inconsistency detected! precomputation_ed448_isogeny_32.c in use despite FE3C_SMALL_PRECOMPUTATION being set"
+#endif /* FE3C_SMALL_PRECOMPUTATION */
+
+#if !FE3C_32BIT
+    #error "Build system inconsistency detected! precomputation_ed448_isogeny_32.c in use despite FE3C_32BIT not being set"
+#endif /* !FE3C_32BIT */
+
+#include <points/comb/comb_ed448.h>
+
+const ed448_precomp_internal ed448_comb_precomp[57][8] = {
     {
         {
             .YplusX = { 0xfdd4a65, 0x6079b4d, 0x470a1c8, 0xc1e3ab, 0x8e5199b, 0x44d73f4, 0x4141818, 0xd045271, 0x3d5242b, 0x4c74c39, 0x6437050, 0x2408052, 0x13078ca, 0xd48d06c, 0x4f04286, 0x508de1 },
@@ -2392,3 +2407,4 @@
             .T2d = { 0x2809a50, 0x4c2b4fe, 0x178e008, 0x3f3da8c, 0x8fa52ac, 0xd63746b, 0x91aee56, 0x5d04c64, 0xa4c9e25, 0x38ff12b, 0xe747103, 0x1ec2d49, 0xd6de51c, 0xd5f703c, 0x2b8b854, 0xcced56b }
         },
     }
+};

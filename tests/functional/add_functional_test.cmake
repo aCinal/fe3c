@@ -23,34 +23,56 @@ function(add_functional_test)
     endif()
 
     set(FUNCTIONAL_TESTS_SOURCE_DIR ${CMAKE_SOURCE_DIR})
-    # Build the test group
-    add_executable(
-        ${ftest_NAME}
-        # Always include the common main
-        ${FUNCTIONAL_TESTS_SOURCE_DIR}/Main.cpp
-        # Include the unit-test code
-        ${ftest_UT_SOURCE}
-        # Include the sources under test
-        ${ftest_UUT_SOURCES}
-        # Include mocks
-        ${ftest_MOCK_SOURCES}
-    )
 
-    # Add custom preprocessor definitions
-    target_compile_definitions(
-        ${ftest_NAME}
-        PRIVATE
-        # Always enable sanity checks
-        FE3C_ENABLE_SANITY_CHECKS
-        ${ftest_PREPROCESSOR_DEFINITIONS}
-    )
+    # Automatically build both 32- and 64-bit variant
+    foreach(ARCHITECTURE "32" "64")
+        set(TEST_NAME "${ftest_NAME}_${ARCHITECTURE}")
 
-    # Link against CppUTest
-    target_link_libraries(
-        ${ftest_NAME}
-        PRIVATE
-        CppUTest
-        CppUTestExt
-    )
+        string(REPLACE "??" "${ARCHITECTURE}" UT_SOURCE ${ftest_UT_SOURCE})
+
+        set(UUT_SOURCES "")
+        foreach(UUT_SOURCE ${ftest_UUT_SOURCES})
+            string(REPLACE "??" "${ARCHITECTURE}" __UT_SOURCE ${UUT_SOURCE})
+            list(APPEND UUT_SOURCES ${__UT_SOURCE})
+        endforeach()
+
+        set(MOCK_SOURCES "")
+        foreach(MOCK_SOURCE ${ftest_MOCK_SOURCES})
+            string(REPLACE "??" "${ARCHITECTURE}" __MOCK_SOURCE ${MOCK_SOURCE})
+            list(APPEND MOCK_SOURCES ${__MOCK_SOURCE})
+        endforeach()
+
+        # Build the test group
+        add_executable(
+            ${TEST_NAME}
+            # Always include the common main
+            ${FUNCTIONAL_TESTS_SOURCE_DIR}/Main.cpp
+            # Include the unit-test code
+            ${UT_SOURCE}
+            # Include the sources under test
+            ${UUT_SOURCES}
+            # Include mocks
+            ${MOCK_SOURCES}
+        )
+
+        # Add custom preprocessor definitions
+        target_compile_definitions(
+            ${TEST_NAME}
+            PRIVATE
+            # Always enable sanity checks
+            FE3C_ENABLE_SANITY_CHECKS
+            FE3C_${ARCHITECTURE}BIT
+            ${ftest_PREPROCESSOR_DEFINITIONS}
+        )
+
+        # Link against CppUTest
+        target_link_libraries(
+            ${TEST_NAME}
+            PRIVATE
+            CppUTest
+            CppUTestExt
+        )
+
+    endforeach()
 
 endfunction()

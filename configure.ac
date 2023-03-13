@@ -64,7 +64,11 @@ AS_IF([test "x$fe3c_cv_visibility_hidden_supported" != "xyes"],
       [VISIBILITY_CFLAGS=""])
 AM_CFLAGS="$AM_CFLAGS $VISIBILITY_CFLAGS"
 
+
+
+# -------------------------------------------------------------------------------------------
 # -------------------------------- Supported elliptic curves --------------------------------
+# -------------------------------------------------------------------------------------------
 ed25519="no"
 AC_ARG_ENABLE([ed25519],
               [AS_HELP_STRING([--enable-ed25519], [Enable support for the Ed25519 curve])],
@@ -76,6 +80,8 @@ AC_ARG_ENABLE([ed25519],
               [])
 AM_CONDITIONAL([FE3C_SUPPORT_CURVE_ED25519], [test "x$ed25519" = "xyes"])
 AS_IF([test "x$ed25519" = "xyes"], AC_DEFINE([FE3C_SUPPORT_CURVE_ED25519]), [])
+
+# -------------------------------------------------------------------------------------------
 
 ed448="no"
 AC_ARG_ENABLE([ed448],
@@ -89,8 +95,49 @@ AC_ARG_ENABLE([ed448],
 AM_CONDITIONAL([FE3C_SUPPORT_CURVE_ED448], [test "x$ed448" = "xyes"])
 AS_IF([test "x$ed448" = "xyes"], AC_DEFINE([FE3C_SUPPORT_CURVE_ED448]), [])
 # -------------------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------------------
 
+
+
+# -------------------------------------------------------------------------------------------
 # ----------------------------- Optional features/optimizations -----------------------------
+# -------------------------------------------------------------------------------------------
+optimization_ed448_isogeny="no"
+AC_ARG_ENABLE([ed448-isogeny],
+              [AS_HELP_STRING([--enable-ed448-isogeny],
+                              [Enable performing the Ed448 computations on a 4-isogenous curve, which
+                               may increase performance, but amounts to using cofactored verification,
+                               which may lead to consensus issues where different implementations
+                               disagree on the validity of maliciously constructed signatures.])],
+              [AS_IF([test "x$enableval" = "xyes"],
+                     [optimization_ed448_isogeny="yes"],
+
+                     [test "x$enableval" != "xno"],
+                     [AC_MSG_ERROR([bad value ${enableval} for --enable-ed448-isogeny])])],
+              [])
+AM_CONDITIONAL([FE3C_OPTIMIZATION_ED448_ISOGENY], [test "x$optimization_ed448_isogeny" = "xyes"])
+AS_IF([test "x$optimization_ed448_isogeny" = "xyes"], AC_DEFINE([FE3C_OPTIMIZATION_ED448_ISOGENY]), [])
+
+# -------------------------------------------------------------------------------------------
+
+small_precomputation="no"
+AC_ARG_ENABLE([small-precomputation],
+              [AS_HELP_STRING([--enable-small-precomputation],
+                              [Minimize the size of the precomputation tables when using the comb method.
+                               This may result in a smaller library size at the cost of decreased
+                               performance.])],
+              [AS_IF([test "x$enableval" = "xyes"],
+                     [small_precomputation="yes"],
+
+                     [test "x$enableval" != "xno"],
+                     [AC_MSG_ERROR([bad value ${enableval} for --enable-small-precomputation])])],
+              [])
+AM_CONDITIONAL([FE3C_SMALL_PRECOMPUTATION], [test "x$small_precomputation" = "xyes"])
+AS_IF([test "x$small_precomputation" = "xyes"], AC_DEFINE([FE3C_SMALL_PRECOMPUTATION]), [])
+
+# -------------------------------------------------------------------------------------------
+
 optimization_fast_squaring="yes"
 AC_ARG_ENABLE([fast-squaring],
               [AS_HELP_STRING([--disable-fast-squaring],
@@ -104,6 +151,8 @@ AC_ARG_ENABLE([fast-squaring],
               [])
 AM_CONDITIONAL([FE3C_OPTIMIZATION_FAST_SQUARING], [test "x$optimization_fast_squaring" = "xyes"])
 AS_IF([test "x$optimization_fast_squaring" = "xyes"], AC_DEFINE([FE3C_OPTIMIZATION_FAST_SQUARING]), [])
+
+# -------------------------------------------------------------------------------------------
 
 optimization_comb_method="yes"
 AC_ARG_ENABLE([comb-method],
@@ -119,6 +168,8 @@ AC_ARG_ENABLE([comb-method],
 AM_CONDITIONAL([FE3C_OPTIMIZATION_COMB_METHOD], [test "x$optimization_comb_method" = "xyes"])
 AS_IF([test "x$optimization_comb_method" = "xyes"], AC_DEFINE([FE3C_OPTIMIZATION_COMB_METHOD]), [])
 
+# -------------------------------------------------------------------------------------------
+
 optimization_base_four_shamir="yes"
 AC_ARG_ENABLE([base-four-shamir],
               [AS_HELP_STRING([--disable-base-four-shamir],
@@ -132,6 +183,8 @@ AC_ARG_ENABLE([base-four-shamir],
               [])
 AM_CONDITIONAL([FE3C_OPTIMIZATION_BASE_FOUR_SHAMIR_TRICK], [test "x$optimization_base_four_shamir" = "xyes"])
 AS_IF([test "x$optimization_base_four_shamir" = "xyes"], AC_DEFINE([FE3C_OPTIMIZATION_BASE_FOUR_SHAMIR_TRICK]), [])
+
+# -------------------------------------------------------------------------------------------
 
 optimization_skip_zeroization="no"
 AC_ARG_ENABLE([zeroization],
@@ -147,25 +200,36 @@ AC_ARG_ENABLE([zeroization],
               [])
 AM_CONDITIONAL([FE3C_OPTIMIZATION_SKIP_ZEROIZATION], [test "x$optimization_skip_zeroization" = "xyes"])
 AS_IF([test "x$optimization_skip_zeroization" = "xyes"], AC_DEFINE([FE3C_OPTIMIZATION_SKIP_ZEROIZATION]), [])
-
+# -------------------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------------------
 # -------------------------------------------------------------------------------------------
 
+
+
+# -------------------------------------------------------------------------------------------
 # --------------------------------- Architecture intrinsics ---------------------------------
-optimize32="no"
+# -------------------------------------------------------------------------------------------
+archbits="64"
 AC_ARG_ENABLE([32bit],
               [AS_HELP_STRING([--enable-32bit],
                               [Optimize elliptic curve arithmetic for 32-bit architecture(s)])],
               [AS_IF([test "x$enableval" = "xyes"],
-                     [optimize32="yes"],
+                     [archbits="32"],
 
                      [test "x$enableval" != "xno"],
                      [AC_MSG_ERROR([bad value ${enableval} for --enable-32bit])])],
               [])
-AM_CONDITIONAL([FE3C_32BIT], [test "x$optimize32" = "xyes"])
-AS_IF([test "x$optimize32" = "xyes"], AC_DEFINE([FE3C_32BIT]), AC_DEFINE([FE3C_64BIT]))
+AC_SUBST([archbits])
+AS_IF([test "x$archbits" = "x32"], AC_DEFINE([FE3C_32BIT]), AC_DEFINE([FE3C_64BIT]))
+# -------------------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------------------
 # -------------------------------------------------------------------------------------------
 
+
+
+# -------------------------------------------------------------------------------------------
 # -------------------------------------- Debug options --------------------------------------
+# -------------------------------------------------------------------------------------------
 sanity_checks="no"
 AC_ARG_ENABLE([sanity-checks],
               [AS_HELP_STRING([--enable-sanity-checks],
@@ -178,6 +242,8 @@ AC_ARG_ENABLE([sanity-checks],
               [])
 AS_IF([test "x$sanity_checks" = "xyes"], AC_DEFINE([FE3C_ENABLE_SANITY_CHECKS]), [])
 # -------------------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------------------
 
 AC_CONFIG_FILES([Makefile src/Makefile])
 
@@ -186,6 +252,10 @@ AC_SUBST([AM_CFLAGS])
 AC_SUBST([AM_CPPFLAGS])
 AC_SUBST([AM_LDFLAGS])
 
+# -------------------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------------------
+
 AC_OUTPUT
 AC_MSG_RESULT([
     $PACKAGE $VERSION
@@ -193,11 +263,13 @@ AC_MSG_RESULT([
     Curve Ed25519 supported:                ${ed25519}
     Curve Ed448 supported:                  ${ed448}
 
-    Optimized for 32-bit architectures:     ${optimize32}
+    Architecture:                           ${archbits}-bit
     Sanity checks enabled:                  ${sanity_checks}
 
+    Using 4-isogenous curve of Ed448:       ${optimization_ed448_isogeny}
     Optimized field element squaring:       ${optimization_fast_squaring}
     Comb method for scalar multiplication:  ${optimization_comb_method}
+    Small precomputation tables:            ${small_precomputation}
     Base-4 recoding for Shamir's trick:     ${optimization_base_four_shamir}
     Skip secret zeroization on stack:       ${optimization_skip_zeroization}
 ])

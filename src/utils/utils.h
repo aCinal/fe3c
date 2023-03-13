@@ -10,7 +10,9 @@ extern "C" {
 #include <string.h>  /* Include memcpy() from libc via this header to allow overriding it if need be */
 
 /** Access a specific bit in an array (assume little-endian byte order) */
-#define array_bit(arr, b) ( (arr[(b) >> 3] >> ((b) & 0x7)) & 1 )
+#define array_bit(arr, b)      ( (arr[(b) >> 3] >> ((b) & 0x7)) & 1 )
+/** Get array length at compile time */
+#define static_array_len(arr)  ( sizeof(arr) / sizeof((arr)[0]) )
 
 /** Test two bytes for equality in a predictable and constant-time manner */
 static inline int byte_equal(u8 x, u8 y) {

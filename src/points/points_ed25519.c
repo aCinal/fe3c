@@ -2,7 +2,7 @@
 #include <field_elements/field_elements_ed25519.h>
 #include <utils/utils.h>
 #if FE3C_OPTIMIZATION_COMB_METHOD
-    #include <points/points_ed25519_comb_method.h>
+    #include <points/comb/comb_ed25519.h>
 #endif /* FE3C_OPTIMIZATION_COMB_METHOD */
 
 #define ED25519_STR \
@@ -433,7 +433,7 @@ static void ed25519_multiply_basepoint(point * rgen, const u8 * s) {
     ed25519_comb_recode_scalar_into_4naf(naf, s);
 
     ed25519_identity(r);
-    point_precomp p;
+    ed25519_precomp p;
     /* Since we have b=2 we only have two iterations of the outermost loop of the algorithm
      * (Algorithm 3 in "Improved Fixed-base Comb Method for Fast Scalar Multiplication") which
      * implements the double summation at the end of the above description. Also for the second
@@ -448,7 +448,7 @@ static void ed25519_multiply_basepoint(point * rgen, const u8 * s) {
          * but correct for it in the j index (j = i / 2) */
         ed25519_comb_read_precomp(&p, i >> 1, naf[i]);
         /* For the last iteration skip setting the extended coordinate */
-        ed25519_points_add_precomp(r, r, &p, i < 62);
+        ed25519_comb_add_precomp(r, r, &p);
     }
 
     /* Compute 2^{tw} Q = 2^4 Q */
@@ -465,7 +465,7 @@ static void ed25519_multiply_basepoint(point * rgen, const u8 * s) {
          * but correct for it in the j index (j = i / 2) */
         ed25519_comb_read_precomp(&p, i >> 1, naf[i]);
         /* For the last iteration skip setting the extended coordinate */
-        ed25519_points_add_precomp(r, r, &p, i < 62);
+        ed25519_comb_add_precomp(r, r, &p);
     }
 
     /* At this point Q := 2^{tw} Q is a no-op since 2^{tw} Q = 2^0 Q */
