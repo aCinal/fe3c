@@ -1,13 +1,13 @@
-#if !FE3C_OPTIMIZATION_ED448_ISOGENY
-    #error "Build system inconsistency detected! points_ed448_isogeny.c in use despite FE3C_OPTIMIZATION_ED448_ISOGENY not being set"
-#endif /* !FE3C_OPTIMIZATION_ED448_ISOGENY */
+#if !FE3C_ED448_ISOGENY
+    #error "Build system inconsistency detected! points_ed448_isogeny.c in use despite FE3C_ED448_ISOGENY not being set"
+#endif /* !FE3C_ED448_ISOGENY */
 
 #include <points/points.h>
 #include <field_elements/field_elements_ed448.h>
 #include <utils/utils.h>
-#if FE3C_OPTIMIZATION_COMB_METHOD
+#if FE3C_COMB_METHOD
     #include <points/comb/comb_ed448.h>
-#endif /* FE3C_OPTIMIZATION_COMB_METHOD */
+#endif /* FE3C_COMB_METHOD */
 
 #define ED448_STR \
     "    X = " FE448_STR "\n" \
@@ -423,7 +423,7 @@ static void ed448_points_add(point_ed448 * r, const point_ed448 * p, const point
     fe448_mul(r->Z, F, G);
 }
 
-#if !FE3C_OPTIMIZATION_COMB_METHOD
+#if !FE3C_COMB_METHOD
 static inline void ed448_scalar_multiply(point_ed448 * r, const point_ed448 * p, const u8 * s) {
 
     FE3C_SANITY_CHECK(ed448_is_on_curve(p), ED448_STR, ED448_TO_STR(p));
@@ -447,7 +447,7 @@ static inline void ed448_scalar_multiply(point_ed448 * r, const point_ed448 * p,
 
     purge_secrets(&R[1], sizeof(R[1]));
 }
-#endif /* !FE3C_OPTIMIZATION_COMB_METHOD */
+#endif /* !FE3C_COMB_METHOD */
 
 static inline void ed448_map_scalar_to_isogenous_curve(u8 r[57], const u8 s[57]) {
 
@@ -492,7 +492,7 @@ static void ed448_multiply_basepoint(point * rgen, const u8 * sraw) {
     u8 s[57];
     /* TODO: Combine division by four with NAF-recoding for the comb method variant */
     ed448_map_scalar_to_isogenous_curve(s, sraw);
-#if !FE3C_OPTIMIZATION_COMB_METHOD
+#if !FE3C_COMB_METHOD
     ed448_scalar_multiply(r, &ed448_basepoint, s);
 #else
     /* Implement the improved comb method from "Improved Fixed-base Comb Method for Fast
@@ -595,7 +595,7 @@ static void ed448_multiply_basepoint(point * rgen, const u8 * sraw) {
     purge_secrets(naf, sizeof(naf));
     /* Clear the last accessed precomputed point */
     purge_secrets(&p, sizeof(p));
-#endif /* !FE3C_OPTIMIZATION_COMB_METHOD */
+#endif /* !FE3C_COMB_METHOD */
 }
 
 static void ed448_point_negate(point * pgen) {

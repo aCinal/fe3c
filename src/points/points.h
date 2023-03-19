@@ -22,9 +22,9 @@ typedef struct point_ed448 {
     fe448 X;
     fe448 Y;
     fe448 Z;
-#if FE3C_OPTIMIZATION_ED448_ISOGENY
+#if FE3C_ED448_ISOGENY
     fe448 T;
-#endif /* FE3C_OPTIMIZATION_ED448_ISOGENY */
+#endif /* FE3C_ED448_ISOGENY */
 } point_ed448;
 #endif /* FE3C_SUPPORT_CURVE_ED448 */
 

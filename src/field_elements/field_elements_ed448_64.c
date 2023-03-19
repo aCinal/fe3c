@@ -9,10 +9,10 @@
 
 /* Elliptic curve constant d = -39081 */
 const fe448 ed448_d = { 0xffffffffff6756, 0xffffffffffffff, 0xffffffffffffff, 0xffffffffffffff, 0xfffffffffffffe, 0xffffffffffffff, 0xffffffffffffff, 0xffffffffffffff };
-#if FE3C_OPTIMIZATION_ED448_ISOGENY
+#if FE3C_ED448_ISOGENY
 /* Twisted elliptic curve constant d' = d-1 */
 const fe448 ed448twist_d = { 0xffffffffff6755, 0xffffffffffffff, 0xffffffffffffff, 0xffffffffffffff, 0xfffffffffffffe, 0xffffffffffffff, 0xffffffffffffff, 0xffffffffffffff };
-#endif /* FE3C_OPTIMIZATION_ED448_ISOGENY */
+#endif /* FE3C_ED448_ISOGENY */
 /* Additive identity in the field */
 const fe448 fe448_zero = { 0, 0, 0, 0, 0, 0, 0, 0 };
 /* Multiplicative identity in the field */
@@ -553,7 +553,7 @@ void fe448_mul(fe448 r, const fe448 a, const fe448 b) {
  */
 void fe448_square(fe448 r, const fe448 a) {
 
-#if !FE3C_OPTIMIZATION_FAST_SQUARING
+#if !FE3C_FAST_SQUARING
     fe448_mul(r, a, a);
 #else
     u128 a0 = a[0];
@@ -666,7 +666,7 @@ void fe448_square(fe448 r, const fe448 a) {
     r[5] = r5;
     r[6] = r6;
     r[7] = r7;
-#endif /* !FE3C_OPTIMIZATION_FAST_SQUARING */
+#endif /* !FE3C_FAST_SQUARING */
 }
 
 /**

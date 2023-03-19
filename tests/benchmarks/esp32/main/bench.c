@@ -25,9 +25,6 @@ typedef struct esp32_bench_stopwatch {
 
 void app_main(void) {
 
-    /* Assert at least one curve is supported */
-    assert(eddsa_is_curve_supported(EDDSA_CURVE_ED25519) || eddsa_is_curve_supported(EDDSA_CURVE_ED448));
-
     /* Spawn a new task to have strict control over the stack size */
     BaseType_t ret = xTaskCreatePinnedToCore(
         benchmark_task,

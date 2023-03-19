@@ -410,7 +410,7 @@ void fe25519_mul(fe25519 r, const fe25519 a, const fe25519 b) {
  */
 void fe25519_square(fe25519 r, const fe25519 a) {
 
-#if !FE3C_OPTIMIZATION_FAST_SQUARING
+#if !FE3C_FAST_SQUARING
     fe25519_mul(r, a, a);
 #else
     u128 r0, r1, r2, r3, r4;
@@ -459,7 +459,7 @@ void fe25519_square(fe25519 r, const fe25519 a) {
     r[2] = r2;
     r[3] = r3;
     r[4] = r4;
-#endif /* FE3C_OPTIMIZATION_FAST_SQUARING */
+#endif /* FE3C_FAST_SQUARING */
 }
 
 /**

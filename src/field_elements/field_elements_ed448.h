@@ -29,8 +29,10 @@ extern "C" {
 
 /* Elliptic curve constant d = -39081 */
 extern const fe448 ed448_d;
+#if FE3C_ED448_ISOGENY
 /* Twisted elliptic curve constant d' = d-1 */
 extern const fe448 ed448twist_d;
+#endif /* FE3C_ED448_ISOGENY */
 /* Additive identity in the field */
 extern const fe448 fe448_zero;
 /* Multiplicative identity in the field */

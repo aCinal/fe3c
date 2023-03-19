@@ -12,7 +12,7 @@ menu "cementite (fe3c)"
         help
             Enable support for the Ed448 curve.
 
-    config FE3C_OPTIMIZATION_ED448_ISOGENY
+    config FE3C_ED448_ISOGENY
         bool "Use 4-isogeny of Ed448"
         depends on FE3C_SUPPORT_CURVE_ED448
         default n
@@ -22,7 +22,7 @@ menu "cementite (fe3c)"
             which may lead to consensus issues where different implementations
             disagree on the validity of maliciously constructed signatures.
 
-    config FE3C_OPTIMIZATION_SKIP_ZEROIZATION
+    config FE3C_SKIP_ZEROIZATION
         bool "Skip secret zeroization"
         default n
         help
@@ -30,7 +30,7 @@ menu "cementite (fe3c)"
             performance and reduce code footprint, but decreases security in systems where stack
             is shared with unsafe code, which may read data left behind by crypto operations.
 
-    config FE3C_OPTIMIZATION_COMB_METHOD
+    config FE3C_COMB_METHOD
         bool "Use comb method for scalar multiplication"
         default y
         help
@@ -39,14 +39,14 @@ menu "cementite (fe3c)"
 
     config FE3C_SMALL_PRECOMPUTATION
         bool "Use smaller precomputation tables for comb method"
-        depends on FE3C_OPTIMIZATION_COMB_METHOD
+        depends on FE3C_COMB_METHOD
         default n
         help
             Minimize the size of the precomputation tables when using the comb method.
             This may result in a smaller library size at the cost of decreased
             performance.
 
-    config FE3C_OPTIMIZATION_FAST_SQUARING
+    config FE3C_FAST_SQUARING
         bool "Use optimized squaring in the field"
         default y
         help

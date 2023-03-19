@@ -1,6 +1,6 @@
-#if FE3C_OPTIMIZATION_ED448_ISOGENY && !FE3C_SMALL_PRECOMPUTATION
-    #error "Build system inconsistency detected! comb_ed448_small.c in use despite FE3C_OPTIMIZATION_ED448_ISOGENY being set and FE3C_SMALL_PRECOMPUTATION not being set"
-#endif /* FE3C_OPTIMIZATION_ED448_ISOGENY && !FE3C_SMALL_PRECOMPUTATION */
+#if FE3C_ED448_ISOGENY && !FE3C_SMALL_PRECOMPUTATION
+    #error "Build system inconsistency detected! comb_ed448_small.c in use despite FE3C_ED448_ISOGENY being set and FE3C_SMALL_PRECOMPUTATION not being set"
+#endif /* FE3C_ED448_ISOGENY && !FE3C_SMALL_PRECOMPUTATION */
 
 #include <points/comb/comb_ed448.h>
 #include <utils/utils.h>
@@ -53,8 +53,8 @@ void ed448_comb_read_precomp(ed448_precomp * r, u8 j, i8 ijt) {
     /* Negate the point if necessary */
     ed448_comb_cneg(r, negate);
 
-#if FE3C_OPTIMIZATION_ED448_ISOGENY
+#if FE3C_ED448_ISOGENY
     /* Set the extended T coordinate to the correct value */
     fe448_mul(r->T, r->X, r->Y);
-#endif /* FE3C_OPTIMIZATION_ED448_ISOGENY */
+#endif /* FE3C_ED448_ISOGENY */
 }

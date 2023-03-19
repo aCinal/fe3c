@@ -103,7 +103,7 @@ AS_IF([test "x$ed448" = "xyes"], AC_DEFINE([FE3C_SUPPORT_CURVE_ED448]), [])
 # -------------------------------------------------------------------------------------------
 # ----------------------------- Optional features/optimizations -----------------------------
 # -------------------------------------------------------------------------------------------
-optimization_ed448_isogeny="no"
+ed448_isogeny="no"
 AC_ARG_ENABLE([ed448-isogeny],
               [AS_HELP_STRING([--enable-ed448-isogeny],
                               [Enable performing the Ed448 computations on a 4-isogenous curve, which
@@ -111,13 +111,13 @@ AC_ARG_ENABLE([ed448-isogeny],
                                which may lead to consensus issues where different implementations
                                disagree on the validity of maliciously constructed signatures.])],
               [AS_IF([test "x$enableval" = "xyes"],
-                     [optimization_ed448_isogeny="yes"],
+                     [ed448_isogeny="yes"],
 
                      [test "x$enableval" != "xno"],
                      [AC_MSG_ERROR([bad value ${enableval} for --enable-ed448-isogeny])])],
               [])
-AM_CONDITIONAL([FE3C_OPTIMIZATION_ED448_ISOGENY], [test "x$optimization_ed448_isogeny" = "xyes"])
-AS_IF([test "x$optimization_ed448_isogeny" = "xyes"], AC_DEFINE([FE3C_OPTIMIZATION_ED448_ISOGENY]), [])
+AM_CONDITIONAL([FE3C_ED448_ISOGENY], [test "x$ed448_isogeny" = "xyes"])
+AS_IF([test "x$ed448_isogeny" = "xyes"], AC_DEFINE([FE3C_ED448_ISOGENY]), [])
 
 # -------------------------------------------------------------------------------------------
 
@@ -138,52 +138,52 @@ AS_IF([test "x$small_precomputation" = "xyes"], AC_DEFINE([FE3C_SMALL_PRECOMPUTA
 
 # -------------------------------------------------------------------------------------------
 
-optimization_fast_squaring="yes"
+fast_squaring="yes"
 AC_ARG_ENABLE([fast-squaring],
               [AS_HELP_STRING([--disable-fast-squaring],
                               [Disable optimization of squaring in the field and reuse multiplication routine,
                                which should reduce code footprint but may decrease performance])],
               [AS_IF([test "x$enableval" = "xno"],
-                     [optimization_fast_squaring="no"],
+                     [fast_squaring="no"],
 
                      [test "x$enableval" != "xyes"],
                      [AC_MSG_ERROR([bad value ${enableval} for --enable-fast-squaring])])],
               [])
-AM_CONDITIONAL([FE3C_OPTIMIZATION_FAST_SQUARING], [test "x$optimization_fast_squaring" = "xyes"])
-AS_IF([test "x$optimization_fast_squaring" = "xyes"], AC_DEFINE([FE3C_OPTIMIZATION_FAST_SQUARING]), [])
+AM_CONDITIONAL([FE3C_FAST_SQUARING], [test "x$fast_squaring" = "xyes"])
+AS_IF([test "x$fast_squaring" = "xyes"], AC_DEFINE([FE3C_FAST_SQUARING]), [])
 
 # -------------------------------------------------------------------------------------------
 
-optimization_comb_method="yes"
+comb_method="yes"
 AC_ARG_ENABLE([comb-method],
               [AS_HELP_STRING([--disable-comb-method],
                               [Disable comb method of scalar multiplication, which may reduce data footprint,
                                but will definitely decrease performance])],
               [AS_IF([test "x$enableval" = "xno"],
-                     [optimization_comb_method="no"],
+                     [comb_method="no"],
 
                      [test "x$enableval" != "xyes"],
                      [AC_MSG_ERROR([bad value ${enableval} for --enable-comb-method])])],
               [])
-AM_CONDITIONAL([FE3C_OPTIMIZATION_COMB_METHOD], [test "x$optimization_comb_method" = "xyes"])
-AS_IF([test "x$optimization_comb_method" = "xyes"], AC_DEFINE([FE3C_OPTIMIZATION_COMB_METHOD]), [])
+AM_CONDITIONAL([FE3C_COMB_METHOD], [test "x$comb_method" = "xyes"])
+AS_IF([test "x$comb_method" = "xyes"], AC_DEFINE([FE3C_COMB_METHOD]), [])
 
 # -------------------------------------------------------------------------------------------
 
-optimization_skip_zeroization="no"
+skip_zeroization="no"
 AC_ARG_ENABLE([zeroization],
               [AS_HELP_STRING([--disable-zeroization],
                               [Disable zeroization of intermediate results on stack, which may marginally increase
                                performance and reduce code footprint, but decreases security in systems where stack
                                is shared with unsafe code, which may read data left behind by crypto operations])],
               [AS_IF([test "x$enableval" = "xno"],
-                     [optimization_skip_zeroization="yes"],
+                     [skip_zeroization="yes"],
 
                      [test "x$enableval" != "xyes"],
                      [AC_MSG_ERROR([bad value ${enableval} for --enable-zeroization])])],
               [])
-AM_CONDITIONAL([FE3C_OPTIMIZATION_SKIP_ZEROIZATION], [test "x$optimization_skip_zeroization" = "xyes"])
-AS_IF([test "x$optimization_skip_zeroization" = "xyes"], AC_DEFINE([FE3C_OPTIMIZATION_SKIP_ZEROIZATION]), [])
+AM_CONDITIONAL([FE3C_SKIP_ZEROIZATION], [test "x$skip_zeroization" = "xyes"])
+AS_IF([test "x$skip_zeroization" = "xyes"], AC_DEFINE([FE3C_SKIP_ZEROIZATION]), [])
 # -------------------------------------------------------------------------------------------
 # -------------------------------------------------------------------------------------------
 # -------------------------------------------------------------------------------------------
@@ -250,9 +250,9 @@ AC_MSG_RESULT([
     Architecture:                           ${archbits}-bit
     Sanity checks enabled:                  ${sanity_checks}
 
-    Using 4-isogenous curve of Ed448:       ${optimization_ed448_isogeny}
-    Optimized field element squaring:       ${optimization_fast_squaring}
-    Comb method for scalar multiplication:  ${optimization_comb_method}
+    Using 4-isogenous curve of Ed448:       ${ed448_isogeny}
+    Optimized field element squaring:       ${fast_squaring}
+    Comb method for scalar multiplication:  ${comb_method}
     Small precomputation tables:            ${small_precomputation}
-    Skip secret zeroization on stack:       ${optimization_skip_zeroization}
+    Skip secret zeroization on stack:       ${skip_zeroization}
 ])

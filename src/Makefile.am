@@ -24,7 +24,7 @@ else
 ed25519_small_precomp_tag =
 endif
 
-if FE3C_OPTIMIZATION_ED448_ISOGENY
+if FE3C_ED448_ISOGENY
 
 ed448_isogeny_tag = _isogeny
 if FE3C_SMALL_PRECOMPUTATION
@@ -50,7 +50,7 @@ __LIB__libcementite_la_SOURCES += \
     scalars/scalars_ed25519_$(archbits).c \
     field_elements/field_elements_ed25519_$(archbits).c
 
-if FE3C_OPTIMIZATION_COMB_METHOD
+if FE3C_COMB_METHOD
 __LIB__libcementite_la_SOURCES += \
     points/comb/comb_ed25519$(ed25519_small_precomp_tag).c \
     points/comb/precomputation/precomputation_ed25519$(ed25519_small_precomp_tag)_$(archbits).c
@@ -64,11 +64,11 @@ if FE3C_SUPPORT_CURVE_ED448
 __LIB__libcementite_la_SOURCES += \
     curves/curve_ed448.c \
     hash_functions/hash_function_shake256.c \
-    scalars/scalars_ed448_${archbits}.c \
-    field_elements/field_elements_ed448_${archbits}.c \
+    scalars/scalars_ed448_$(archbits).c \
+    field_elements/field_elements_ed448_$(archbits).c \
     points/points_ed448$(ed448_isogeny_tag).c
 
-if FE3C_OPTIMIZATION_COMB_METHOD
+if FE3C_COMB_METHOD
 __LIB__libcementite_la_SOURCES += \
     points/comb/comb_ed448$(ed448_small_precomp_tag).c \
     points/comb/precomputation/precomputation_ed448$(ed448_isogeny_tag)$(ed448_small_precomp_tag)_$(archbits).c

@@ -1,9 +1,9 @@
 #include <points/points.h>
 #include <field_elements/field_elements_ed25519.h>
 #include <utils/utils.h>
-#if FE3C_OPTIMIZATION_COMB_METHOD
+#if FE3C_COMB_METHOD
     #include <points/comb/comb_ed25519.h>
-#endif /* FE3C_OPTIMIZATION_COMB_METHOD */
+#endif /* FE3C_COMB_METHOD */
 
 #define ED25519_STR \
     "    X = " FE25519_STR "\n" \
@@ -342,7 +342,7 @@ static void ed25519_points_add(point_ed25519 * r, const point_ed25519 * p, const
     fe25519_mul(r->Z, F, G);
 }
 
-#if !FE3C_OPTIMIZATION_COMB_METHOD
+#if !FE3C_COMB_METHOD
 static inline void ed25519_scalar_multiply(point_ed25519 * r, const point_ed25519 * p, const u8 * s) {
 
     FE3C_SANITY_CHECK(ed25519_is_on_curve(p), ED25519_STR, ED25519_TO_STR(p));
@@ -365,12 +365,12 @@ static inline void ed25519_scalar_multiply(point_ed25519 * r, const point_ed2551
     *r = R[0];
     purge_secrets(&R[1], sizeof(R[1]));
 }
-#endif /* !FE3C_OPTIMIZATION_COMB_METHOD */
+#endif /* !FE3C_COMB_METHOD */
 
 static void ed25519_multiply_basepoint(point * rgen, const u8 * s) {
 
     point_ed25519 * r = (point_ed25519 *) rgen;
-#if !FE3C_OPTIMIZATION_COMB_METHOD
+#if !FE3C_COMB_METHOD
     ed25519_scalar_multiply(r, &ed25519_basepoint, s);
 #else
     /* Implement the improved comb method from "Improved Fixed-base Comb Method for Fast
@@ -474,7 +474,7 @@ static void ed25519_multiply_basepoint(point * rgen, const u8 * s) {
     purge_secrets(naf, sizeof(naf));
     /* Clear the last accessed precomputed point */
     purge_secrets(&p, sizeof(p));
-#endif /* !FE3C_OPTIMIZATION_COMB_METHOD */
+#endif /* !FE3C_COMB_METHOD */
 }
 
 static void ed25519_point_negate(point * pgen) {

@@ -25,7 +25,7 @@ static inline int byte_equal(u8 x, u8 y) {
 
 /* Provide constant-time and otherwise secure implementations of common libc functions */
 
-#if FE3C_OPTIMIZATION_SKIP_ZEROIZATION
+#if FE3C_SKIP_ZEROIZATION
     #define purge_secrets(...)
 #else
     /**
@@ -41,7 +41,7 @@ static inline int byte_equal(u8 x, u8 y) {
             *p++ = 0;
         }
     }
-#endif /* FE3C_OPTIMIZATION_SKIP_ZEROIZATION */
+#endif /* FE3C_SKIP_ZEROIZATION */
 
 #if FE3C_ENABLE_SANITY_CHECKS
     #include <stdio.h>
