@@ -44,7 +44,7 @@ FE3C_TEST(HASH_FUNCTION_SHA512, EmptyString) {
     FAIL_IF_MEMCMP(expected_output, output, HASH_OUTPUT_SIZE_IN_BYTES);
 }
 
-FE3C_TEST(HASH_FUNCTION_SHA512, SingleMessageOfLength1024) {
+FE3C_TEST(HASH_FUNCTION_SHA512, SingleMessageOfLength128) {
 
     u8 output[HASH_OUTPUT_SIZE_IN_BYTES];
     const u8 expected_output[] = \

@@ -14,17 +14,10 @@
     FE25519_TO_STR((p)->X), FE25519_TO_STR((p)->Y), FE25519_TO_STR((p)->Z), FE25519_TO_STR((p)->T)
 
 static const point_ed25519 ed25519_basepoint = {
-#if FE3C_64BIT
-    .X = { 0x62d608f25d51a, 0x412a4b4f6592a, 0x75b7171a4b31d, 0x1ff60527118fe, 0x216936d3cd6e5 },
-    .Y = { 0x6666666666658, 0x4cccccccccccc, 0x1999999999999, 0x3333333333333, 0x6666666666666 },
-    .Z = { 1, 0, 0, 0, 0 },
-    .T = { 0x68ab3a5b7dda3, 0xeea2a5eadbb, 0x2af8df483c27e, 0x332b375274732, 0x67875f0fd78b7 }
-#else
-    .X = { 0x325d51a, 0x18b5823, 0xf6592a, 0x104a92d, 0x1a4b31d, 0x1d6dc5c, 0x27118fe, 0x7fd814, 0x13cd6e5, 0x85a4db },
-    .Y = { 0x2666658, 0x1999999, 0xcccccc, 0x1333333, 0x1999999, 0x666666, 0x3333333, 0xcccccc, 0x2666666, 0x1999999 },
-    .Z = { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-    .T = { 0x1b7dda3, 0x1a2ace9, 0x25eadbb, 0x3ba8a, 0x83c27e, 0xabe37d, 0x1274732, 0xccacdd, 0xfd78b7, 0x19e1d7c }
-#endif /* FE3C_64BIT */
+    .X = ED25519_BASEPOINT_X,
+    .Y = ED25519_BASEPOINT_Y,
+    .Z = ED25519_BASEPOINT_Z,
+    .T = ED25519_BASEPOINT_T
 };
 
 #if FE3C_ENABLE_SANITY_CHECKS
@@ -125,49 +118,50 @@ static void ed25519_encode(u8 * buf, const point * pgen) {
     purge_secrets(z_inv, sizeof(z_inv));
 }
 
-static void ed25519_point_double(point_ed25519 * r, const point_ed25519 * p, int set_extended_coordinate) {
+void ed25519_point_double(point_ed25519 * r, const point_ed25519 * p, int set_extended_coordinate) {
 
     FE3C_SANITY_CHECK(ed25519_is_on_curve(p), ED25519_STR, ED25519_TO_STR(p));
 
-    /* TODO: Reuse some old variables to reduce stack usage */
-    fe25519 A, B, C, E, F, G, H;
+    /* For optimal stack and cache usage we reduce the number of variables
+     * allocated relative to the algorithm description in RFC 8032. For
+     * clarity, the comments include the names of variables as they appear
+     * in RFC 8032. */
+    fe25519 G, H;
 
     /* A := X1^2 */
-    fe25519_square(A, p->X);
+    fe25519_square(G, p->X);
     /* B := Y1^2*/
-    fe25519_square(B, p->Y);
-
-    /* C := 2*Z1^2 */
-    fe25519_square(C, p->Z);
-    fe25519_add(C, C, C);
+    fe25519_square(r->T, p->Y);
 
     /* H := A+B */
-    fe25519_add(H, A, B);
+    fe25519_add(H, G, r->T);
+    /* G := A-B */
+    fe25519_sub(G, G, r->T);
 
     /* E := H-(X1+Y1)^2 */
-    fe25519_add(E, p->X, p->Y);
-    fe25519_square(E, E);
-    fe25519_sub(E, H, E);
+    fe25519_add(r->T, p->X, p->Y);
+    fe25519_square(r->T, r->T);
+    fe25519_sub(r->T, H, r->T);
 
-    /* G := A-B */
-    fe25519_sub(G, A, B);
-
+    /* C := 2*Z1^2 */
+    fe25519_square(r->Z, p->Z);
+    fe25519_add(r->Z, r->Z, r->Z);
     /* F := C+G */
-    fe25519_add(F, C, G);
+    fe25519_add(r->Z, r->Z, G);
 
     /* X3 := E*F */
-    fe25519_mul(r->X, E, F);
+    fe25519_mul(r->X, r->T, r->Z);
     /* Y3 := G*H */
     fe25519_mul(r->Y, G, H);
     /* Z3 := F*G */
-    fe25519_mul(r->Z, F, G);
+    fe25519_mul(r->Z, r->Z, G);
 
     /* When scheduled to be followed by another doubling we can skip setting the extended coordinate T
      * which is not needed for doubling */
     if (set_extended_coordinate) {
 
         /* T3 := E*H */
-        fe25519_mul(r->T, E, H);
+        fe25519_mul(r->T, r->T, H);
     }
 }
 
@@ -294,52 +288,55 @@ static int ed25519_decode(point * pgen, const u8 * buf) {
     return success;
 }
 
-static void ed25519_points_add(point_ed25519 * r, const point_ed25519 * p, const point_ed25519 * q) {
+void ed25519_points_add(point_ed25519 * r, const point_ed25519 * p, const point_ed25519 * q) {
 
     FE3C_SANITY_CHECK(ed25519_is_on_curve(p), ED25519_STR, ED25519_TO_STR(p));
     FE3C_SANITY_CHECK(ed25519_is_on_curve(q), ED25519_STR, ED25519_TO_STR(q));
     FE3C_SANITY_CHECK(ed25519_valid_extended_projective(p), ED25519_STR, ED25519_TO_STR(p));
     FE3C_SANITY_CHECK(ed25519_valid_extended_projective(q), ED25519_STR, ED25519_TO_STR(q));
 
-    /* TODO: Reuse some old variables to reduce stack usage */
-    fe25519 A, B, C, D, E, F, G, H;
+    /* For optimal stack and cache usage we reduce the number of variables
+     * allocated relative to the algorithm description in RFC 8032. For
+     * clarity, the comments include the names of variables as they appear
+     * in RFC 8032. */
+    fe25519 A, B, E;
 
     /* A := (Y1-X1)*(Y2-X2) */
-    fe25519_sub(E, p->Y, p->X);
-    fe25519_sub(F, q->Y, q->X);
-    fe25519_mul(A, E, F);
+    fe25519_sub(A, p->Y, p->X);
+    fe25519_sub(B, q->Y, q->X);
+    fe25519_mul(A, A, B);
 
     /* B := (Y1+X1)*(Y2+X2) */
-    fe25519_add(G, p->Y, p->X);
-    fe25519_add(H, q->Y, q->X);
-    fe25519_mul(B, G, H);
+    fe25519_add(E, p->Y, p->X);
+    fe25519_add(B, q->Y, q->X);
+    fe25519_mul(B, E, B);
 
     /* C := T1*2*d*T2 */
-    fe25519_mul(C, p->T, q->T);
-    fe25519_mul(C, C, ed25519_d);
-    fe25519_add(C, C, C);
+    fe25519_mul(r->T, p->T, q->T);
+    fe25519_mul(r->T, r->T, ed25519_d);
+    fe25519_add(r->T, r->T, r->T);
 
     /* D := Z1*2*Z2 */
-    fe25519_mul(D, p->Z, q->Z);
-    fe25519_add(D, D, D);
+    fe25519_mul(r->Z, p->Z, q->Z);
+    fe25519_add(r->Z, r->Z, r->Z);
 
     /* E := B-A */
     fe25519_sub(E, B, A);
     /* F := D-C */
-    fe25519_sub(F, D, C);
+    fe25519_sub(r->X, r->Z, r->T);
     /* G := D+C */
-    fe25519_add(G, D, C);
+    fe25519_add(r->Z, r->Z, r->T);
     /* H := B+A */
-    fe25519_add(H, B, A);
+    fe25519_add(r->T, B, A);
 
-    /* X3 := E*F */
-    fe25519_mul(r->X, E, F);
     /* Y3 := G*H */
-    fe25519_mul(r->Y, G, H);
+    fe25519_mul(r->Y, r->Z, r->T);
     /* T3 := E*H */
-    fe25519_mul(r->T, E, H);
+    fe25519_mul(r->T, E, r->T);
     /* Z3 := F*G */
-    fe25519_mul(r->Z, F, G);
+    fe25519_mul(r->Z, r->X, r->Z);
+    /* X3 := E*F */
+    fe25519_mul(r->X, E, r->X);
 }
 
 #if !FE3C_COMB_METHOD

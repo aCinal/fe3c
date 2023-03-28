@@ -6,6 +6,10 @@
 extern "C" {
 #endif
 
+#if FE3C_PORT_OVERRIDES
+    #include <port/field_elements/overrides.h>
+#endif /* FE3C_PORT_OVERRIDES */
+
 #include <global_defs.h>
 
 /* Represent big integers as arrays of "limbs" with each limb corresponding to a machine word. Unless overridden by

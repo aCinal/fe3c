@@ -672,16 +672,16 @@ void fe25519_encode(u8 * buffer, fe25519 a) {
      * a[i]. Recall that each limb has a different length according to the following
      * table:
      *
-     *                              A[0]  ---   26 bits
-     *                              A[1]  ---   25 bits
-     *                              A[2]  ---   26 bits
-     *                              A[3]  ---   25 bits
-     *                              A[4]  ---   26 bits
-     *                              A[5]  ---   25 bits
-     *                              A[6]  ---   26 bits
-     *                              A[7]  ---   25 bits
-     *                              A[8]  ---   26 bits
-     *                              A[9]  ---   25 bits
+     *                              A[0]  ---  26 bits
+     *                              A[1]  ---  25 bits
+     *                              A[2]  ---  26 bits
+     *                              A[3]  ---  25 bits
+     *                              A[4]  ---  26 bits
+     *                              A[5]  ---  25 bits
+     *                              A[6]  ---  26 bits
+     *                              A[7]  ---  25 bits
+     *                              A[8]  ---  26 bits
+     *                              A[9]  ---  25 bits
      */
 
     /* Store the lowest (26-bits wide) limb + whatever can fit (6 bits) of the second lowest limb */

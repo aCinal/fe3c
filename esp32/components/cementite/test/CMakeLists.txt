@@ -2,10 +2,9 @@
 set(FE3C_UT_DEFINES
     "FE3C_FUNCTIONAL_TESTS_ESP32"
     "FE3C_32BIT"
-    "FE3C_LILENDIAN"
-    # Use packed-radix representation of the field elements
-    # "ED25519_FE_LIMB_COUNT=8"
-    # "ED448_FE_LIMB_COUNT=14"
+    "FE3C_LILENDIAN_TARGET"
+    # TODO: Make sure we don't get a mismatch where the library is compiled without port overrides, but tests don't care
+    "FE3C_PORT_OVERRIDES"
 )
 
 if (CONFIG_FE3C_ED448_ISOGENY)
@@ -23,7 +22,7 @@ if (CONFIG_FE3C_SUPPORT_CURVE_ED25519)
         "${FE3C_UT_COMMON_SOURCE_DIR}/hash_functions/Test_hash_function_sha512.cpp"
         "${FE3C_UT_COMMON_SOURCE_DIR}/points/Test_points_ed25519.cpp"
         "${FE3C_UT_COMMON_SOURCE_DIR}/scalars/Test_scalars_ed25519.cpp"
-        "${FE3C_UT_COMMON_SOURCE_DIR}/field_elements/Test_field_elements_ed25519_32.cpp"
+        "${FE3C_UT_PORT_SOURCE_DIR}/field_elements/Test_field_elements_ed25519_32.cpp"
     )
 endif()
 
@@ -42,7 +41,8 @@ if (CONFIG_FE3C_SUPPORT_CURVE_ED448)
 endif()
 
 idf_component_register(SRCS ${UT_SOURCES}
-                       INCLUDE_DIRS "${FE3C_UUT_INCLUDE_DIR}"
+                       INCLUDE_DIRS "${FE3C_UUT_COMMON_INCLUDE_DIR}"
+                                    "${FE3C_UUT_PORT_INCLUDE_DIR}"
                                     "${FE3C_UUT_COMMON_SOURCE_DIR}"
                        REQUIRES unity cementite)
 

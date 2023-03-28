@@ -12,14 +12,48 @@ extern "C" {
 #if FE3C_32BIT && FE3C_64BIT
     #error "Both FE3C_32BIT and FE3C_64BIT set!"
 #elif FE3C_32BIT
-    #define FE25519_STR "0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x"
-    #define FE25519_TO_STR(x) \
-        x[0], x[1], x[2], x[3], x[4], \
-        x[5], x[6], x[7], x[8], x[9]
+    #if !defined(FE25519_STR)
+        #define FE25519_STR "0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x"
+    #endif /* !defined(FE25519_STR) */
+    #if !defined(FE25519_TO_STR)
+        #define FE25519_TO_STR(x) \
+            x[0], x[1], x[2], x[3], x[4], \
+            x[5], x[6], x[7], x[8], x[9]
+    #endif /* !defined(FE25519_TO_STR) */
+
+    #if !defined(ED25519_BASEPOINT_X)
+        #define ED25519_BASEPOINT_X  { 0x325d51a, 0x18b5823, 0xf6592a, 0x104a92d, 0x1a4b31d, 0x1d6dc5c, 0x27118fe, 0x7fd814, 0x13cd6e5, 0x85a4db }
+    #endif /* !defined(ED25519_BASEPOINT_X) */
+    #if !defined(ED25519_BASEPOINT_Y)
+        #define ED25519_BASEPOINT_Y  { 0x2666658, 0x1999999, 0xcccccc, 0x1333333, 0x1999999, 0x666666, 0x3333333, 0xcccccc, 0x2666666, 0x1999999 }
+    #endif /* !defined(ED25519_BASEPOINT_Y) */
+    #if !defined(ED25519_BASEPOINT_Z)
+        #define ED25519_BASEPOINT_Z  { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0 }
+    #endif /* !defined(ED25519_BASEPOINT_Z) */
+    #if !defined(ED25519_BASEPOINT_T)
+        #define ED25519_BASEPOINT_T  { 0x1b7dda3, 0x1a2ace9, 0x25eadbb, 0x3ba8a, 0x83c27e, 0xabe37d, 0x1274732, 0xccacdd, 0xfd78b7, 0x19e1d7c }
+    #endif /* !defined(ED25519_BASEPOINT_T) */
 #elif FE3C_64BIT
-    #define FE25519_STR "0x%lx, 0x%lx, 0x%lx, 0x%lx, 0x%lx"
-    #define FE25519_TO_STR(x) \
-        x[0], x[1], x[2], x[3], x[4]
+    #if !defined(FE25519_STR)
+        #define FE25519_STR "0x%lx, 0x%lx, 0x%lx, 0x%lx, 0x%lx"
+    #endif /* !defined(FE25519_STR) */
+    #if !defined(FE25519_TO_STR)
+        #define FE25519_TO_STR(x) \
+            x[0], x[1], x[2], x[3], x[4]
+    #endif /* !defined(FE25519_TO_STR) */
+
+    #if !defined(ED25519_BASEPOINT_X)
+        #define ED25519_BASEPOINT_X  { 0x62d608f25d51a, 0x412a4b4f6592a, 0x75b7171a4b31d, 0x1ff60527118fe, 0x216936d3cd6e5 }
+    #endif /* !defined(ED25519_BASEPOINT_X) */
+    #if !defined(ED25519_BASEPOINT_Y)
+        #define ED25519_BASEPOINT_Y  { 0x6666666666658, 0x4cccccccccccc, 0x1999999999999, 0x3333333333333, 0x6666666666666 }
+    #endif /* !defined(ED25519_BASEPOINT_Y) */
+    #if !defined(ED25519_BASEPOINT_Z)
+        #define ED25519_BASEPOINT_Z  { 1, 0, 0, 0, 0 }
+    #endif /* !defined(ED25519_BASEPOINT_Z) */
+    #if !defined(ED25519_BASEPOINT_T)
+        #define ED25519_BASEPOINT_T  { 0x68ab3a5b7dda3, 0xeea2a5eadbb, 0x2af8df483c27e, 0x332b375274732, 0x67875f0fd78b7 }
+    #endif /* !defined(ED25519_BASEPOINT_T) */
 #else
     #error "Architecture not defined. Set exactly one of FE3C_32BIT or FE3C_64BIT"
 #endif /* FE3C_32BIT && FE3C_64BIT */

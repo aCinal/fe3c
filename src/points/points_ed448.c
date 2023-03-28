@@ -131,36 +131,39 @@ static void ed448_point_double(point_ed448 * r, const point_ed448 * p) {
 
     FE3C_SANITY_CHECK(ed448_is_on_curve(p), ED448_STR, ED448_TO_STR(p));
 
-    /* TODO: Reuse some old variables to reduce stack usage */
-    fe448 B, C, D, E, H, J;
+    /* For optimal stack and cache usage we reduce the number of variables
+     * allocated relative to the algorithm description in RFC 8032. For
+     * clarity, the comments include the names of variables as they appear
+     * in RFC 8032. */
+    fe448 C, J;
 
-    /* B := (X1+Y1)^2 */
-    fe448_add(B, p->X, p->Y);
-    fe448_square(B, B);
     /* C := X1^2 */
     fe448_square(C, p->X);
+    /* B := (X1+Y1)^2 */
+    fe448_add(r->X, p->X, p->Y);
+    fe448_square(r->X, r->X);
     /* D := Y1^2 */
-    fe448_square(D, p->Y);
-    /* E := C+D */
-    fe448_add(E, C, D);
-    fe448_weak_reduce(E, E);
+    fe448_square(r->Y, p->Y);
     /* H := Z1^2 */
-    fe448_square(H, p->Z);
+    fe448_square(J, p->Z);
+    /* E := C+D */
+    fe448_add(r->Z, C, r->Y);
+    fe448_weak_reduce(r->Z, r->Z);
     /* J := E-2*H */
-    fe448_add(J, H, H);
+    fe448_add(J, J, J);
     fe448_weak_reduce(J, J);
-    fe448_sub(J, E, J);
+    fe448_sub(J, r->Z, J);
 
     /* X3 := (B-E)*J */
-    fe448_sub(r->X, B, E);
+    fe448_sub(r->X, r->X, r->Z);
     fe448_mul(r->X, r->X, J);
 
     /* Y3 := E*(C-D) */
-    fe448_sub(r->Y, C, D);
-    fe448_mul(r->Y, E, r->Y);
+    fe448_sub(r->Y, C, r->Y);
+    fe448_mul(r->Y, r->Z, r->Y);
 
     /* Z3 := E*J */
-    fe448_mul(r->Z, E, J);
+    fe448_mul(r->Z, r->Z, J);
 }
 
 static inline int ed448_is_ok_order(const point_ed448 * p) {
@@ -256,7 +259,11 @@ static void ed448_points_add(point_ed448 * r, const point_ed448 * p, const point
     FE3C_SANITY_CHECK(ed448_is_on_curve(p), ED448_STR, ED448_TO_STR(p));
     FE3C_SANITY_CHECK(ed448_is_on_curve(q), ED448_STR, ED448_TO_STR(q));
 
-    fe448 A, B, C, D, E, F, G, H;
+    /* For optimal stack and cache usage we reduce the number of variables
+     * allocated relative to the algorithm description in RFC 8032. For
+     * clarity, the comments include the names of variables as they appear
+     * in RFC 8032. */
+    fe448 A, B, C, D, G;
 
     /* A := Z1*Z2 */
     fe448_mul(A, p->Z, q->Z);
@@ -266,28 +273,26 @@ static void ed448_points_add(point_ed448 * r, const point_ed448 * p, const point
     fe448_mul(C, p->X, q->X);
     /* D := Y1*Y2 */
     fe448_mul(D, p->Y, q->Y);
-    /* E := d*C*D */
-    fe448_mul(E, ed448_d, C);
-    fe448_mul(E, E, D);
-    /* F := B-E */
-    fe448_sub(F, B, E);
-    /* G := B+E */
-    fe448_add(G, B, E);
-
     /* H := (X1+Y1)*(X2+Y2) */
-    /* At this point we can safely use r->Z for temporary storage
-     * even if r is an alias for one of the inputs */
     fe448_add(r->Z, p->X, p->Y);
-    fe448_add(H, q->X, q->Y);
-    fe448_mul(H, r->Z, H);
+    fe448_add(r->X, q->X, q->Y);
+    fe448_mul(r->X, r->Z, r->X);
+
+    /* E := d*C*D */
+    fe448_mul(r->Z, ed448_d, C);
+    fe448_mul(r->Z, r->Z, D);
+    /* G := B+E */
+    fe448_add(G, B, r->Z);
+    /* F := B-E */
+    fe448_sub(r->Z, B, r->Z);
 
     /* X3 := A*F*(H-C-D) */
     /* Note that we use Karatsuba's trick to obtain
      * X1*Y1+X2*Y2 as H-C-D. */
-    fe448_sub(r->X, H, C);
+    fe448_sub(r->X, r->X, C);
     fe448_sub(r->X, r->X, D);
     fe448_mul(r->X, r->X, A);
-    fe448_mul(r->X, r->X, F);
+    fe448_mul(r->X, r->X, r->Z);
 
     /* Y3 := A*G*(D-C) */
     fe448_sub(r->Y, D, C);
@@ -295,7 +300,7 @@ static void ed448_points_add(point_ed448 * r, const point_ed448 * p, const point
     fe448_mul(r->Y, r->Y, G);
 
     /* Z3 := F*G */
-    fe448_mul(r->Z, F, G);
+    fe448_mul(r->Z, r->Z, G);
 }
 
 #if !FE3C_COMB_METHOD

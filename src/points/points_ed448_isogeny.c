@@ -187,53 +187,53 @@ static void ed448_point_double(point_ed448 * r, const point_ed448 * p, int set_e
 
     FE3C_SANITY_CHECK(ed448_is_on_curve(p), ED448_STR, ED448_TO_STR(p));
 
-    /* TODO: Reuse some old variables to reduce stack usage */
-    fe448 A, B, C, E, F, G, H;
+    /* For optimal stack and cache usage we reduce the number of variables
+     * allocated relative to the algorithm description in RFC 8032. For
+     * clarity, the comments include the names of variables as they appear
+     * in RFC 8032. */
+    fe448 G, H;
 
     /* A := X1^2 */
-    fe448_square(A, p->X);
+    fe448_square(G, p->X);
     /* B := Y1^2*/
-    fe448_square(B, p->Y);
-
-    /* C := 2*Z1^2 */
-    fe448_square(C, p->Z);
-    fe448_add(C, C, C);
+    fe448_square(r->T, p->Y);
 
     /* H := A+B */
-    fe448_add(H, A, B);
+    fe448_add(H, G, r->T);
+    /* G := A-B */
+    fe448_sub(G, G, r->T);
 
     /* E := H-(X1+Y1)^2 */
-    fe448_add(E, p->X, p->Y);
-    fe448_square(E, E);
-    fe448_sub(E, H, E);
+    fe448_add(r->T, p->X, p->Y);
+    fe448_square(r->T, r->T);
+    fe448_sub(r->T, H, r->T);
 
-    /* G := A-B */
-    fe448_sub(G, A, B);
-
+    /* C := 2*Z1^2 */
+    fe448_square(r->Z, p->Z);
+    fe448_add(r->Z, r->Z, r->Z);
     /* F := C+G */
-    fe448_add(F, C, G);
-
+    fe448_add(r->Z, r->Z, G);
 #if FE3C_32BIT
     /* Note that F is a result of addition of two variables
      * which themselves were produced by additions. This amounts
      * to four carries, which is the most we can handle in our 28-bit
      * representation. Do a weak reduction before proceeding */
-    fe448_weak_reduce(F, F);
+    fe448_weak_reduce(r->Z, r->Z);
 #endif /* FE3C_32BIT */
 
     /* X3 := E*F */
-    fe448_mul(r->X, E, F);
+    fe448_mul(r->X, r->T, r->Z);
     /* Y3 := G*H */
     fe448_mul(r->Y, G, H);
     /* Z3 := F*G */
-    fe448_mul(r->Z, F, G);
+    fe448_mul(r->Z, r->Z, G);
 
     /* When scheduled to be followed by another doubling we can skip setting the extended coordinate T
      * which is not needed for doubling */
     if (set_extended_coordinate) {
 
         /* T3 := E*H */
-        fe448_mul(r->T, E, H);
+        fe448_mul(r->T, r->T, H);
     }
 }
 
@@ -381,46 +381,49 @@ static void ed448_points_add(point_ed448 * r, const point_ed448 * p, const point
     FE3C_SANITY_CHECK(ed448_valid_extended_projective(p), ED448_STR, ED448_TO_STR(p));
     FE3C_SANITY_CHECK(ed448_valid_extended_projective(q), ED448_STR, ED448_TO_STR(q));
 
-    /* TODO: Reuse some old variables to reduce stack usage */
-    fe448 A, B, C, D, E, F, G, H;
+    /* For optimal stack and cache usage we reduce the number of variables
+     * allocated relative to the algorithm description in RFC 8032. For
+     * clarity, the comments include the names of variables as they appear
+     * in RFC 8032. */
+    fe448 A, B, E;
 
     /* A := (Y1-X1)*(Y2-X2) */
-    fe448_sub(E, p->Y, p->X);
-    fe448_sub(F, q->Y, q->X);
-    fe448_mul(A, E, F);
+    fe448_sub(A, p->Y, p->X);
+    fe448_sub(B, q->Y, q->X);
+    fe448_mul(A, A, B);
 
     /* B := (Y1+X1)*(Y2+X2) */
-    fe448_add(G, p->Y, p->X);
-    fe448_add(H, q->Y, q->X);
-    fe448_mul(B, G, H);
+    fe448_add(E, p->Y, p->X);
+    fe448_add(B, q->Y, q->X);
+    fe448_mul(B, E, B);
 
-    /* C := T1*2*d'*T2 */
-    fe448_mul(C, p->T, q->T);
-    fe448_mul(C, C, ed448twist_d);
-    fe448_add(C, C, C);
-    fe448_weak_reduce(C, C);
+    /* C := T1*2*d*T2 */
+    fe448_mul(r->T, p->T, q->T);
+    fe448_mul(r->T, r->T, ed448twist_d);
+    fe448_add(r->T, r->T, r->T);
+    fe448_weak_reduce(r->T, r->T);
 
     /* D := Z1*2*Z2 */
-    fe448_mul(D, p->Z, q->Z);
-    fe448_add(D, D, D);
+    fe448_mul(r->Z, p->Z, q->Z);
+    fe448_add(r->Z, r->Z, r->Z);
 
     /* E := B-A */
     fe448_sub(E, B, A);
     /* F := D-C */
-    fe448_sub(F, D, C);
+    fe448_sub(r->X, r->Z, r->T);
     /* G := D+C */
-    fe448_add(G, D, C);
+    fe448_add(r->Z, r->Z, r->T);
     /* H := B+A */
-    fe448_add(H, B, A);
+    fe448_add(r->T, B, A);
 
-    /* X3 := E*F */
-    fe448_mul(r->X, E, F);
     /* Y3 := G*H */
-    fe448_mul(r->Y, G, H);
+    fe448_mul(r->Y, r->Z, r->T);
     /* T3 := E*H */
-    fe448_mul(r->T, E, H);
+    fe448_mul(r->T, E, r->T);
     /* Z3 := F*G */
-    fe448_mul(r->Z, F, G);
+    fe448_mul(r->Z, r->X, r->Z);
+    /* X3 := E*F */
+    fe448_mul(r->X, E, r->X);
 }
 
 #if !FE3C_COMB_METHOD
