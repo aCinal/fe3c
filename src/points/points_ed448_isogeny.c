@@ -19,17 +19,10 @@
 
 /* Note that the below basepoint is the basepoint on the 4-isogenous curve: y^2 - x^2 = 1 + (d-1)x^2y^2 */
 static const point_ed448 ed448_basepoint = {
-#if FE3C_64BIT
-    .X = { 0x0, 0x0, 0x0, 0x80000000000000, 0xfffffffffffffe, 0xffffffffffffff, 0xffffffffffffff, 0x7fffffffffffff },
-    .Y = { 0x6079b4dfdd4a64, 0xc1e3ab470a1c8, 0x44d73f48e5199b, 0x50452714141818, 0x4c74c393d5242c, 0x24080526437050, 0xd48d06c13078ca, 0x8508de14f04286 },
-    .Z = { 1, 0, 0, 0, 0, 0, 0, 0 },
-    .T = { 0xe3c816dc198105, 0x62071833f4e093, 0x4dde98e3421403, 0xa319b57519c985, 0x794be956382384, 0xe1ddc2b86da60f, 0x50e23d5682a9ff, 0x6d3669e173c6a4 }
-#else
-    .X = { 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x8000000, 0xffffffe, 0xfffffff, 0xfffffff, 0xfffffff, 0xfffffff, 0xfffffff, 0xfffffff, 0x7ffffff },
-    .Y = { 0xfdd4a64, 0x6079b4d, 0x470a1c8, 0xc1e3ab, 0x8e5199b, 0x44d73f4, 0x4141818, 0x5045271, 0x3d5242c, 0x4c74c39, 0x6437050, 0x2408052, 0x13078ca, 0xd48d06c, 0x4f04286, 0x8508de1 },
-    .Z = { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-    .T = { 0xc198105, 0xe3c816d, 0x3f4e093, 0x6207183, 0x3421403, 0x4dde98e, 0x519c985, 0xa319b57, 0x6382384, 0x794be95, 0x86da60f, 0xe1ddc2b, 0x682a9ff, 0x50e23d5, 0x173c6a4, 0x6d3669e }
-#endif /* FE3C_64BIT */
+    .X = ED448_ISOGENY_BASEPOINT_X,
+    .Y = ED448_ISOGENY_BASEPOINT_Y,
+    .Z = ED448_ISOGENY_BASEPOINT_Z,
+    .T = ED448_ISOGENY_BASEPOINT_T
 };
 
 #if FE3C_ENABLE_SANITY_CHECKS

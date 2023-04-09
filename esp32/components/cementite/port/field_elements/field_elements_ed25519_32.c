@@ -96,64 +96,76 @@ int fe25519_equal(const fe25519 a, const fe25519 b) {
  * @param a Field element to check
  * @return 1 if a is in canonical form, 0 otherwise
  */
-static int fe25519_is_canonical(const fe25519 a) {
+static inline int fe25519_is_canonical(const fe25519 a) {
 
     /* Iterators over the limbs */
     const fe_limb_type * ai = (fe_limb_type *) a;
     const fe_limb_type * pi = (fe_limb_type *) fe25519_p;
-    /* Registers to store the values of limbs */
+    /* Registers to store the values of limbs, any borrow and an
+     * indicator whether or not the input is equal to the modulus
+     * (in which case it is also not canonical despite the borrow
+     * being zero). */
     u32 ax;
     u32 px;
     u32 borrow;
+    u32 notp;
 
-    /* Try subtracting p from a and check if borrow is set afterwards */
+    /* Try subtracting a from p and check if borrow is set afterwards */
     asm volatile(
         /* Initialize the borrow to zero */
         _ "movi.n %[borrow], 0"
+        /* Initialize the equality indicator */
+        _ "movi.n %[notp],   0"
 
         /* Set up a hardware loop */
         _ "movi.n %[ax],     %[limb_count]"
-        _ "loop   %[ax],     is_canonical.endloop"
-    _ "is_canonical.startloop:"
-        /* Load the operands' limbs. By design, loading with or without
-         * sign extension should not make a difference.
-         * TODO: Check if it has performance implications.*/
-        _ "l16si  %[ax],     %[ai], 0"
-        _ "l16si  %[px],     %[pi], 0"
+        _ "loop   %[ax],     is_canonical%=.endloop"
+    _ "is_canonical%=.startloop:"
+        /* Load the operands' limbs */
+        _ "l16ui  %[ax],     %[ai],     0"
+        _ "l16ui  %[px],     %[pi],     0"
 
         /* Subtract the low halves and the borrow (write the result to
          * ax as we discard it anyways since we only care about the borrow) */
-        _ "sub    %[ax],     %[px], %[ax]"
-        _ "sub    %[ax],     %[ax], %[borrow]"
+        _ "sub    %[ax],     %[px],     %[ax]"
+        /* Update the equality indicator */
+        _ "movnez %[notp],   %[ax],     %[ax]"
+        _ "sub    %[ax],     %[ax],     %[borrow]"
         /* Extract the sign bit to identify the borrow */
-        _ "extui  %[borrow], %[ax], 31, 1"
+        _ "extui  %[borrow], %[ax],     31, 1"
 
         /* Repeat for the high halves */
-        _ "l16si  %[ax],     %[ai], 2"
-        _ "l16si  %[px],     %[pi], 2"
-        _ "sub    %[ax],     %[px], %[ax]"
-        _ "sub    %[ax],     %[ax], %[borrow]"
-        _ "extui  %[borrow], %[ax], 31, 1"
+        _ "l16ui  %[ax],     %[ai],     2"
+        _ "l16ui  %[px],     %[pi],     2"
+        _ "sub    %[ax],     %[px],     %[ax]"
+        _ "movnez %[notp],   %[ax],     %[ax]"
+        _ "sub    %[ax],     %[ax],     %[borrow]"
+        _ "extui  %[borrow], %[ax],     31, 1"
 
         /* Advance the iterators */
-        _ "addi.n %[ai],     %[ai], 4"
-        _ "addi.n %[pi],     %[pi], 4"
+        _ "addi.n %[ai],     %[ai],     4"
+        _ "addi.n %[pi],     %[pi],     4"
 
-    _ "is_canonical.endloop:"
+    _ "is_canonical%=.endloop:"
 
-        : [ai] "+r" (ai),
-          [pi] "+r" (pi),
-          [ax] "=r" (ax),
-          [px] "=r" (px),
-          [borrow] "=r" (borrow)
-        : [limb_count] "i" (ED25519_FE_LIMB_COUNT)
+        /* Normalize the equality indicator */
+        _ "movi.n %[ax],     1"
+        _ "movnez %[notp],   %[ax],     %[notp]"
+
+        : [ai]         "+r" (ai),
+          [pi]         "+r" (pi),
+          [ax]         "=r" (ax),
+          [px]         "=r" (px),
+          [borrow]     "=r" (borrow),
+          [notp]       "=r" (notp)
+        : [limb_count] "i"  (ED25519_FE_LIMB_COUNT)
         : "memory"
     );
 
-    /* If the element is exactly equal to the field characteristic,
-     * there will be no borrow, but it's still not canonical */
-    borrow |= fe25519_equal(a, fe25519_p);
-    return 1 - borrow;
+    /* A field element is canonical if and only if there was
+     * no borrow at the end of the loop, i.e. a <= p, and
+     * notp is set, i.e. a != p */
+    return ~borrow & notp;
 }
 
 /**
@@ -257,7 +269,7 @@ void fe25519_weak_reduce(fe25519 r, const fe25519 a) {
     );
 }
 
-static inline void fe25519_sub_internal(fe25519 r, const fe25519 a, const fe25519 b) {
+static inline void fe25519_sub_internal(fe25519 r, const fe25519 a, const fe25519 b, int mock) {
 
     /* This is an internal function that assumes a >= b and the subtraction
      * can be done directly. */
@@ -276,44 +288,49 @@ static inline void fe25519_sub_internal(fe25519 r, const fe25519 a, const fe2551
         _ "movi.n %[ax],     %[limb_count]"
         _ "loop   %[ax],     sub_internal%=.endloop"
     _ "sub_internal%=.startloop:"
-        /* Load the operands' limbs. By design, loading with or without
-         * sign extension should not make a difference. */
-        _ "l16ui  %[ax],     %[ai], 0"
-        _ "l16ui  %[bx],     %[bi], 0"
+        /* Load the operands' limbs */
+        _ "l16ui  %[ax],     %[ai],     0"
+        _ "l16ui  %[bx],     %[bi],     0"
+
+        /* If mock=1, set the subtrahend to zero (note that borrow
+         * will remain zero for the whole loop in that case) */
+        _ "movnez %[bx],     %[borrow], %[mock]"
 
         /* Subtract the low halves and the borrow */
-        _ "sub    %[rx],     %[ax], %[bx]"
-        _ "sub    %[rx],     %[rx], %[borrow]"
+        _ "sub    %[rx],     %[ax],     %[bx]"
+        _ "sub    %[rx],     %[rx],     %[borrow]"
         /* Extract the sign bit to identify the borrow */
-        _ "extui  %[borrow], %[rx], 31, 1"
+        _ "extui  %[borrow], %[rx],     31, 1"
         /* Write the low 15 bits of the result back to memory */
-        _ "extui  %[rx],     %[rx], 0, 15"
-        _ "s16i   %[rx],     %[ri], 0"
+        _ "extui  %[rx],     %[rx],     0, 15"
+        _ "s16i   %[rx],     %[ri],     0"
 
         /* Repeat for the high halves */
-        _ "l16si  %[ax],     %[ai], 2"
-        _ "l16si  %[bx],     %[bi], 2"
-        _ "sub    %[rx],     %[ax], %[bx]"
-        _ "sub    %[rx],     %[rx], %[borrow]"
-        _ "extui  %[borrow], %[rx], 31, 1"
-        _ "extui  %[rx],     %[rx], 0, 15"
-        _ "s16i   %[rx],     %[ri], 2"
+        _ "l16ui  %[ax],     %[ai],     2"
+        _ "l16ui  %[bx],     %[bi],     2"
+        _ "movnez %[bx],     %[borrow], %[mock]"
+        _ "sub    %[rx],     %[ax],     %[bx]"
+        _ "sub    %[rx],     %[rx],     %[borrow]"
+        _ "extui  %[borrow], %[rx],     31, 1"
+        _ "extui  %[rx],     %[rx],     0, 15"
+        _ "s16i   %[rx],     %[ri],     2"
 
         /* Advance the iterators */
-        _ "addi.n %[ai],     %[ai], 4"
-        _ "addi.n %[bi],     %[bi], 4"
-        _ "addi.n %[ri],     %[ri], 4"
+        _ "addi.n %[ai],     %[ai],     4"
+        _ "addi.n %[bi],     %[bi],     4"
+        _ "addi.n %[ri],     %[ri],     4"
 
     _ "sub_internal%=.endloop:"
 
-        : [ai] "+r" (a),
-          [bi] "+r" (b),
-          [ri] "+r" (r),
-          [ax] "=r" (ax),
-          [bx] "=r" (bx),
-          [rx] "=r" (rx),
-          [borrow] "=r" (borrow)
-        : [limb_count] "i" (ED25519_FE_LIMB_COUNT)
+        : [ai]         "+&r" (a),
+          [bi]         "+&r" (b),
+          [ri]         "+&r" (r),
+          [ax]         "=&r" (ax),
+          [bx]         "=&r" (bx),
+          [rx]         "=&r" (rx),
+          [borrow]     "=&r" (borrow)
+        : [limb_count] "i"   (ED25519_FE_LIMB_COUNT),
+          [mock]       "r"   (mock)
         : "memory"
     );
 }
@@ -331,9 +348,7 @@ void fe25519_strong_reduce(fe25519 r, const fe25519 a) {
     /* Check canonicity of a */
     int canonical = fe25519_is_canonical(a);
     /* Compute a-p and conditionally use it as a result if a is larger than p */
-    fe25519 t;
-    fe25519_sub_internal(t, a, fe25519_p);
-    fe25519_conditional_move(r, t, 1 - canonical);
+    fe25519_sub_internal(r, a, fe25519_p, canonical);
 }
 
 /**
@@ -344,7 +359,7 @@ void fe25519_strong_reduce(fe25519 r, const fe25519 a) {
 void fe25519_neg(fe25519 r, const fe25519 a) {
 
     /* TODO: Assert that the input is weakly reduced, i.e. smaller than 2p */
-    fe25519_sub_internal(r, fe25519_2p, a);
+    fe25519_sub_internal(r, fe25519_2p, a, 0);
 }
 
 /**
@@ -373,11 +388,9 @@ void fe25519_add(fe25519 r, const fe25519 a, const fe25519 b) {
         _ "movi.n %[ax],    %[limb_count]"
         _ "loop   %[ax],    add.endloop"
     _ "add.startloop:"
-        /* Load the operands' limbs. By design, loading with or without
-         * sign extension should not make a difference.
-         * TODO: Check if it has performance implications.*/
-        _ "l16si  %[ax],    %[ai], 0"
-        _ "l16si  %[bx],    %[bi], 0"
+        /* Load the operands' limbs */
+        _ "l16ui  %[ax],    %[ai], 0"
+        _ "l16ui  %[bx],    %[bi], 0"
 
         /* Add the low halves */
         _ "add.n  %[rx],    %[ax], %[bx]"
@@ -390,8 +403,8 @@ void fe25519_add(fe25519 r, const fe25519 a, const fe25519 b) {
         _ "srli   %[carry], %[rx], 15"
 
         /* Repeat for the high halves */
-        _ "l16si  %[ax],    %[ai], 2"
-        _ "l16si  %[bx],    %[bi], 2"
+        _ "l16ui  %[ax],    %[ai], 2"
+        _ "l16ui  %[bx],    %[bi], 2"
         _ "add.n  %[rx],    %[ax], %[bx]"
         _ "add.n  %[rx],    %[rx], %[carry]"
         _ "extui  %[carry], %[rx], 0, 15"
@@ -427,68 +440,8 @@ void fe25519_sub(fe25519 r, const fe25519 a, const fe25519 b) {
     /* Negate b and then add that to a */
     fe25519 _b;
     /* TODO: Assert that b is weakly reduced, i.e. smaller than 2p */
-    fe25519_sub_internal(_b, fe25519_2p, b);
-
-    /* Iterators over the limbs */
-    const fe_limb_type * ai = a;
-    const fe_limb_type * bi = _b;
-    fe_limb_type * ri = r;
-
-    /* Registers to store the values of limbs */
-    u32 ax;
-    u32 bx;
-    u32 rx;
-    u32 carry;
-
-    asm volatile(
-        /* Initialize the carry to zero */
-        _ "movi.n %[carry], 0"
-
-        /* Set up a hardware loop */
-        _ "movi.n %[ax],    %[limb_count]"
-        _ "loop   %[ax],    sub.endloop"
-    _ "sub.startloop:"
-        /* Load the operands' limbs. By design, loading with or without
-         * sign extension should not make a difference.
-         * TODO: Check if it has performance implications.*/
-        _ "l16si %[ax],     %[ai], 0"
-        _ "l16si %[bx],     %[bi], 0"
-
-        /* Add the low halves */
-        _ "add.n %[rx],     %[ax], %[bx]"
-        /* Add the carry */
-        _ "add.n %[rx],     %[rx], %[carry]"
-        /* ...write back to memory the low 15 bits of the result... */
-        _ "extui %[carry],  %[rx], 0, 15"
-        _ "s16i  %[carry],  %[ri], 0"
-        /* ...and put any overflow back in carry */
-        _ "srli  %[carry],  %[rx], 15"
-
-        /* Repeat for the high halves */
-        _ "l16si %[ax],     %[ai], 2"
-        _ "l16si %[bx],     %[bi], 2"
-        _ "add.n %[rx],     %[ax], %[bx]"
-        _ "add.n %[rx],     %[rx], %[carry]"
-        _ "extui %[carry],  %[rx], 0, 15"
-        _ "s16i  %[carry],  %[ri], 2"
-        _ "srli  %[carry],  %[rx], 15"
-
-        /* Advance the iterators */
-        _ "addi.n %[ai],    %[ai], 4"
-        _ "addi.n %[bi],    %[bi], 4"
-        _ "addi.n %[ri],    %[ri], 4"
-    _ "sub.endloop:"
-
-        : [ai] "+r" (ai),
-          [bi] "+r" (bi),
-          [ri] "+r" (ri),
-          [ax] "=r" (ax),
-          [bx] "=r" (bx),
-          [rx] "=r" (rx),
-          [carry] "=r" (carry)
-        : [limb_count] "i" (ED25519_FE_LIMB_COUNT)
-        : "memory"
-    );
+    fe25519_sub_internal(_b, fe25519_2p, b, 0);
+    fe25519_add(r, a, _b);
 }
 
 /**
@@ -608,12 +561,6 @@ void fe25519_mul(fe25519 r, const fe25519 a, const fe25519 b) {
          * final sum of a given column - low 15 bits of this sum will be committed
          * to memory and the rest will be put back in the accumulator as the carry.
          */
-
-        /* To limit the number of memory accesses, we shall commit two limbs of the
-         * result to memory at a time. To enable this we shall store the 15-bit
-         * result of a column (see above) in rxeven or rxodd. Once both contain valid
-         * results (rxeven contains the even limb and rxodd - the odd limb), we
-         * shall write both to memory in one go. */
 
         /* Note the indentation style when using the MAC16 instruction set:
          *
@@ -1424,21 +1371,21 @@ void fe25519_encode(u8 * buffer, fe25519 a) {
 
     /* In the first word of the output buffer we shall fit the first
      * two 15-bit limbs as well as two bits of the third limb */
-    words[0] = (limb15[ 0] >>  0) | (limb15[ 1] << 15) | ( (limb15[ 2] &    0x3) << 30);
+    words[0] = (limb15[ 0] >>  0) | (limb15[ 1] << 15) | ( (limb15[ 2] &    0x3) << 30 );
     /* 13 bits of limb15[2], 15 bits of limb15[3], 4 bits of limb15[4] */
-    words[1] = (limb15[ 2] >>  2) | (limb15[ 3] << 13) | ( (limb15[ 4] &    0xF) << 28);
+    words[1] = (limb15[ 2] >>  2) | (limb15[ 3] << 13) | ( (limb15[ 4] &    0xF) << 28 );
     /* 11 bits of limb15[4], 15 bits of limb15[5], 6 bits of limb15[6] */
-    words[2] = (limb15[ 4] >>  4) | (limb15[ 5] << 11) | ( (limb15[ 6] &   0x3F) << 26);
+    words[2] = (limb15[ 4] >>  4) | (limb15[ 5] << 11) | ( (limb15[ 6] &   0x3F) << 26 );
     /* 9 bits of limb15[6], 15 bits of limb15[7], 8 bits of limb15[8] */
-    words[3] = (limb15[ 6] >>  6) | (limb15[ 7] <<  9) | ( (limb15[ 8] &   0xFF) << 24);
+    words[3] = (limb15[ 6] >>  6) | (limb15[ 7] <<  9) | ( (limb15[ 8] &   0xFF) << 24 );
     /* 7 bits of limb15[8], 15 bits of limb15[9], 10 bits of limb15[10] */
-    words[4] = (limb15[ 8] >>  8) | (limb15[ 9] <<  7) | ( (limb15[10] &  0x3FF) << 22);
+    words[4] = (limb15[ 8] >>  8) | (limb15[ 9] <<  7) | ( (limb15[10] &  0x3FF) << 22 );
     /* 5 bits of limb15[10], 15 bits of limb15[11], 12 bits of limb15[12] */
-    words[5] = (limb15[10] >> 10) | (limb15[11] <<  5) | ( (limb15[12] &  0xFFF) << 20);
+    words[5] = (limb15[10] >> 10) | (limb15[11] <<  5) | ( (limb15[12] &  0xFFF) << 20 );
     /* 3 bits of limb15[12], 15 bits of limb15[13], 14 bits of limb15[14] */
-    words[6] = (limb15[12] >> 12) | (limb15[13] <<  3) | ( (limb15[14] & 0x3FFF) << 18);
+    words[6] = (limb15[12] >> 12) | (limb15[13] <<  3) | ( (limb15[14] & 0x3FFF) << 18 );
     /* 1 bit of limb15[14], 15 bits of limb15[15], 15 bits of limb15[16] */
-    words[7] = (limb15[14] >> 14) | (limb15[15] <<  1) | ( (limb15[16] & 0xFFFF) << 16);
+    words[7] = (limb15[14] >> 14) | (limb15[15] <<  1) | ( (limb15[16] & 0xFFFF) << 16 );
 }
 
 /**
@@ -1460,9 +1407,9 @@ int fe25519_decode(fe25519 r, const u8 * buffer) {
      * for code clarity (at the cost of worse cache usage, though) */
 
     /* Read in 15 bits from the first word */
-    limb15[ 0] = words[0];
+    limb15[ 0] = (words[0] >>  0);
     /* Read in the next 15 bits from the same word */
-    limb15[ 1] = words[0] >> 15;
+    limb15[ 1] = (words[0] >> 15);
     /* Read two most significant bits from the first word and 13 bits from the next one */
     limb15[ 2] = (words[0] >> 30) | (words[1] <<  2);
     /* Words don't come easy */

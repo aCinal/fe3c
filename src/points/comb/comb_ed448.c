@@ -65,38 +65,42 @@ void ed448_comb_read_precomp(ed448_precomp * r, u8 j, i8 ijt) {
 
 void ed448_comb_add_precomp(point_ed448 * r, const point_ed448 * p, const ed448_precomp * q) {
 
-    /* TODO: Reuse some old variables to reduce stack usage */
-    fe448 A, B, C, D, E, F, G, H;
+    /* For optimal stack and cache usage we reduce the number of variables
+     * allocated relative to the algorithm description in RFC 8032. For
+     * clarity, the comments include the names of variables as they appear
+     * in RFC 8032. */
+
+    fe448 A, F;
 
     /* A := (Y1-X1)*(Y2-X2) */
-    fe448_sub(E, p->Y, p->X);
-    fe448_mul(A, E, q->YminusX);
+    fe448_sub(A, p->Y, p->X);
+    fe448_mul(A, A, q->YminusX);
 
     /* B := (Y1+X1)*(Y2+X2) */
-    fe448_add(G, p->Y, p->X);
-    fe448_mul(B, G, q->YplusX);
+    fe448_add(r->X, p->Y, p->X);
+    fe448_mul(r->X, r->X, q->YplusX);
 
     /* C := T1*2*d*T2 */
-    fe448_mul(C, p->T, q->T2d);
+    fe448_mul(r->T, p->T, q->T2d);
 
     /* D := Z1*2*Z2, but we know Z2=1 for precomputed points */
-    fe448_add(D, p->Z, p->Z);
+    fe448_add(r->Z, p->Z, p->Z);
 
-    /* E := B-A */
-    fe448_sub(E, B, A);
-    /* F := D-C */
-    fe448_sub(F, D, C);
-    /* G := D+C */
-    fe448_add(G, D, C);
     /* H := B+A */
-    fe448_add(H, B, A);
+    fe448_add(r->Y, r->X, A);
+    /* E := B-A */
+    fe448_sub(r->X, r->X, A);
+    /* F := D-C */
+    fe448_sub(F, r->Z, r->T);
+    /* G := D+C */
+    fe448_add(r->Z, r->Z, r->T);
 
-    /* X3 := E*F */
-    fe448_mul(r->X, E, F);
-    /* Y3 := G*H */
-    fe448_mul(r->Y, G, H);
-    /* Z3 := F*G */
-    fe448_mul(r->Z, F, G);
     /* T3 := E*H */
-    fe448_mul(r->T, E, H);
+    fe448_mul(r->T, r->X, r->Y);
+    /* X3 := E*F */
+    fe448_mul(r->X, r->X, F);
+    /* Y3 := G*H */
+    fe448_mul(r->Y, r->Z, r->Y);
+    /* Z3 := F*G */
+    fe448_mul(r->Z, F, r->Z);
 }

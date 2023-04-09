@@ -61,38 +61,42 @@ void ed25519_comb_read_precomp(ed25519_precomp * r, u8 j, i8 ijt) {
 
 void ed25519_comb_add_precomp(point_ed25519 * r, const point_ed25519 * p, const ed25519_precomp * q) {
 
-    /* TODO: Reuse some old variables to reduce stack usage */
-    fe25519 A, B, C, D, E, F, G, H;
+    /* For optimal stack and cache usage we reduce the number of variables
+     * allocated relative to the algorithm description in RFC 8032. For
+     * clarity, the comments include the names of variables as they appear
+     * in RFC 8032. */
+
+    fe25519 A, F;
 
     /* A := (Y1-X1)*(Y2-X2) */
-    fe25519_sub(E, p->Y, p->X);
-    fe25519_mul(A, E, q->YminusX);
+    fe25519_sub(A, p->Y, p->X);
+    fe25519_mul(A, A, q->YminusX);
 
     /* B := (Y1+X1)*(Y2+X2) */
-    fe25519_add(G, p->Y, p->X);
-    fe25519_mul(B, G, q->YplusX);
+    fe25519_add(r->X, p->Y, p->X);
+    fe25519_mul(r->X, r->X, q->YplusX);
 
     /* C := T1*2*d*T2 */
-    fe25519_mul(C, p->T, q->T2d);
+    fe25519_mul(r->T, p->T, q->T2d);
 
     /* D := Z1*2*Z2, but we know Z2=1 for precomputed points */
-    fe25519_add(D, p->Z, p->Z);
+    fe25519_add(r->Z, p->Z, p->Z);
 
-    /* E := B-A */
-    fe25519_sub(E, B, A);
-    /* F := D-C */
-    fe25519_sub(F, D, C);
-    /* G := D+C */
-    fe25519_add(G, D, C);
     /* H := B+A */
-    fe25519_add(H, B, A);
+    fe25519_add(r->Y, r->X, A);
+    /* E := B-A */
+    fe25519_sub(r->X, r->X, A);
+    /* F := D-C */
+    fe25519_sub(F, r->Z, r->T);
+    /* G := D+C */
+    fe25519_add(r->Z, r->Z, r->T);
 
-    /* X3 := E*F */
-    fe25519_mul(r->X, E, F);
-    /* Y3 := G*H */
-    fe25519_mul(r->Y, G, H);
-    /* Z3 := F*G */
-    fe25519_mul(r->Z, F, G);
     /* T3 := E*H */
-    fe25519_mul(r->T, E, H);
+    fe25519_mul(r->T, r->X, r->Y);
+    /* X3 := E*F */
+    fe25519_mul(r->X, r->X, F);
+    /* Y3 := G*H */
+    fe25519_mul(r->Y, r->Z, r->Y);
+    /* Z3 := F*G */
+    fe25519_mul(r->Z, F, r->Z);
 }

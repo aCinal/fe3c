@@ -36,7 +36,7 @@ if (CONFIG_FE3C_SUPPORT_CURVE_ED448)
         "${FE3C_UT_COMMON_SOURCE_DIR}/hash_functions/Test_hash_function_shake256.cpp"
         "${FE3C_UT_COMMON_SOURCE_DIR}/points/Test_points_ed448${ed448_isogeny_tag}.cpp"
         "${FE3C_UT_COMMON_SOURCE_DIR}/scalars/Test_scalars_ed448.cpp"
-        "${FE3C_UT_COMMON_SOURCE_DIR}/field_elements/Test_field_elements_ed448_32.cpp"
+        "${FE3C_UT_PORT_SOURCE_DIR}/field_elements/Test_field_elements_ed448_32.cpp"
     )
 endif()
 

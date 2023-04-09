@@ -130,6 +130,7 @@ void hash_sha512(u8 * output, const struct iovec * iov, int iovcnt) {
     /* Zeroize the scratchpad */
     purge_secrets(message_schedule, sizeof(message_schedule));
     purge_secrets(working_variables, sizeof(working_variables));
+    purge_secrets(block_buffer, sizeof(block_buffer));
 }
 
 static inline void sha512_compress(u64 * state, const u8 * input_block, u64 * schedule, sha512_working_variables * work) {

@@ -593,7 +593,7 @@ void fe448_mul(fe448 r, const fe448 a, const fe448 b) {
      *
      *   m = (x+z) = (m7, m6, m5, m4, m3, m2, m1, m0) and k = (u+v) = (k7, k6, k5, k4, k3, k2, k1, k0)
      *
-     * where mi, ki are all 56-digits for i=0,1,2,3,4,5,6,7. We shall compute simple products and add
+     * where mi, ki are all 28-bit digits for i=0,1,2,3,4,5,6,7. We shall compute simple products and add
      * them together column by column:
      *
      *                                         m7   m6   m5   m4   m3   m2   m1   m0

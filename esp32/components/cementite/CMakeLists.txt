@@ -76,15 +76,31 @@ if (CONFIG_FE3C_SUPPORT_CURVE_ED448)
     list(APPEND FE3C_SOURCES "${FE3C_SRC_DIR}/curves/curve_ed448.c")
     list(APPEND FE3C_SOURCES "${FE3C_SRC_DIR}/hash_functions/hash_function_shake256.c")
     list(APPEND FE3C_SOURCES "${FE3C_SRC_DIR}/scalars/scalars_ed448_32.c")
-    list(APPEND FE3C_SOURCES "${FE3C_SRC_DIR}/field_elements/field_elements_ed448_32.c")
     list(APPEND FE3C_SOURCES "${FE3C_SRC_DIR}/points/points_ed448${ed448_isogeny_tag}.c")
+    if (CONFIG_FE3C_PORT_OVERRIDES)
+        list(APPEND FE3C_SOURCES "${FE3C_PORT_DIR}/field_elements/field_elements_ed448_32.c")
+    else()
+        list(APPEND FE3C_SOURCES "${FE3C_SRC_DIR}/field_elements/field_elements_ed448_32.c")
+    endif()
+
 
     if (CONFIG_FE3C_COMB_METHOD)
         list(APPEND FE3C_SOURCES "${FE3C_SRC_DIR}/points/comb/comb_ed448${ed448_small_precomp_tag}.c")
-        list(
-            APPEND FE3C_SOURCES
-            "${FE3C_SRC_DIR}/points/comb/precomputation/precomputation_ed448${ed448_isogeny_tag}${ed448_small_precomp_tag}_32.c"
-        )
+
+
+        if (CONFIG_FE3C_PORT_OVERRIDES)
+            list(
+                APPEND FE3C_SOURCES
+                "${FE3C_PORT_DIR}/points/comb/precomputation/precomputation_ed448${ed448_isogeny_tag}${ed448_small_precomp_tag}_32.c"
+            )
+        else()
+            list(
+                APPEND FE3C_SOURCES
+                "${FE3C_SRC_DIR}/points/comb/precomputation/precomputation_ed448${ed448_isogeny_tag}${ed448_small_precomp_tag}_32.c"
+            )
+        endif()
+
+
     endif()
 
     list(APPEND FE3C_DEFINES "FE3C_SUPPORT_CURVE_ED448")

@@ -17,20 +17,9 @@
     FE448_TO_STR((p)->X), FE448_TO_STR((p)->Y), FE448_TO_STR((p)->Z)
 
 static const point_ed448 ed448_basepoint = {
-#if FE3C_64BIT
-    .X = { 0x26a82bc70cc05e, 0x80e18b00938e26, 0xf72ab66511433b, 0xa3d3a46412ae1a, 0xf1767ea6de324, 0x36da9e14657047, 0xed221d15a622bf, 0x4f1970c66bed0d },
-    .Y = { 0x8795bf230fa14, 0x132c4ed7c8ad98, 0x1ce67c39c4fdbd, 0x5a0c2d73ad3ff, 0xa3984087789c1e, 0xc7624bea73736c, 0x248876203756c9, 0x693f46716eb6bc },
-#else
-    .X = {
-        0x70cc05e, 0x26a82bc, 0x938e26, 0x80e18b0, 0x511433b, 0xf72ab66, 0x412ae1a, 0xa3d3a46,
-        0xa6de324, 0xf1767e, 0x4657047, 0x36da9e1, 0x5a622bf, 0xed221d1, 0x66bed0d, 0x4f1970c
-    },
-    .Y = {
-        0x230fa14, 0x8795bf, 0x7c8ad98, 0x132c4ed, 0x9c4fdbd, 0x1ce67c3, 0x73ad3ff, 0x5a0c2d,
-        0x7789c1e, 0xa398408, 0xa73736c, 0xc7624be, 0x3756c9, 0x2488762, 0x16eb6bc, 0x693f467
-    },
-#endif /* FE3C_64BIT */
-    .Z = { 1 }
+    .X = ED448_BASEPOINT_X,
+    .Y = ED448_BASEPOINT_Y,
+    .Z = ED448_BASEPOINT_Z
 };
 
 #if FE3C_ENABLE_SANITY_CHECKS
