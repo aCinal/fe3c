@@ -1,9 +1,6 @@
 #include <hash_functions/hash_functions.h>
 #include <hash_functions/hash_function_sha512.h>
 
-/* TODO: Provide an optimized implementation for 32-bit targets (and even more so
- * for targets with hardware support for SHA, e.g. ESP32) */
-
 static inline void sha512_compress(u64 * state, const u8 * input_block, u64 * schedule, sha512_working_variables * work);
 static inline void sha512_prepare_message_schedule(u64 * schedule, const u8 * input);
 static inline void store_64(u8 * dst, const u64 * src, size_t wordcount);

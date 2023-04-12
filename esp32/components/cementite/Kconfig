@@ -62,6 +62,14 @@ menu "cementite (fe3c)"
             may decrease performance, increase binary size as well as create side-channel
             vulnerabilities.
 
+    config FE3C_USE_SHA512_HARDWARE
+        bool "Use SHA512 hardware acceleration when possible"
+        depends on FE3C_PORT_OVERRIDES && FE3C_SUPPORT_CURVE_ED25519
+        default n
+        help
+            Use SHA512 hardware acceleration when possible. This will significantly
+            reduce stack usage and increase performance for large messages.
+
     config FE3C_ENABLE_SANITY_CHECKS
         bool "Enable sanity checks"
         default n
