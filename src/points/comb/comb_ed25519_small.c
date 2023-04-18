@@ -56,3 +56,48 @@ void ed25519_comb_read_precomp(ed25519_precomp * r, u8 j, i8 ijt) {
     /* Set the extended T coordinate to the correct value */
     fe25519_mul(r->T, r->X, r->Y);
 }
+
+void ed25519_comb_add_precomp(point_ed25519 * r, const point_ed25519 * p, const ed25519_precomp * q) {
+
+    /* For optimal stack and cache usage we reduce the number of variables
+     * allocated relative to the algorithm description in RFC 8032. For
+     * clarity, the comments include the names of variables as they appear
+     * in RFC 8032. */
+    fe25519 A, B, E;
+
+    /* A := (Y1-X1)*(Y2-X2) */
+    fe25519_sub(A, p->Y, p->X);
+    fe25519_sub(B, q->Y, q->X);
+    fe25519_mul(A, A, B);
+
+    /* B := (Y1+X1)*(Y2+X2) */
+    fe25519_add(E, p->Y, p->X);
+    fe25519_add(B, q->Y, q->X);
+    fe25519_mul(B, E, B);
+
+    /* C := T1*2*d*T2 */
+    fe25519_mul(r->T, p->T, q->T);
+    fe25519_mul(r->T, r->T, ed25519_d);
+    fe25519_add(r->T, r->T, r->T);
+
+    /* D := Z1*2*Z2, but we know that Z2=1 */
+    fe25519_add(r->Z, p->Z, p->Z);
+
+    /* E := B-A */
+    fe25519_sub(E, B, A);
+    /* F := D-C */
+    fe25519_sub(r->X, r->Z, r->T);
+    /* G := D+C */
+    fe25519_add(r->Z, r->Z, r->T);
+    /* H := B+A */
+    fe25519_add(r->T, B, A);
+
+    /* Y3 := G*H */
+    fe25519_mul(r->Y, r->Z, r->T);
+    /* T3 := E*H */
+    fe25519_mul(r->T, E, r->T);
+    /* Z3 := F*G */
+    fe25519_mul(r->Z, r->X, r->Z);
+    /* X3 := E*F */
+    fe25519_mul(r->X, E, r->X);
+}

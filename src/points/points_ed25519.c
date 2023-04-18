@@ -370,10 +370,9 @@ static void ed25519_multiply_basepoint(point * rgen, const u8 * s) {
 #if !FE3C_COMB_METHOD
     ed25519_scalar_multiply(r, &ed25519_basepoint, s);
 #else
-    /* Implement the improved comb method from "Improved Fixed-base Comb Method for Fast
-     * Scalar Multiplication" by Mohamed et. al. Start by recoding the scalar into an array
-     * of a columns S[d] each being an integer represented in non-adjacent form (NAF) of length w
-     * (width-w NAF), i.e. let:
+    /* Implement the comb method with signed digit scalar representation. Start by recoding the
+     * scalar into an array of a columns S[d] each being an integer in signed digit representation
+     * of length w (width-w SD), i.e. let:
      *
      *                                                  a-1
      *                                                  ___
@@ -395,7 +394,7 @@ static void ed25519_multiply_basepoint(point * rgen, const u8 * s) {
      *  sP = /__ S[d] 2   P = /__ /__ S[jb + t] 2          P = /__ 2   /__ S[jb + t] 2    P
      *       d=0              j=0 t=0                          j=0     t=0
      *
-     * where S[jb + t] is width-w NAF representation (note that iterating over a columns is the same
+     * where S[jb + t] is width-w SD representation (note that iterating over a columns is the same
      * as iterating over v vertical subblocks and within each subblock iterating over the b columns).
      *
      * We have precomputed the values:
@@ -418,16 +417,16 @@ static void ed25519_multiply_basepoint(point * rgen, const u8 * s) {
      * Note that the element for S[jb + t] = 0 is the group identity which we do not bother storing
      * in the precomputation table and so we offset the table by one (note that for Edwards curves
      * we are protected against any side-channel attacks here since the formula for adding the identity
-     * is the same as for adding any other point). Also note that G[j][i] = -G[j][-i] (since we use NAF
+     * is the same as for adding any other point). Also note that G[j][i] = -G[j][-i] (since we use SD
      * encoding) and since negating elliptic curve points is almost free, we can store only the points
      * corresponding to positive indices S[jb + t].
      */
 
-    /* Use w = 4 (width-4 NAF) and v = 32. For scalars of length 256 (actually less than that, but
-     * a power of two is easier to work with plus with NAF we may get an additional 4-bit digit) we
-     * get a = 64 and b = 2. */
-    i8 naf[64];
-    ed25519_comb_recode_scalar_into_4naf(naf, s);
+    /* Use w = 4 (width-4 SD) and v = 32. For scalars of length 256 (actually less than that, but
+     * a power of two is easier to work with plus with signed digits we may get an additional 4-bit
+     * digit) we get a = 64 and b = 2. */
+    i8 recoding[64];
+    ed25519_comb_recode_scalar_into_width4_sd(recoding, s);
 
     ed25519_identity(r);
     ed25519_precomp p;
@@ -441,9 +440,9 @@ static void ed25519_multiply_basepoint(point * rgen, const u8 * s) {
      * entries of the recoding. */
     for (int i = 1; i < 64; i += 2) {
 
-        /* We let the loop index run twice as fast and skip every other entry of naf,
+        /* We let the loop index run twice as fast and skip every other entry of recoding,
          * but correct for it in the j index (j = i / 2) */
-        ed25519_comb_read_precomp(&p, i >> 1, naf[i]);
+        ed25519_comb_read_precomp(&p, i >> 1, recoding[i]);
         /* For the last iteration skip setting the extended coordinate */
         ed25519_comb_add_precomp(r, r, &p);
     }
@@ -458,9 +457,9 @@ static void ed25519_multiply_basepoint(point * rgen, const u8 * s) {
      * (see explanation above). */
     for (int i = 0; i < 64; i += 2) {
 
-        /* We let the loop index run twice as fast and skip every other entry of naf,
+        /* We let the loop index run twice as fast and skip every other entry of recoding,
          * but correct for it in the j index (j = i / 2) */
-        ed25519_comb_read_precomp(&p, i >> 1, naf[i]);
+        ed25519_comb_read_precomp(&p, i >> 1, recoding[i]);
         /* For the last iteration skip setting the extended coordinate */
         ed25519_comb_add_precomp(r, r, &p);
     }
@@ -468,7 +467,7 @@ static void ed25519_multiply_basepoint(point * rgen, const u8 * s) {
     /* At this point Q := 2^{tw} Q is a no-op since 2^{tw} Q = 2^0 Q */
 
     /* Clear the recoding of the secret scalar from the stack */
-    purge_secrets(naf, sizeof(naf));
+    purge_secrets(recoding, sizeof(recoding));
     /* Clear the last accessed precomputed point */
     purge_secrets(&p, sizeof(p));
 #endif /* !FE3C_COMB_METHOD */

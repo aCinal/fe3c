@@ -76,7 +76,7 @@ void hash_shake256(u8 * output, const struct iovec * iov, int iovcnt) {
 
 static inline void absorb_block(shake256_state * state, const u8 * block, shake256_working_variables * working_variables) {
 
-    /* XOR the block buffer with*/
+    /* XOR the block buffer with the state */
     for (int j = 0; j < sizeof(state->outer_state) / sizeof(state->outer_state[0]); j++) {
 
         state->outer_state[j] ^= load_64(&block[j << 3]);
