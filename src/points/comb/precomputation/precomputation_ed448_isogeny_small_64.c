@@ -2,9 +2,9 @@
     #error "Build system inconsistency detected! precomputation_ed448_isogeny_small_64.c in use despite FE3C_ED448_ISOGENY not being set"
 #endif /* !FE3C_ED448_ISOGENY */
 
-#if !FE3C_SMALL_PRECOMPUTATION
-    #error "Build system inconsistency detected! precomputation_ed448_isogeny_small_64.c in use despite FE3C_SMALL_PRECOMPUTATION not being set"
-#endif /* !FE3C_SMALL_PRECOMPUTATION */
+#if !FE3C_ED448_SMALL_PRECOMPUTATION
+    #error "Build system inconsistency detected! precomputation_ed448_isogeny_small_64.c in use despite FE3C_ED448_SMALL_PRECOMPUTATION not being set"
+#endif /* !FE3C_ED448_SMALL_PRECOMPUTATION */
 
 #if !FE3C_64BIT
     #error "Build system inconsistency detected! precomputation_ed448_isogeny_small_64.c in use despite FE3C_64BIT not being set"

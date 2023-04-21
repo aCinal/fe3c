@@ -121,20 +121,37 @@ AS_IF([test "x$ed448_isogeny" = "xyes"], AC_DEFINE([FE3C_ED448_ISOGENY]), [])
 
 # -------------------------------------------------------------------------------------------
 
-small_precomputation="no"
-AC_ARG_ENABLE([small-precomputation],
-              [AS_HELP_STRING([--enable-small-precomputation],
-                              [Minimize the size of the precomputation tables when using the comb method.
+ed25519_small_precomputation="no"
+AC_ARG_ENABLE([ed25519-small-precomputation],
+              [AS_HELP_STRING([--enable-ed25519-small-precomputation],
+                              [Minimize the size of Ed25519 precomputation tables when using the comb method.
                                This may result in a smaller library size at the cost of decreased
                                performance.])],
               [AS_IF([test "x$enableval" = "xyes"],
-                     [small_precomputation="yes"],
+                     [ed25519_small_precomputation="yes"],
 
                      [test "x$enableval" != "xno"],
-                     [AC_MSG_ERROR([bad value ${enableval} for --enable-small-precomputation])])],
+                     [AC_MSG_ERROR([bad value ${enableval} for --enable-ed25519-small-precomputation])])],
               [])
-AM_CONDITIONAL([FE3C_SMALL_PRECOMPUTATION], [test "x$small_precomputation" = "xyes"])
-AS_IF([test "x$small_precomputation" = "xyes"], AC_DEFINE([FE3C_SMALL_PRECOMPUTATION]), [])
+AM_CONDITIONAL([FE3C_ED25519_SMALL_PRECOMPUTATION], [test "x$ed25519_small_precomputation" = "xyes"])
+AS_IF([test "x$ed25519_small_precomputation" = "xyes"], AC_DEFINE([FE3C_ED25519_SMALL_PRECOMPUTATION]), [])
+
+# -------------------------------------------------------------------------------------------
+
+ed448_small_precomputation="no"
+AC_ARG_ENABLE([ed448-small-precomputation],
+              [AS_HELP_STRING([--enable-ed448-small-precomputation],
+                              [Minimize the size of Ed448 precomputation tables when using the comb method.
+                               This may result in a smaller library size at the cost of decreased
+                               performance.])],
+              [AS_IF([test "x$enableval" = "xyes"],
+                     [ed448_small_precomputation="yes"],
+
+                     [test "x$enableval" != "xno"],
+                     [AC_MSG_ERROR([bad value ${enableval} for --enable-ed448-small-precomputation])])],
+              [])
+AM_CONDITIONAL([FE3C_ED448_SMALL_PRECOMPUTATION], [test "x$ed448_small_precomputation" = "xyes"])
+AS_IF([test "x$ed448_small_precomputation" = "xyes"], AC_DEFINE([FE3C_ED448_SMALL_PRECOMPUTATION]), [])
 
 # -------------------------------------------------------------------------------------------
 
@@ -250,9 +267,11 @@ AC_MSG_RESULT([
     Architecture:                           ${archbits}-bit
     Sanity checks enabled:                  ${sanity_checks}
 
-    Using 4-isogenous curve of Ed448:       ${ed448_isogeny}
+    Use 4-isogenous curve of Ed448:         ${ed448_isogeny}
     Optimized field element squaring:       ${fast_squaring}
     Comb method for scalar multiplication:  ${comb_method}
-    Small precomputation tables:            ${small_precomputation}
+    Small precomputation tables:
+        Ed25519:                            ${ed25519_small_precomputation}
+        Ed448:                              ${ed448_small_precomputation}
     Skip secret zeroization on stack:       ${skip_zeroization}
 ])

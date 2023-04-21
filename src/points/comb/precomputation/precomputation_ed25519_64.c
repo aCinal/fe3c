@@ -1,6 +1,6 @@
-#if FE3C_SMALL_PRECOMPUTATION
-    #error "Build system inconsistency detected! precomputation_ed25519_64.c in use despite FE3C_SMALL_PRECOMPUTATION being set"
-#endif /* FE3C_SMALL_PRECOMPUTATION */
+#if FE3C_ED25519_SMALL_PRECOMPUTATION
+    #error "Build system inconsistency detected! precomputation_ed25519_64.c in use despite FE3C_ED25519_SMALL_PRECOMPUTATION being set"
+#endif /* FE3C_ED25519_SMALL_PRECOMPUTATION */
 
 #if !FE3C_64BIT
     #error "Build system inconsistency detected! precomputation_ed25519_64.c in use despite FE3C_64BIT not being set"

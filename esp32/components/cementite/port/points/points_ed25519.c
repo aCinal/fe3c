@@ -1,9 +1,13 @@
+#if !FE3C_COMB_METHOD
+    #error "Build system inconsistency detected! port/points/points_ed25519.c in use despite FE3C_COMB_METHOD not being set"
+#endif /* !FE3C_COMB_METHOD */
+
 #include <points/points.h>
 #include <field_elements/field_elements_ed25519.h>
 #include <utils/utils.h>
-#if FE3C_COMB_METHOD
-    #include <points/comb/comb_ed25519.h>
-#endif /* FE3C_COMB_METHOD */
+#include <points/comb/comb_ed25519.h>
+#include <port/points/comb/comb_parallel.h>
+#include <port/points/comb/comb_parallel_ed25519.h>
 
 #define ED25519_STR \
     "    X = " FE25519_STR "\n" \
@@ -339,136 +343,53 @@ void ed25519_points_add(point_ed25519 * r, const point_ed25519 * p, const point_
     fe25519_mul(r->X, E, r->X);
 }
 
-#if !FE3C_COMB_METHOD
-static inline void ed25519_scalar_multiply(point_ed25519 * r, const point_ed25519 * p, const u8 * s) {
-
-    FE3C_SANITY_CHECK(ed25519_is_on_curve(p), ED25519_STR, ED25519_TO_STR(p));
-
-    point_ed25519 R[2];
-    ed25519_identity(&R[0]);
-    R[1] = *p;
-
-    /* Do a simple Montgomery ladder. Note that the input scalar must have been pruned, which
-     * results in bit 255 being cleared (and bit 254 being set), or reduced modulo the group order,
-     * in which case bit 255 will also be cleared, so we can safely skip it. */
-    for (int i = 254; i >= 0; i--) {
-
-        /* Recover the ith bit of the scalar */
-        int bit = array_bit(s, i);
-        ed25519_points_add(&R[1 - bit], &R[1 - bit], &R[bit]);
-        ed25519_point_double(&R[bit], &R[bit], 1);
-    }
-
-    *r = R[0];
-    purge_secrets(&R[1], sizeof(R[1]));
-}
-#endif /* !FE3C_COMB_METHOD */
-
 static void ed25519_multiply_basepoint(point * rgen, const u8 * s) {
 
     point_ed25519 * r = (point_ed25519 *) rgen;
-#if !FE3C_COMB_METHOD
-    ed25519_scalar_multiply(r, &ed25519_basepoint, s);
-#else
-    /* Implement the comb method with signed digit scalar representation. Start by recoding the
-     * scalar into an array of a columns S[d] each being an integer in signed digit representation
-     * of length w (width-w SD), i.e. let:
-     *
-     *                                                  a-1
-     *                                                  ___
-     *                                                  \         dw
-     *                    s = S[a-1]S[a-2]...S[1]S[0] = /__ S[d] 2        (sum of columns)
-     *                                                  d=0
-     *
-     * Note that the exponent array (to borrow nomenclature from "Handbook of Applied Cryptography")
-     * is organized top-to-bottom and then right-to-left as opposed to the traditional Lim/Lee
-     * comb method, where it is the top row of the array that corresponds to a least significant bits
-     * of the scalar. Here the rightmost column corresponds to w least significant bits of s.
-     *
-     * From right to left we divide the w x a blocks into w x v blocks, each of size b = ceil(a/v),
-     * and obtain:
-     *
-     *       a-1              v-1 b-1                          v-1     b-1
-     *       ___              ___ ___                          ___     ___
-     *       \         dw     \   \              (jb + t)w     \    tw \              jbw
-     *  sP = /__ S[d] 2   P = /__ /__ S[jb + t] 2          P = /__ 2   /__ S[jb + t] 2    P
-     *       d=0              j=0 t=0                          j=0     t=0
-     *
-     * where S[jb + t] is width-w SD representation (note that iterating over a columns is the same
-     * as iterating over v vertical subblocks and within each subblock iterating over the b columns).
-     *
-     * We have precomputed the values:
-     *
-     *                                      w-1            w-2
-     *                   G[0][kd] = e[w-1] 2   P + e[w-2] 2   P + ... + e[0] P = kdP
-     *
-     *                                           jwb            jwb
-     *                               G[j][kd] = 2   G[0][kd] = 2    kdP
-     *
-     * where the index kd is equal to the decimal value of (e[w-1]...e[1]e[0]). Then sP can be written
-     * as:
-     *
-     *                                        b-1     v-1
-     *                                        ___     ___
-     *                                        \    tw \
-     *                                   sP = /__ 2   /__ G[j][S[jb + t]]
-     *                                        t=0     j=0
-     *
-     * Note that the element for S[jb + t] = 0 is the group identity which we do not bother storing
-     * in the precomputation table and so we offset the table by one (note that for Edwards curves
-     * we are protected against any side-channel attacks here since the formula for adding the identity
-     * is the same as for adding any other point). Also note that G[j][i] = -G[j][-i] (since we use SD
-     * encoding) and since negating elliptic curve points is almost free, we can store only the points
-     * corresponding to positive indices S[jb + t].
-     */
 
-    /* Use w = 4 (width-4 SD) and v = 32. For scalars of length 256 (actually less than that, but
-     * a power of two is easier to work with plus with signed digits we may get an additional 4-bit
-     * digit) we get a = 64 and b = 2. */
+    /* See src/points/points_ed25519.c for a description of the comb method algorithm used here.
+     * The core of the algorithm uses two loops iterating respectively over the odd and the even
+     * indices of the signed digit recoding of the scalar. Try offloading one of the loops to a
+     * separate thread to exploit parallelism. If not possible, fall back to a serial algorithm. */
     i8 recoding[64];
     ed25519_comb_recode_scalar_into_width4_sd(recoding, s);
 
-    ed25519_identity(r);
-    ed25519_precomp p;
-    /* Since we have b=2 we only have two iterations of the outermost loop of the algorithm
-     * (Algorithm 3 in "Improved Fixed-base Comb Method for Fast Scalar Multiplication") which
-     * implements the double summation at the end of the above description. Also for the second
-     * iteration we have t=0 so we can skip the 2^{tw} = 2^0. Note that iterating from j=0 to v-1
-     * over G[j][S[jb+t]] for t=1 corresponds to only accessing the elements of G (precomp table)
-     * indexed by odd positions of the recoding above (jb+t = 1, 3, 5, ...), since b=2. Similarly,
-     * when t=0 (second iteration) we shall only access the elements of G indexed by even-index
-     * entries of the recoding. */
-    for (int i = 1; i < 64; i += 2) {
+    point_ed25519 even_part;
+    comb_thread_work thread_work = {
+        .thread_result = (point *) &even_part,
+        .scalar_recoding = recoding,
+        .curve_id = EDDSA_CURVE_ED25519
+    };
 
-        /* We let the loop index run twice as fast and skip every other entry of recoding,
-         * but correct for it in the j index (j = i / 2) */
-        ed25519_comb_read_precomp(&p, i >> 1, recoding[i]);
-        ed25519_comb_add_precomp(r, r, &p);
+    int parallel = comb_dispatch_loop_to_thread(&thread_work);
+    if (!parallel) {
+
+        /* Failed to offload the even indices loop to a worker thread,
+         * fine... we'll do it ourselves */
+        ed25519_comb_loop(&even_part, recoding, 0);
     }
 
-    /* Compute 2^{tw} Q = 2^4 Q */
+    /* Do the odd indices loop */
+    ed25519_comb_loop(r, recoding, 1);
+
     ed25519_point_double(r, r, 0);
     ed25519_point_double(r, r, 0);
     ed25519_point_double(r, r, 0);
     ed25519_point_double(r, r, 1);
 
-    /* Do the second iteration of the outermost loop, i.e. iterate over even indices of the recoding
-     * (see explanation above). */
-    for (int i = 0; i < 64; i += 2) {
+    if (parallel) {
 
-        /* We let the loop index run twice as fast and skip every other entry of recoding,
-         * but correct for it in the j index (j = i / 2) */
-        ed25519_comb_read_precomp(&p, i >> 1, recoding[i]);
-        ed25519_comb_add_precomp(r, r, &p);
+        /* Wait for the worker to finish */
+        comb_join_worker_thread();
     }
 
-    /* At this point Q := 2^{tw} Q is a no-op since 2^{tw} Q = 2^0 Q */
+    /* Add the odd and even results */
+    ed25519_points_add(r, r, &even_part);
 
     /* Clear the recoding of the secret scalar from the stack */
     purge_secrets(recoding, sizeof(recoding));
-    /* Clear the last accessed precomputed point */
-    purge_secrets(&p, sizeof(p));
-#endif /* !FE3C_COMB_METHOD */
+    /* Clear the partial result from the stack */
+    purge_secrets(&even_part, sizeof(even_part));
 }
 
 static void ed25519_point_negate(point * pgen) {

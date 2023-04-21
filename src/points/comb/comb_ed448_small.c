@@ -1,6 +1,6 @@
-#if FE3C_ED448_ISOGENY && !FE3C_SMALL_PRECOMPUTATION
-    #error "Build system inconsistency detected! comb_ed448_small.c in use despite FE3C_ED448_ISOGENY being set and FE3C_SMALL_PRECOMPUTATION not being set"
-#endif /* FE3C_ED448_ISOGENY && !FE3C_SMALL_PRECOMPUTATION */
+#if FE3C_ED448_ISOGENY && !FE3C_ED448_SMALL_PRECOMPUTATION
+    #error "Build system inconsistency detected! comb_ed448_small.c in use despite FE3C_ED448_ISOGENY being set and FE3C_ED448_SMALL_PRECOMPUTATION not being set"
+#endif /* FE3C_ED448_ISOGENY && !FE3C_ED448_SMALL_PRECOMPUTATION */
 
 #include <points/comb/comb_ed448.h>
 #include <utils/utils.h>

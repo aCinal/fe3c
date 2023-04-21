@@ -5,7 +5,7 @@
 #include <points/points.h>
 #include <field_elements/field_elements_ed25519.h>
 
-#if !FE3C_SMALL_PRECOMPUTATION
+#if !FE3C_ED25519_SMALL_PRECOMPUTATION
 
 /* Store intermediate results needed for addition in the precomputation table */
 typedef struct ed25519_precomp_internal {
@@ -26,7 +26,7 @@ typedef struct ed25519_precomp_internal {
 
 typedef point_ed25519 ed25519_precomp;
 
-#endif /* !FE3C_SMALL_PRECOMPUTATION */
+#endif /* !FE3C_ED25519_SMALL_PRECOMPUTATION */
 
 void ed25519_comb_read_precomp(ed25519_precomp * r, u8 j, i8 ijt);
 void ed25519_comb_add_precomp(point_ed25519 * r, const point_ed25519 * p, const ed25519_precomp * q);

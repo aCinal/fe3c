@@ -63,7 +63,7 @@ add_functional_test(
                               ${FE3C_UUT_SOURCE_DIR}/field_elements/field_elements_ed25519_??.c
     PREPROCESSOR_DEFINITIONS  FE3C_SUPPORT_CURVE_ED25519
                               FE3C_COMB_METHOD
-                              FE3C_SMALL_PRECOMPUTATION
+                              FE3C_ED25519_SMALL_PRECOMPUTATION
 )
 
 add_functional_test(
@@ -76,5 +76,5 @@ add_functional_test(
     PREPROCESSOR_DEFINITIONS  FE3C_SUPPORT_CURVE_ED448
                               FE3C_ED448_ISOGENY
                               FE3C_COMB_METHOD
-                              FE3C_SMALL_PRECOMPUTATION
+                              FE3C_ED448_SMALL_PRECOMPUTATION
 )

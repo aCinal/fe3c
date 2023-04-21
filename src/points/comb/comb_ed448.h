@@ -5,7 +5,7 @@
 #include <points/points.h>
 #include <field_elements/field_elements_ed448.h>
 
-#if FE3C_ED448_ISOGENY && !FE3C_SMALL_PRECOMPUTATION
+#if FE3C_ED448_ISOGENY && !FE3C_ED448_SMALL_PRECOMPUTATION
 
 /* Store intermediate results needed for addition in the precomputation table */
 typedef struct ed448_precomp_internal {
@@ -26,7 +26,7 @@ typedef struct ed448_precomp_internal {
 
 typedef point_ed448 ed448_precomp;
 
-#endif /* FE3C_ED448_ISOGENY && !FE3C_SMALL_PRECOMPUTATION */
+#endif /* FE3C_ED448_ISOGENY && !FE3C_ED448_SMALL_PRECOMPUTATION */
 
 void ed448_comb_read_precomp(ed448_precomp * r, u8 j, i8 ijt);
 void ed448_comb_add_precomp(point_ed448 * r, const point_ed448 * p, const ed448_precomp * q);

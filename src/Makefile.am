@@ -18,7 +18,7 @@ __LIB__libcementite_la_SOURCES = \
     eddsa/eddsa.c \
     curves/curves.c
 
-if FE3C_SMALL_PRECOMPUTATION
+if FE3C_ED25519_SMALL_PRECOMPUTATION
 ed25519_small_precomp_tag = _small
 else
 ed25519_small_precomp_tag =
@@ -27,7 +27,7 @@ endif
 if FE3C_ED448_ISOGENY
 
 ed448_isogeny_tag = _isogeny
-if FE3C_SMALL_PRECOMPUTATION
+if FE3C_ED448_SMALL_PRECOMPUTATION
 ed448_small_precomp_tag = _small
 else
 ed448_small_precomp_tag =
