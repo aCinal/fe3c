@@ -97,7 +97,9 @@ static void ed25519_scalar_reduce(u8 * s) {
      * on sign extension in the algorithm. Recall that masking a signed variable with
      * LOW_21_BITS_MASK == ( (1 << 21) - 1 ) is equivalent to reduction modulo 2^21 (same as
      * for unsigned integers). Similarly shifting by 21 bits to the right is equivalent to
-     * dividing by 2^21 while preserving the sign. */
+     * dividing by 2^21 while preserving the sign, assuming (which is the case for most
+     * compilers) that right-shifting a signed variable results in arithmetic (as opposed to
+     * logical) shift being emitted by the compiler. */
 
     i64 t[24];
 
@@ -142,7 +144,7 @@ static void ed25519_scalar_reduce(u8 * s) {
      * them by c, and subtract the product from the low part (t0-t11). We rely here on
      * the identity:
      *
-     *           s := x + 2^252 y = x + (2^252 + c) y - c y = x - c y (mod L)
+     *           s = x + 2^252 y = x + (2^252 + c) y - c y = x - c y (mod L)
      */
 
     t[11] -= t[23] * GROUP_ORDER_LIMB_0;

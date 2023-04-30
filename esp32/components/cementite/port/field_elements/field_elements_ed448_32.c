@@ -1166,7 +1166,7 @@ void fe448_mul(fe448 r, const fe448 a, const fe448 b) {
     FE3C_SANITY_CHECK(aux1 == 0, NULL);
 
     /* Compute B = vy and put the result directly in the result buffer. Again,
-     * since we assume all inputs are canonical, i.e. v < S and y < S, there
+     * since we assume all inputs are below S^2, i.e. v < S and y < S, there
      * can be no overflow above S^2. */
     aux1 = multiply_distinct_16_limbs(_r, a + 8, b + 8);
     FE3C_SANITY_CHECK(aux1 == 0, NULL);

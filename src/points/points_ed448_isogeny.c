@@ -503,17 +503,17 @@ static void ed448_multiply_basepoint(point * rgen, const u8 * sraw) {
      *
      * Note that the exponent array (to borrow nomenclature from "Handbook of Applied Cryptography")
      * is organized top-to-bottom and then right-to-left as opposed to the traditional Lim/Lee
-     * comb method, where it is the top row of the array that corresponds to a least significant bits
+     * comb method, where it is the top row of the array that corresponds to thet least significant bits
      * of the scalar. Here the rightmost column corresponds to w least significant bits of s.
      *
      * From right to left we divide the w x a blocks into w x v blocks, each of size b = ceil(a/v),
      * and obtain:
      *
-     *       a-1              v-1 b-1                          v-1     b-1
+     *       a-1              v-1 b-1                          b-1     v-1
      *       ___              ___ ___                          ___     ___
      *       \         dw     \   \              (jb + t)w     \    tw \              jbw
      *  sP = /__ S[d] 2   P = /__ /__ S[jb + t] 2          P = /__ 2   /__ S[jb + t] 2    P
-     *       d=0              j=0 t=0                          j=0     t=0
+     *       d=0              j=0 t=0                          t=0     j=0
      *
      * where S[jb + t] is width-w SD representation (note that iterating over a columns is the same
      * as iterating over v vertical subblocks and within each subblock iterating over the b columns).
@@ -523,7 +523,7 @@ static void ed448_multiply_basepoint(point * rgen, const u8 * sraw) {
      *                                      w-1            w-2
      *                   G[0][kd] = e[w-1] 2   P + e[w-2] 2   P + ... + e[0] P = kdP
      *
-     *                                           jwb            jwb
+     *                                           jbw            jbw
      *                               G[j][kd] = 2   G[0][kd] = 2    kdP
      *
      * where the index kd is equal to the decimal value of (e[w-1]...e[1]e[0]). Then sP can be written

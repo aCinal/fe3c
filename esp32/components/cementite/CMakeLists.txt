@@ -57,7 +57,6 @@ endif()
 if (CONFIG_FE3C_SUPPORT_CURVE_ED25519)
     list(APPEND FE3C_SOURCES "${FE3C_SRC_DIR}/curves/curve_ed25519.c")
     list(APPEND FE3C_SOURCES "${FE3C_SRC_DIR}/scalars/scalars_ed25519_32.c")
-
     list(APPEND FE3C_SOURCES "${FE3C_OVERRIDE_DIR}/field_elements/field_elements_ed25519_32.c")
     list(APPEND FE3C_SOURCES "${FE3C_OVERRIDE_DIR}/hash_functions/hash_function_sha512.c")
 
@@ -89,7 +88,7 @@ endif()
 if (CONFIG_FE3C_SUPPORT_CURVE_ED448)
     list(APPEND FE3C_SOURCES "${FE3C_SRC_DIR}/curves/curve_ed448.c")
     list(APPEND FE3C_SOURCES "${FE3C_SRC_DIR}/hash_functions/hash_function_shake256.c")
-    list(APPEND FE3C_SOURCES "${FE3C_SRC_DIR}/scalars/scalars_ed448_32.c")
+    list(APPEND FE3C_SOURCES "${FE3C_OVERRIDE_DIR}/scalars/scalars_ed448_32.c")
     list(APPEND FE3C_SOURCES "${FE3C_OVERRIDE_DIR}/field_elements/field_elements_ed448_32.c")
 
     if (CONFIG_FE3C_COMB_METHOD)

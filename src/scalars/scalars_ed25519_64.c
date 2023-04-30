@@ -110,7 +110,9 @@ static void ed25519_scalar_reduce(u8 * s) {
      * on sign extension in the algorithm. Recall that masking a signed variable with
      * LOW_42_BITS_MASK == ( (1 << 42) - 1 ) is equivalent to reduction modulo 2^42 (same as
      * for unsigned integers). Similarly shifting by 42 bits to the right is equivalent to
-     * dividing by 2^42 while preserving the sign. */
+     * dividing by 2^42 while preserving the sign, assuming (which is the case for most
+     * compilers) that right-shifting a signed variable results in arithmetic (as opposed to
+     * logical) shift being emitted by the compiler. */
 
     i128 t[12];
 
@@ -140,7 +142,7 @@ static void ed25519_scalar_reduce(u8 * s) {
      * c can be represented as (c2, c1, c0). Take the limbs t6-t11, multiply them by c,
      * and subtract the product from the low part (t0-t5). We rely here on the identity:
      *
-     *           s := x + 2^252 y = x + (2^252 + c) y - c y = x - c y (mod L)
+     *           s = x + 2^252 y = x + (2^252 + c) y - c y = x - c y (mod L)
      */
 
     /* Naive schoolbok multiplication of (c2, c1, c0) and (t11, t10, t9, t8, t7, t6) split
