@@ -269,6 +269,13 @@ void fe25519_weak_reduce(fe25519 r, const fe25519 a) {
     );
 }
 
+/**
+ * @brief Subtract one field element from another
+ * @param[out] r Result of the (possibly mock) subtraction, i.e. r = a - b * mock, where mock is 0 or 1
+ * @param[in] a Minuend
+ * @param[in] b Subtrahend
+ * @param mock Flag controlling whether subtraction is actually performed or result is set to a
+ */
 static inline void fe25519_sub_internal(fe25519 r, const fe25519 a, const fe25519 b, int mock) {
 
     /* This is an internal function that assumes a >= b and the subtraction

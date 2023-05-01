@@ -320,7 +320,7 @@ static void ed448_scalars_muladd(u8 * r, const u8 * a, const u8 * b, const u8 * 
         carry >>= 8;
     }
 
-    for (int k = 56; k < 112; k++) {
+    for (int k = 56; k < 114; k++) {
 
         /* Convolve a and b */
         for (int i = k + 1 - 56; i < 56; i++) {
@@ -331,8 +331,6 @@ static void ed448_scalars_muladd(u8 * r, const u8 * a, const u8 * b, const u8 * 
         t[k] = (u8) carry;
         carry >>= 8;
     }
-    /* Clear the top two bytes to be compatible with ed448_scalar_reduce */
-    t[113] = t[112] = 0;
 
     ed448_scalar_reduce(t);
     /* Copy to the output buffer */

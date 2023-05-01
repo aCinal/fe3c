@@ -15,15 +15,12 @@ static const fe448 fe448_p = {
     0x3fff3ffe, 0x3fff3fff, 0x3fff3fff, 0x3fff3fff,
     0x3fff3fff, 0x3fff3fff, 0x3fff3fff, 0x3fff3fff
 };
-/* Twice the field characteristic - note that 2p cannot be expressed in the
- * representation we use for fe448, where we use 32 limbs all of which are
- * strictly 14-bits long with no overflow bits. This constant is, however,
- * used only internally by fe448_neg, which knows how to handle it. */
-static const fe448 fe448_2p = {
+/* -S-1 where S = 2^224 */
+static const fe448 fe448_mSm1 = {
     0x3fff3ffe, 0x3fff3fff, 0x3fff3fff, 0x3fff3fff,
     0x3fff3fff, 0x3fff3fff, 0x3fff3fff, 0x3fff3fff,
     0x3fff3ffd, 0x3fff3fff, 0x3fff3fff, 0x3fff3fff,
-    0x3fff3fff, 0x3fff3fff, 0x3fff3fff, 0x7fff3fff
+    0x3fff3fff, 0x3fff3fff, 0x3fff3fff, 0x3fff3fff
 };
 /* Elliptic curve constant d = -39081 */
 const fe448 ed448_d = {
@@ -245,7 +242,15 @@ void fe448_weak_reduce(fe448 r, const fe448 a) {
     fe448_copy(r, a);
 }
 
-static inline void fe448_sub_internal(fe448 r, const fe448 a, const fe448 b, int mock) {
+/**
+ * @brief Subtract one field element from another
+ * @param[out] r Result of the (possibly mock) subtraction, i.e. the difference r = a - b * mock, where mock is 0 or 1
+ * @param[in] a Minuend
+ * @param[in] b Subtrahend
+ * @param mock Flag controlling whether subtraction is actually performed or result is set to a
+ * @return Borrow if b > a and mock is zero
+ */
+static inline u32 fe448_sub_internal(fe448 r, const fe448 a, const fe448 b, int mock) {
 
     /* This is an internal function that assumes a >= b and the subtraction
      * can be done directly. */
@@ -309,6 +314,8 @@ static inline void fe448_sub_internal(fe448 r, const fe448 a, const fe448 b, int
           [mock]       "r"   (mock)
         : "memory"
     );
+
+    return borrow;
 }
 
 /**
@@ -324,7 +331,7 @@ void fe448_strong_reduce(fe448 r, const fe448 a) {
     /* Check canonicity of a */
     int canonical = fe448_is_canonical(a);
     /* Compute a-p and conditionally use it as a result if a is larger than p */
-    fe448_sub_internal(r, a, fe448_p, canonical);
+    (void) fe448_sub_internal(r, a, fe448_p, canonical);
 }
 
 /**
@@ -334,39 +341,17 @@ void fe448_strong_reduce(fe448 r, const fe448 a) {
  */
 void fe448_neg(fe448 r, const fe448 a) {
 
-    /* Check if the input is canonical and multiplex between
-     * p and 2p. For canonical inputs we compute p-a, for
-     * non-canonical ones, we instead compute 2p-a, which
-     * makes the output canonical. */
-    int canonical = fe448_is_canonical(a);
-    const fe448 * negator = &fe448_p;
-    /* Note that we use 2p here which has a nonstandard representation
-     * which uses an overflow bit (bit 14 in the highest limb). We use
-     * it here assuming that fe448_sub_internal can handle it. */
-    const fe448 * _2p = &fe448_2p;
-
-    asm volatile(
-
-        /* If the input is non-canonical, subtract from 2p instead */
-        _ "moveqz %[negator], %[_2p], %[canonical]"
-
-        : [negator]   "+&r" (negator)
-        : [canonical] "r"   (canonical),
-          [_2p]  "r"   (_2p)
-        :
-    );
-
-    /* Note that field elements on Ed448 are always weakly reduced, i.e. smaller than 2p */
-    fe448_sub_internal(r, *negator, a, 0);
+    fe448_sub(r, fe448_p, a);
 }
 
 /**
  * @brief Add two field elements
- * @param[out] r Result of the addition, i.e. the sum r = a + b
+ * @param[out] r Result of the (possibly mock) addition, i.e. the sum r = a + b * mock, where mock is 0 or 1
  * @param[in] a Operand
  * @param[in] b Operand
+ * @param mock Flag controlling whether subtraction is actually performed or result is set to a
  */
-void fe448_add(fe448 r, const fe448 a, const fe448 b) {
+static inline void fe448_add_internal(fe448 r, const fe448 a, const fe448 b, int mock) {
 
     /* Iterators over the limbs */
     const fe_limb_type * ai = a;
@@ -384,11 +369,14 @@ void fe448_add(fe448 r, const fe448 a, const fe448 b) {
 
         /* Set up a hardware loop */
         _ "movi.n %[ax],    %[limb_count]"
-        _ "loop   %[ax],    add.endloop"
-    _ "add.startloop:"
+        _ "loop   %[ax],    add_internal.endloop"
+    _ "add_internal.startloop:"
         /* Load the operands' limbs. */
         _ "l16ui  %[ax],    %[ai], 0"
         _ "l16ui  %[bx],    %[bi], 0"
+        /* If mock=1, set the second operand to zero (note that carry
+         * will remain zero for the whole loop in that case) */
+        _ "movnez %[bx],    %[carry], %[mock]"
 
         /* Add the low halves */
         _ "add.n  %[rx],    %[ax], %[bx]"
@@ -403,6 +391,7 @@ void fe448_add(fe448 r, const fe448 a, const fe448 b) {
         /* Repeat for the high halves */
         _ "l16ui  %[ax],    %[ai], 2"
         _ "l16ui  %[bx],    %[bi], 2"
+        _ "movnez %[bx],    %[carry], %[mock]"
         _ "add.n  %[rx],    %[ax], %[bx]"
         _ "add.n  %[rx],    %[rx], %[carry]"
         _ "extui  %[carry], %[rx], 0, 14"
@@ -413,7 +402,7 @@ void fe448_add(fe448 r, const fe448 a, const fe448 b) {
         _ "addi.n %[ai],    %[ai], 4"
         _ "addi.n %[bi],    %[bi], 4"
         _ "addi.n %[ri],    %[ri], 4"
-    _ "add.endloop:"
+    _ "add_internal.endloop:"
 
         /* Do a weak reduction. Note that we use the identity
          *
@@ -434,8 +423,8 @@ void fe448_add(fe448 r, const fe448 a, const fe448 b) {
 
         /* Loop over the first 16 limbs */
         _ "movi.n %[rx],    %[limb_count] / 2"
-        _ "loop   %[rx],    add.endreduceloop"
-    _ "add.startreduceloop:"
+        _ "loop   %[rx],    add_internal.endreduceloop"
+    _ "add_internal.startreduceloop:"
         /* Load a 14-bit limb */
         _ "l16ui  %[rx],    %[ri], 0"
         /* Add the carry to it */
@@ -455,15 +444,15 @@ void fe448_add(fe448 r, const fe448 a, const fe448 b) {
 
         /* Advance the iterator */
         _ "addi.n %[ri],    %[ri], 4"
-    _ "add.endreduceloop:"
+    _ "add_internal.endreduceloop:"
 
         /* At this point add the previously stored z back
          * to the carry before continuing */
         _ "add.n  %[carry], %[carry], %[ax]"
 
         _ "movi.n %[rx],    %[limb_count] / 2"
-        _ "loop   %[rx],    add.endreduceloop2"
-    _ "add.startreduceloop2:"
+        _ "loop   %[rx],    add_internal.endreduceloop2"
+    _ "add_internal.startreduceloop2:"
         _ "l16ui  %[rx],    %[ri], 0"
         _ "add.n  %[rx],    %[rx], %[carry]"
         _ "extui  %[carry], %[rx], 0, 14"
@@ -477,7 +466,7 @@ void fe448_add(fe448 r, const fe448 a, const fe448 b) {
         _ "srli   %[carry], %[rx], 14"
 
         _ "addi.n %[ri],    %[ri], 4"
-    _ "add.endreduceloop2:"
+    _ "add_internal.endreduceloop2:"
 
         : [ai]         "+&r" (ai),
           [bi]         "+&r" (bi),
@@ -487,6 +476,7 @@ void fe448_add(fe448 r, const fe448 a, const fe448 b) {
           [rx]         "=&r" (rx),
           [carry]      "=&r" (carry)
         : [r]          "r"   (r),
+          [mock]       "r"   (mock),
           [limb_count] "i"   (ED448_FE_LIMB_COUNT)
         : "memory"
     );
@@ -495,7 +485,18 @@ void fe448_add(fe448 r, const fe448 a, const fe448 b) {
      * the representation use only 32 14-bit limbs, without
      * any overflow bits. Note that such representation may
      * still not be canonical. */
-    fe448_sub_internal(r, r, fe448_p, 1 - carry);
+    (void) fe448_sub_internal(r, r, fe448_p, 1 - carry);
+}
+
+/**
+ * @brief Add two field elements
+ * @param[out] r Result of the addition, i.e. the sum r = a + b
+ * @param[in] a Operand
+ * @param[in] b Operand
+ */
+void fe448_add(fe448 r, const fe448 a, const fe448 b) {
+
+    fe448_add_internal(r, a, b, 0);
 }
 
 /**
@@ -506,10 +507,8 @@ void fe448_add(fe448 r, const fe448 a, const fe448 b) {
  */
 void fe448_sub(fe448 r, const fe448 a, const fe448 b) {
 
-    /* Negate b and then add that to a */
-    fe448 _b;
-    fe448_neg(_b, b);
-    fe448_add(r, a, _b);
+    u32 borrow = fe448_sub_internal(r, a, b, 0);
+    fe448_add_internal(r, r, fe448_mSm1, 1 - borrow);
 }
 
 /**
@@ -1215,10 +1214,11 @@ void fe448_mul(fe448 r, const fe448 a, const fe448 b) {
         _ "addi.n %[riter], %[riter], 2"
         _ "addi.n %[Aiter], %[Aiter], 2"
         _ "addi.n %[Citer], %[Citer], 2"
-        /* TODO: Optimize this by controlling the memory layout
-         * of the stack buffers - the distance between the
-         * iterators is constant and can be determined at
-         * compile-time */
+        /* Note that we could leverage the fact that the distance
+         * between the buffers (and the respective iterators) is
+         * constant throughout the loop and known at compile-time.
+         * Benchmarking shows, however, that the performance
+         * improvement from doing this is negligible. */
 
     _ "mul.endlloop:"
 
@@ -1345,7 +1345,7 @@ void fe448_mul(fe448 r, const fe448 a, const fe448 b) {
      * however, that such representation is not necessarily
      * canonical. */
     FE3C_SANITY_CHECK(carry < 2, NULL);
-    fe448_sub_internal(r, _r, fe448_p, 1 - carry);
+    (void) fe448_sub_internal(r, _r, fe448_p, 1 - carry);
 }
 
 /**
