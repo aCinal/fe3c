@@ -65,7 +65,7 @@ static int ed448_scalar_is_canonical(const u8 * s) {
     return ~borrow & notq;
 }
 
-static void ed448_scalar_sub_internal(u8 * r, const u8 * a, const u8 * b, int mock) {
+static inline void ed448_scalar_sub_internal(u8 * r, const u8 * a, const u8 * b, int mock) {
 
     /* Note that we could do subtraction with u16 granularity since we use packed-radix
      * representation, thus better utilizing the hardware adder and halving the number
