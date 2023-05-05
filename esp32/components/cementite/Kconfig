@@ -89,7 +89,8 @@ menu "cementite (fe3c)"
         default n
         help
             Use SHA512 hardware acceleration when possible. This will significantly
-            reduce stack usage and increase performance for large messages.
+            reduce stack usage and increase performance for large messages, but may
+            cause blocking for some SoC variants.
 
     config FE3C_ENABLE_SANITY_CHECKS
         bool "Enable sanity checks"

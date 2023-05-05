@@ -301,6 +301,7 @@ static void ed448_scalar_reduce(u8 * s) {
      * conditionally if s is not canonical at this point. */
     int canonical = ed448_scalar_is_canonical(t);
     ed448_scalar_sub_internal(s, t, group_order, canonical);
+    purge_secrets(t, sizeof(t));
 }
 
 static void ed448_scalars_muladd(u8 * r, const u8 * a, const u8 * b, const u8 * c) {

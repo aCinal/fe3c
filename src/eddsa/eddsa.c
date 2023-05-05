@@ -67,6 +67,9 @@ void eddsa_sign(const eddsa_sign_request * req) {
         gops->multiply_basepoint(&public_key, hash_secret_key);
         gops->encode(encoded_public_key_buffer, &public_key);
         encoded_public_key = encoded_public_key_buffer;
+        /* The public key in projective coordinates leaks the secret key
+         * - zeroize it before proceeding */
+        purge_secrets(&public_key, sizeof(public_key));
 
     } else {
 
@@ -108,8 +111,8 @@ void eddsa_sign(const eddsa_sign_request * req) {
     sops->muladd(&req->signature[curve->b_in_bytes], hash_commit_key_message, hash_secret_key, ephemeral_scalar);
 
     /* Purge the stack reliably, i.e. memset all intermediate buffers to 0 */
-    purge_secrets(&hash_secret_key, sizeof(hash_secret_key));
-    purge_secrets(&ephemeral_scalar, sizeof(ephemeral_scalar));
+    purge_secrets(hash_secret_key, sizeof(hash_secret_key));
+    purge_secrets(ephemeral_scalar, sizeof(ephemeral_scalar));
 }
 
 int eddsa_verify(const eddsa_verify_request * req) {
@@ -229,6 +232,9 @@ void eddsa_derive_public_key(u8 * public_key, const u8 * secret_key, eddsa_curve
 
     /* Encode the public point into the provided buffer */
     gops->encode(public_key, &public_key_point);
+
+    purge_secrets(digest, sizeof(digest));
+    purge_secrets(&public_key_point, sizeof(public_key_point));
 }
 
 int eddsa_get_signature_length(eddsa_curve curve_id) {

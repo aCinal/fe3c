@@ -252,8 +252,8 @@ void fe448_weak_reduce(fe448 r, const fe448 a) {
  */
 static inline u32 fe448_sub_internal(fe448 r, const fe448 a, const fe448 b, int mock) {
 
-    /* This is an internal function that assumes a >= b and the subtraction
-     * can be done directly. */
+    /* This is an internal function that performs the subtraction a - b directly and
+     * returns any borrow that may occur. */
 
     /* Registers to store the values of limbs */
     u32 ax;
@@ -270,8 +270,8 @@ static inline u32 fe448_sub_internal(fe448 r, const fe448 a, const fe448 b, int 
         _ "loop   %[ax],     sub_internal%=.endloop"
     _ "sub_internal%=.startloop:"
         /* Load the operands' limbs. */
-        _ "l16ui  %[ax],     %[ai], 0"
-        _ "l16ui  %[bx],     %[bi], 0"
+        _ "l16ui  %[ax],     %[ai],     0"
+        _ "l16ui  %[bx],     %[bi],     0"
 
         /* If mock=1, set the subtrahend to zero (note that borrow
          * will remain zero for the whole loop in that case) */
@@ -349,7 +349,7 @@ void fe448_neg(fe448 r, const fe448 a) {
  * @param[out] r Result of the (possibly mock) addition, i.e. the sum r = a + b * mock, where mock is 0 or 1
  * @param[in] a Operand
  * @param[in] b Operand
- * @param mock Flag controlling whether subtraction is actually performed or result is set to a
+ * @param mock Flag controlling whether addition is actually performed or result is set to a
  */
 static inline void fe448_add_internal(fe448 r, const fe448 a, const fe448 b, int mock) {
 
@@ -369,40 +369,40 @@ static inline void fe448_add_internal(fe448 r, const fe448 a, const fe448 b, int
 
         /* Set up a hardware loop */
         _ "movi.n %[ax],    %[limb_count]"
-        _ "loop   %[ax],    add_internal.endloop"
-    _ "add_internal.startloop:"
+        _ "loop   %[ax],    add_internal%=.endloop"
+    _ "add_internal%=.startloop:"
         /* Load the operands' limbs. */
-        _ "l16ui  %[ax],    %[ai], 0"
-        _ "l16ui  %[bx],    %[bi], 0"
+        _ "l16ui  %[ax],    %[ai],    0"
+        _ "l16ui  %[bx],    %[bi],    0"
         /* If mock=1, set the second operand to zero (note that carry
          * will remain zero for the whole loop in that case) */
         _ "movnez %[bx],    %[carry], %[mock]"
 
         /* Add the low halves */
-        _ "add.n  %[rx],    %[ax], %[bx]"
+        _ "add.n  %[rx],    %[ax],    %[bx]"
         /* Add the carry */
-        _ "add.n  %[rx],    %[rx], %[carry]"
+        _ "add.n  %[rx],    %[rx],    %[carry]"
         /* ...write back to memory the low 14 bits of the result... */
-        _ "extui  %[carry], %[rx], 0, 14"
-        _ "s16i   %[carry], %[ri], 0"
+        _ "extui  %[carry], %[rx],    0, 14"
+        _ "s16i   %[carry], %[ri],    0"
         /* ...and put any overflow back in carry */
-        _ "srli   %[carry], %[rx], 14"
+        _ "srli   %[carry], %[rx],    14"
 
         /* Repeat for the high halves */
-        _ "l16ui  %[ax],    %[ai], 2"
-        _ "l16ui  %[bx],    %[bi], 2"
+        _ "l16ui  %[ax],    %[ai],    2"
+        _ "l16ui  %[bx],    %[bi],    2"
         _ "movnez %[bx],    %[carry], %[mock]"
-        _ "add.n  %[rx],    %[ax], %[bx]"
-        _ "add.n  %[rx],    %[rx], %[carry]"
-        _ "extui  %[carry], %[rx], 0, 14"
-        _ "s16i   %[carry], %[ri], 2"
-        _ "srli   %[carry], %[rx], 14"
+        _ "add.n  %[rx],    %[ax],    %[bx]"
+        _ "add.n  %[rx],    %[rx],    %[carry]"
+        _ "extui  %[carry], %[rx],    0, 14"
+        _ "s16i   %[carry], %[ri],    2"
+        _ "srli   %[carry], %[rx],    14"
 
         /* Advance the iterators */
-        _ "addi.n %[ai],    %[ai], 4"
-        _ "addi.n %[bi],    %[bi], 4"
-        _ "addi.n %[ri],    %[ri], 4"
-    _ "add_internal.endloop:"
+        _ "addi.n %[ai],    %[ai],    4"
+        _ "addi.n %[bi],    %[bi],    4"
+        _ "addi.n %[ri],    %[ri],    4"
+    _ "add_internal%=.endloop:"
 
         /* Do a weak reduction. Note that we use the identity
          *
@@ -423,50 +423,50 @@ static inline void fe448_add_internal(fe448 r, const fe448 a, const fe448 b, int
 
         /* Loop over the first 16 limbs */
         _ "movi.n %[rx],    %[limb_count] / 2"
-        _ "loop   %[rx],    add_internal.endreduceloop"
-    _ "add_internal.startreduceloop:"
+        _ "loop   %[rx],    add_internal%=.endreduceloop"
+    _ "add_internal%=.startreduceloop:"
         /* Load a 14-bit limb */
-        _ "l16ui  %[rx],    %[ri], 0"
+        _ "l16ui  %[rx],    %[ri],    0"
         /* Add the carry to it */
-        _ "add.n  %[rx],    %[rx], %[carry]"
+        _ "add.n  %[rx],    %[rx],    %[carry]"
         /* Write the low 14 bits back to memory... */
-        _ "extui  %[carry], %[rx], 0, 14"
-        _ "s16i   %[carry], %[ri], 0"
+        _ "extui  %[carry], %[rx],    0, 14"
+        _ "s16i   %[carry], %[ri],    0"
         /* ...and put anything above 14 bits back into carry */
-        _ "srli   %[carry], %[rx], 14"
+        _ "srli   %[carry], %[rx],    14"
 
         /* Repeat for the top half of the word */
-        _ "l16ui  %[rx],    %[ri], 2"
-        _ "add.n  %[rx],    %[rx], %[carry]"
-        _ "extui  %[carry], %[rx], 0, 14"
-        _ "s16i   %[carry], %[ri], 2"
-        _ "srli   %[carry], %[rx], 14"
+        _ "l16ui  %[rx],    %[ri],    2"
+        _ "add.n  %[rx],    %[rx],    %[carry]"
+        _ "extui  %[carry], %[rx],    0, 14"
+        _ "s16i   %[carry], %[ri],    2"
+        _ "srli   %[carry], %[rx],    14"
 
         /* Advance the iterator */
-        _ "addi.n %[ri],    %[ri], 4"
-    _ "add_internal.endreduceloop:"
+        _ "addi.n %[ri],    %[ri],    4"
+    _ "add_internal%=.endreduceloop:"
 
         /* At this point add the previously stored z back
          * to the carry before continuing */
         _ "add.n  %[carry], %[carry], %[ax]"
 
         _ "movi.n %[rx],    %[limb_count] / 2"
-        _ "loop   %[rx],    add_internal.endreduceloop2"
-    _ "add_internal.startreduceloop2:"
-        _ "l16ui  %[rx],    %[ri], 0"
-        _ "add.n  %[rx],    %[rx], %[carry]"
-        _ "extui  %[carry], %[rx], 0, 14"
-        _ "s16i   %[carry], %[ri], 0"
-        _ "srli   %[carry], %[rx], 14"
+        _ "loop   %[rx],    add_internal%=.endreduceloop2"
+    _ "add_internal%=.startreduceloop2:"
+        _ "l16ui  %[rx],    %[ri],    0"
+        _ "add.n  %[rx],    %[rx],    %[carry]"
+        _ "extui  %[carry], %[rx],    0, 14"
+        _ "s16i   %[carry], %[ri],    0"
+        _ "srli   %[carry], %[rx],    14"
 
-        _ "l16ui  %[rx],    %[ri], 2"
-        _ "add.n  %[rx],    %[rx], %[carry]"
-        _ "extui  %[carry], %[rx], 0, 14"
-        _ "s16i   %[carry], %[ri], 2"
-        _ "srli   %[carry], %[rx], 14"
+        _ "l16ui  %[rx],    %[ri],    2"
+        _ "add.n  %[rx],    %[rx],    %[carry]"
+        _ "extui  %[carry], %[rx],    0, 14"
+        _ "s16i   %[carry], %[ri],    2"
+        _ "srli   %[carry], %[rx],    14"
 
-        _ "addi.n %[ri],    %[ri], 4"
-    _ "add_internal.endreduceloop2:"
+        _ "addi.n %[ri],    %[ri],    4"
+    _ "add_internal%=.endreduceloop2:"
 
         : [ai]         "+&r" (ai),
           [bi]         "+&r" (bi),
