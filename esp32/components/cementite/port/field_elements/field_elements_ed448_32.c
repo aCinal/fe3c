@@ -76,7 +76,7 @@ int fe448_equal(const fe448 a, const fe448 b) {
         _ "movi.n %[zero], 0"
 
         /* Set up a hardware loop */
-        _ "movi.n %[ax],    %[limb_count]"
+        _ "movi.n %[ax],    %[word_count]"
         _ "loop   %[ax],    equal.endloop"
     _ "equal.startloop:"
         /* Load the limbs */
@@ -99,7 +99,7 @@ int fe448_equal(const fe448 a, const fe448 b) {
           [b] "+r" (b),
           [ax] "=r" (ax),
           [bx] "=r" (bx)
-        : [limb_count] "i" (ED448_FE_LIMB_COUNT)
+        : [word_count] "i" (ED448_FE_LIMB_COUNT)
         :
     );
 
@@ -121,8 +121,8 @@ static inline int fe448_is_canonical(const fe448 a) {
      * fe448_decode. */
 
     /* Iterators over the limbs */
-    const fe_limb_type * ai = (fe_limb_type *) a;
-    const fe_limb_type * pi = (fe_limb_type *) fe448_p;
+    const fe_limb_type * ai = a;
+    const fe_limb_type * pi = fe448_p;
     /* Registers to store the values of limbs, any borrow and an
      * indicator whether or not the input is equal to the modulus
      * (in which case it is also not canonical despite the borrow
@@ -140,7 +140,7 @@ static inline int fe448_is_canonical(const fe448 a) {
         _ "movi.n %[notp],   0"
 
         /* Set up a hardware loop */
-        _ "movi.n %[ax],     %[limb_count]"
+        _ "movi.n %[ax],     %[word_count]"
         _ "loop   %[ax],     is_canonical%=.endloop"
     _ "is_canonical%=.startloop:"
         /* Load the operands' limbs */
@@ -180,7 +180,7 @@ static inline int fe448_is_canonical(const fe448 a) {
           [px]         "=r" (px),
           [borrow]     "=r" (borrow),
           [notp]       "=r" (notp)
-        : [limb_count] "i"  (ED448_FE_LIMB_COUNT)
+        : [word_count] "i"  (ED448_FE_LIMB_COUNT)
         : "memory"
     );
 
@@ -205,7 +205,7 @@ void fe448_conditional_move(fe448 r, const fe448 a, int move) {
     u32 ax;
     asm volatile(
         /* Set up a hardware loop */
-        _ "movi.n %[ax], %[limb_count]"
+        _ "movi.n %[ax], %[word_count]"
         _ "loop   %[ax], conditional_move.endloop"
     _ "conditional_move.startloop:"
         /* Load the limbs */
@@ -224,7 +224,7 @@ void fe448_conditional_move(fe448 r, const fe448 a, int move) {
           [ri]   "+&r" (ri),
           [rx]   "=&r" (rx),
           [ax]   "=&r" (ax)
-        : [limb_count] "i" (ED448_FE_LIMB_COUNT),
+        : [word_count] "i" (ED448_FE_LIMB_COUNT),
           [move] "r"  (move)
         : "memory"
     );
@@ -266,7 +266,7 @@ static inline u32 fe448_sub_internal(fe448 r, const fe448 a, const fe448 b, int 
         _ "movi.n %[borrow], 0"
 
         /* Set up a hardware loop */
-        _ "movi.n %[ax],     %[limb_count]"
+        _ "movi.n %[ax],     %[word_count]"
         _ "loop   %[ax],     sub_internal%=.endloop"
     _ "sub_internal%=.startloop:"
         /* Load the operands' limbs. */
@@ -310,7 +310,7 @@ static inline u32 fe448_sub_internal(fe448 r, const fe448 a, const fe448 b, int 
           [bx]         "=&r" (bx),
           [rx]         "=&r" (rx),
           [borrow]     "=&r" (borrow)
-        : [limb_count] "i"   (ED448_FE_LIMB_COUNT),
+        : [word_count] "i"   (ED448_FE_LIMB_COUNT),
           [mock]       "r"   (mock)
         : "memory"
     );
@@ -368,7 +368,7 @@ static inline void fe448_add_internal(fe448 r, const fe448 a, const fe448 b, int
         _ "movi.n %[carry], 0"
 
         /* Set up a hardware loop */
-        _ "movi.n %[ax],    %[limb_count]"
+        _ "movi.n %[ax],    %[word_count]"
         _ "loop   %[ax],    add_internal%=.endloop"
     _ "add_internal%=.startloop:"
         /* Load the operands' limbs. */
@@ -382,7 +382,7 @@ static inline void fe448_add_internal(fe448 r, const fe448 a, const fe448 b, int
         _ "add.n  %[rx],    %[ax],    %[bx]"
         /* Add the carry */
         _ "add.n  %[rx],    %[rx],    %[carry]"
-        /* ...write back to memory the low 14 bits of the result... */
+        /* Write back to memory the low 14 bits of the result... */
         _ "extui  %[carry], %[rx],    0, 14"
         _ "s16i   %[carry], %[ri],    0"
         /* ...and put any overflow back in carry */
@@ -422,7 +422,7 @@ static inline void fe448_add_internal(fe448 r, const fe448 a, const fe448 b, int
         _ "mov.n  %[ri],    %[r]"
 
         /* Loop over the first 16 limbs */
-        _ "movi.n %[rx],    %[limb_count] / 2"
+        _ "movi.n %[rx],    %[word_count] / 2"
         _ "loop   %[rx],    add_internal%=.endreduceloop"
     _ "add_internal%=.startreduceloop:"
         /* Load a 14-bit limb */
@@ -450,7 +450,7 @@ static inline void fe448_add_internal(fe448 r, const fe448 a, const fe448 b, int
          * to the carry before continuing */
         _ "add.n  %[carry], %[carry], %[ax]"
 
-        _ "movi.n %[rx],    %[limb_count] / 2"
+        _ "movi.n %[rx],    %[word_count] / 2"
         _ "loop   %[rx],    add_internal%=.endreduceloop2"
     _ "add_internal%=.startreduceloop2:"
         _ "l16ui  %[rx],    %[ri],    0"
@@ -477,7 +477,7 @@ static inline void fe448_add_internal(fe448 r, const fe448 a, const fe448 b, int
           [carry]      "=&r" (carry)
         : [r]          "r"   (r),
           [mock]       "r"   (mock),
-          [limb_count] "i"   (ED448_FE_LIMB_COUNT)
+          [word_count] "i"   (ED448_FE_LIMB_COUNT)
         : "memory"
     );
 
@@ -998,7 +998,7 @@ static u32 multiply_distinct_16_limbs(fe_limb_type * restrict r, const fe_limb_t
           [carrylo] "=&r" (carrylo),
           [carryhi] "=&r" (carryhi),
           [temp] "=&r" (temp)
-        : [limb_count] "i" (ED448_FE_LIMB_COUNT),
+        : [word_count] "i" (ED448_FE_LIMB_COUNT),
           [a] "r" (a),
           [b] "r" (b),
           [r] "r" (r)
@@ -1008,6 +1008,12 @@ static u32 multiply_distinct_16_limbs(fe_limb_type * restrict r, const fe_limb_t
     return carrylo;
 }
 
+/**
+ * @brief Multiply two field elements
+ * @param[out] r Result of the multiplication, i.e. the product r = a b
+ * @param[in] a Operand
+ * @param[in] b Operand
+ */
 void fe448_mul(fe448 r, const fe448 a, const fe448 b) {
 
     /* Let a = u + vS and b = x + yS, where S = 2^224. Since we
@@ -1121,7 +1127,7 @@ void fe448_mul(fe448 r, const fe448 a, const fe448 b) {
           [aux1]    "=&r" (aux1),
           [aux2]    "=&r" (aux2)
 
-        : [limb_count] "i" (ED448_FE_LIMB_COUNT),
+        : [word_count] "i" (ED448_FE_LIMB_COUNT),
           [a] "r" (a),
           [b] "r" (b)
 
@@ -1272,13 +1278,13 @@ void fe448_mul(fe448 r, const fe448 a, const fe448 b) {
 
         /* Set up a loop over the low 16 limbs - unroll it partially */
         _ "movi.n %[temp],  %[word_count] / 2"
-        _ "loop %[temp],    mul.endloredloop"
+        _ "loop   %[temp],  mul.endloredloop"
     _ "mul.startloredloop:"
         /* Load a 14-bit limb */
         _ "l16ui  %[temp],  %[riter], 0"
         /* Add the carry to it */
         _ "add.n  %[carry], %[temp],  %[carry]"
-        /* Write the low 14 bits back to memory... */
+        /* Write the low 14 bits back to memory */
         _ "extui  %[temp],  %[carry], 0, 14"
         _ "s16i   %[temp],  %[riter], 0"
         _ "srai   %[carry], %[carry], 14"
@@ -1287,7 +1293,7 @@ void fe448_mul(fe448 r, const fe448 a, const fe448 b) {
         _ "l16ui  %[temp],  %[riter], 2"
         /* Add the carry to it */
         _ "add.n  %[carry], %[temp],  %[carry]"
-        /* Write the low 14 bits back to memory... */
+        /* Write the low 14 bits back to memory */
         _ "extui  %[temp],  %[carry], 0, 14"
         _ "s16i   %[temp],  %[riter], 2"
         _ "srai   %[carry], %[carry], 14"
@@ -1301,13 +1307,13 @@ void fe448_mul(fe448 r, const fe448 a, const fe448 b) {
 
         /* Set up a loop over the top 16 limbs */
         _ "movi.n %[temp],  %[word_count] / 2"
-        _ "loop %[temp],    mul.endhiredloop"
+        _ "loop   %[temp],  mul.endhiredloop"
     _ "mul.starthiredloop:"
         /* Load a 14-bit limb */
         _ "l16ui  %[temp],  %[riter], 0"
         /* Add the carry to it */
         _ "add.n  %[carry], %[temp],  %[carry]"
-        /* Write the low 14 bits back to memory... */
+        /* Write the low 14 bits back to memory */
         _ "extui  %[temp],  %[carry], 0, 14"
         _ "s16i   %[temp],  %[riter], 0"
         _ "srai   %[carry], %[carry], 14"
@@ -1316,7 +1322,7 @@ void fe448_mul(fe448 r, const fe448 a, const fe448 b) {
         _ "l16ui  %[temp],  %[riter], 2"
         /* Add the carry to it */
         _ "add.n  %[carry], %[temp],  %[carry]"
-        /* Write the low 14 bits back to memory... */
+        /* Write the low 14 bits back to memory */
         _ "extui  %[temp],  %[carry], 0, 14"
         _ "s16i   %[temp],  %[riter], 2"
         _ "srai   %[carry], %[carry], 14"
@@ -1355,12 +1361,7 @@ void fe448_mul(fe448 r, const fe448 a, const fe448 b) {
  */
 void fe448_square(fe448 r, const fe448 a) {
 
-#if !FE3C_FAST_SQUARING
     fe448_mul(r, a, a);
-#else
-    /* TODO: Study if optimized squaring is possible/worthwhile */
-    fe448_mul(r, a, a);
-#endif /* !FE3C_FAST_SQUARING */
 }
 
 /**

@@ -61,7 +61,7 @@ int fe25519_equal(const fe25519 a, const fe25519 b) {
         _ "movi.n %[zero], 0"
 
         /* Set up a hardware loop */
-        _ "movi.n %[ax],    %[limb_count]"
+        _ "movi.n %[ax],    %[word_count]"
         _ "loop   %[ax],    equal.endloop"
     _ "equal.startloop:"
         /* Load the limbs */
@@ -84,7 +84,7 @@ int fe25519_equal(const fe25519 a, const fe25519 b) {
           [b] "+r" (b),
           [ax] "=r" (ax),
           [bx] "=r" (bx)
-        : [limb_count] "i" (ED25519_FE_LIMB_COUNT)
+        : [word_count] "i" (ED25519_FE_LIMB_COUNT)
         :
     );
 
@@ -99,8 +99,8 @@ int fe25519_equal(const fe25519 a, const fe25519 b) {
 static inline int fe25519_is_canonical(const fe25519 a) {
 
     /* Iterators over the limbs */
-    const fe_limb_type * ai = (fe_limb_type *) a;
-    const fe_limb_type * pi = (fe_limb_type *) fe25519_p;
+    const fe_limb_type * ai = a;
+    const fe_limb_type * pi = fe25519_p;
     /* Registers to store the values of limbs, any borrow and an
      * indicator whether or not the input is equal to the modulus
      * (in which case it is also not canonical despite the borrow
@@ -118,7 +118,7 @@ static inline int fe25519_is_canonical(const fe25519 a) {
         _ "movi.n %[notp],   0"
 
         /* Set up a hardware loop */
-        _ "movi.n %[ax],     %[limb_count]"
+        _ "movi.n %[ax],     %[word_count]"
         _ "loop   %[ax],     is_canonical%=.endloop"
     _ "is_canonical%=.startloop:"
         /* Load the operands' limbs */
@@ -158,7 +158,7 @@ static inline int fe25519_is_canonical(const fe25519 a) {
           [px]         "=r" (px),
           [borrow]     "=r" (borrow),
           [notp]       "=r" (notp)
-        : [limb_count] "i"  (ED25519_FE_LIMB_COUNT)
+        : [word_count] "i"  (ED25519_FE_LIMB_COUNT)
         : "memory"
     );
 
@@ -183,7 +183,7 @@ void fe25519_conditional_move(fe25519 r, const fe25519 a, int move) {
     u32 ax;
     asm volatile(
         /* Set up a hardware loop */
-        _ "movi.n %[ax], %[limb_count]"
+        _ "movi.n %[ax], %[word_count]"
         _ "loop   %[ax], conditional_move.endloop"
     _ "conditional_move.startloop:"
         /* Load the limbs */
@@ -202,7 +202,7 @@ void fe25519_conditional_move(fe25519 r, const fe25519 a, int move) {
           [ri]   "+&r" (ri),
           [rx]   "=&r" (rx),
           [ax]   "=&r" (ax)
-        : [limb_count] "i" (ED25519_FE_LIMB_COUNT),
+        : [word_count] "i" (ED25519_FE_LIMB_COUNT),
           [move] "r"  (move)
         : "memory"
     );
@@ -230,14 +230,14 @@ void fe25519_weak_reduce(fe25519 r, const fe25519 a) {
          * Note that 255 / 15 = 17, so whatever is in limb 17 now is the overflow
          * beyond the 2^255 boundary (y in the above identity). We shall multiply it
          * by 19 and add it back to result. */
-        _ "l16ui  %[carry], %[ri], 4 * %[limb_count] - 2"
+        _ "l16ui  %[carry], %[ri], 4 * %[word_count] - 2"
         _ "movi.n %[rx],    19"
         _ "mull   %[carry], %[rx], %[carry]"
         /* Clear the overflow limb in memory */
         _ "movi.n %[rx],    0"
-        _ "s16i   %[rx],    %[ri], 4 * %[limb_count] - 2"
+        _ "s16i   %[rx],    %[ri], 4 * %[word_count] - 2"
 
-        _ "movi.n %[rx],    %[limb_count]"
+        _ "movi.n %[rx],    %[word_count]"
         _ "loop   %[rx],    weak_reduce.endloop"
     _ "weak_reduce.startloop:"
         /* Load a 15-bit limb */
@@ -264,7 +264,7 @@ void fe25519_weak_reduce(fe25519 r, const fe25519 a) {
         : [ri] "+r" (ri),
           [rx] "=r" (rx),
           [carry] "=r" (carry)
-        : [limb_count] "i" (ED25519_FE_LIMB_COUNT)
+        : [word_count] "i" (ED25519_FE_LIMB_COUNT)
         : "memory"
     );
 }
@@ -292,7 +292,7 @@ static inline void fe25519_sub_internal(fe25519 r, const fe25519 a, const fe2551
         _ "movi.n %[borrow], 0"
 
         /* Set up a hardware loop */
-        _ "movi.n %[ax],     %[limb_count]"
+        _ "movi.n %[ax],     %[word_count]"
         _ "loop   %[ax],     sub_internal%=.endloop"
     _ "sub_internal%=.startloop:"
         /* Load the operands' limbs */
@@ -336,7 +336,7 @@ static inline void fe25519_sub_internal(fe25519 r, const fe25519 a, const fe2551
           [bx]         "=&r" (bx),
           [rx]         "=&r" (rx),
           [borrow]     "=&r" (borrow)
-        : [limb_count] "i"   (ED25519_FE_LIMB_COUNT),
+        : [word_count] "i"   (ED25519_FE_LIMB_COUNT),
           [mock]       "r"   (mock)
         : "memory"
     );
@@ -392,7 +392,7 @@ void fe25519_add(fe25519 r, const fe25519 a, const fe25519 b) {
         _ "movi.n %[carry], 0"
 
         /* Set up a hardware loop */
-        _ "movi.n %[ax],    %[limb_count]"
+        _ "movi.n %[ax],    %[word_count]"
         _ "loop   %[ax],    add.endloop"
     _ "add.startloop:"
         /* Load the operands' limbs */
@@ -403,7 +403,7 @@ void fe25519_add(fe25519 r, const fe25519 a, const fe25519 b) {
         _ "add.n  %[rx],    %[ax], %[bx]"
         /* Add the carry */
         _ "add.n  %[rx],    %[rx], %[carry]"
-        /* ...write back to memory the low 15 bits of the result... */
+        /* Write back to memory the low 15 bits of the result... */
         _ "extui  %[carry], %[rx], 0, 15"
         _ "s16i   %[carry], %[ri], 0"
         /* ...and put any overflow back in carry */
@@ -431,7 +431,7 @@ void fe25519_add(fe25519 r, const fe25519 a, const fe25519 b) {
           [bx] "=r" (bx),
           [rx] "=r" (rx),
           [carry] "=r" (carry)
-        : [limb_count] "i" (ED25519_FE_LIMB_COUNT)
+        : [word_count] "i" (ED25519_FE_LIMB_COUNT)
         : "memory"
     );
 }
@@ -589,7 +589,7 @@ void fe25519_mul(fe25519 r, const fe25519 a, const fe25519 b) {
             put_canonical_carry_aside_small()
 
             /* 19*(a0*b17 + a1*b16 + ... + a16*b1 + a17*b0) */
-            _ "addi.n    %[bi], %[b], 4 * %[limb_count]"
+            _ "addi.n    %[bi], %[b], 4 * %[word_count]"
             _ "lddec m2, %[bi]"
 
             _ "mula.dd.lh.ldinc m1, %[ai], m0, m2"  /* a0*b17 */
@@ -628,7 +628,7 @@ void fe25519_mul(fe25519 r, const fe25519 a, const fe25519 b) {
             put_canonical_carry_aside()
 
             /* 19*(a1*b17 + a2*b16 + ... + a16*b2 + a17*b1) */
-            _ "addi.n    %[bi], %[b], 4 * %[limb_count]"
+            _ "addi.n    %[bi], %[b], 4 * %[word_count]"
             _ "lddec m2, %[bi]"
 
             _ "mula.dd.hh.ldinc m1, %[ai], m0, m2"  /* a1*b17 */
@@ -668,7 +668,7 @@ void fe25519_mul(fe25519 r, const fe25519 a, const fe25519 b) {
             put_canonical_carry_aside()
 
             /* 19*(a2*b17 + a3*b16 + ... + a16*b3 + a17*b2) */
-            _ "addi.n    %[bi], %[b], 4 * %[limb_count]"
+            _ "addi.n    %[bi], %[b], 4 * %[word_count]"
             _ "lddec m2, %[bi]"
 
             _ "mula.dd.lh.ldinc m0, %[ai], m1, m2"  /* a2*b17 */
@@ -708,7 +708,7 @@ void fe25519_mul(fe25519 r, const fe25519 a, const fe25519 b) {
             put_canonical_carry_aside()
 
             /* 19*(a3*b17 + a4*b16 + ... + a16*b4 + a17*b3) */
-            _ "addi.n    %[bi], %[b], 4 * %[limb_count]"
+            _ "addi.n    %[bi], %[b], 4 * %[word_count]"
             _ "lddec m2, %[bi]"
 
             _ "mula.dd.hh.ldinc m0, %[ai], m1, m2"  /* a3*b17 */
@@ -748,7 +748,7 @@ void fe25519_mul(fe25519 r, const fe25519 a, const fe25519 b) {
             put_canonical_carry_aside()
 
             /* 19*(a4*b17 + a4*b16 + ... + a16*b4 + a17*b4) */
-            _ "addi.n    %[bi], %[b], 4 * %[limb_count]"
+            _ "addi.n    %[bi], %[b], 4 * %[word_count]"
             _ "lddec m2, %[bi]"
 
             _ "mula.dd.lh.ldinc m1, %[ai], m0, m2"  /* a4*b17 */
@@ -788,7 +788,7 @@ void fe25519_mul(fe25519 r, const fe25519 a, const fe25519 b) {
             put_canonical_carry_aside()
 
             /* 19*(a5*b17 + a6*b16 + ... + a16*b6 + a17*b5) */
-            _ "addi.n    %[bi], %[b], 4 * %[limb_count]"
+            _ "addi.n    %[bi], %[b], 4 * %[word_count]"
             _ "lddec m2, %[bi]"
 
             _ "mula.dd.hh.ldinc m1, %[ai], m0, m2"  /* a5*b17 */
@@ -831,7 +831,7 @@ void fe25519_mul(fe25519 r, const fe25519 a, const fe25519 b) {
             put_canonical_carry_aside()
 
             /* 19*(a6*b17 + a7*b16 + ... + a16*b7 + a17*b6) */
-            _ "addi.n    %[bi], %[b], 4 * %[limb_count]"
+            _ "addi.n    %[bi], %[b], 4 * %[word_count]"
             _ "lddec m2, %[bi]"
 
             _ "mula.dd.lh.ldinc m0, %[ai], m1, m2"  /* a6*b17 */
@@ -871,7 +871,7 @@ void fe25519_mul(fe25519 r, const fe25519 a, const fe25519 b) {
             put_canonical_carry_aside()
 
             /* 19*(a7*b17 + a8*b16 + ... + a16*b8 + a17*b7) */
-            _ "addi.n    %[bi], %[b], 4 * %[limb_count]"
+            _ "addi.n    %[bi], %[b], 4 * %[word_count]"
             _ "lddec m2, %[bi]"
 
             _ "mula.dd.hh.ldinc m0, %[ai], m1, m2"  /* a7*b17 */
@@ -912,7 +912,7 @@ void fe25519_mul(fe25519 r, const fe25519 a, const fe25519 b) {
             put_canonical_carry_aside()
 
             /* 19*(a8*b17 + a9*b16 + ... + a16*b9 + a17*b8) */
-            _ "addi.n    %[bi], %[b], 4 * %[limb_count]"
+            _ "addi.n    %[bi], %[b], 4 * %[word_count]"
             _ "lddec m2, %[bi]"
 
             _ "mula.dd.lh.ldinc m1, %[ai], m0, m2"  /* a8*b17 */
@@ -954,7 +954,7 @@ void fe25519_mul(fe25519 r, const fe25519 a, const fe25519 b) {
             put_canonical_carry_aside()
 
             /* 19*(a9*b17 + a10*b16 + ... + a16*b10 + a17*b9) */
-            _ "addi.n    %[bi], %[b], 4 * %[limb_count]"
+            _ "addi.n    %[bi], %[b], 4 * %[word_count]"
             _ "lddec m2, %[bi]"
 
             _ "mula.dd.hh.ldinc m1, %[ai], m0, m2"  /* a9*b17 */
@@ -997,7 +997,7 @@ void fe25519_mul(fe25519 r, const fe25519 a, const fe25519 b) {
             put_canonical_carry_aside()
 
             /* 19*(a10*b17 + a11*b16 + ... + a16*b11 + a17*b10) */
-            _ "addi.n    %[bi], %[b], 4 * %[limb_count]"
+            _ "addi.n    %[bi], %[b], 4 * %[word_count]"
             _ "lddec m2, %[bi]"
 
             _ "mula.dd.lh.ldinc m0, %[ai], m1, m2"  /* a10*b17 */
@@ -1037,7 +1037,7 @@ void fe25519_mul(fe25519 r, const fe25519 a, const fe25519 b) {
             put_canonical_carry_aside()
 
             /* 19*(a11*b17 + a12*b16 + ... + a16*b12 + a17*b11) */
-            _ "addi.n    %[bi], %[b], 4 * %[limb_count]"
+            _ "addi.n    %[bi], %[b], 4 * %[word_count]"
             _ "lddec m2, %[bi]"
 
             _ "mula.dd.hh.ldinc m0, %[ai], m1, m2"  /* a11*b17 */
@@ -1079,7 +1079,7 @@ void fe25519_mul(fe25519 r, const fe25519 a, const fe25519 b) {
             put_canonical_carry_aside()
 
             /* 19*(a12*b17 + a13*b16 + ... + a16*b13 + a17*b12) */
-            _ "addi.n    %[bi], %[b], 4 * %[limb_count]"
+            _ "addi.n    %[bi], %[b], 4 * %[word_count]"
             _ "lddec m2, %[bi]"
 
             _ "mula.dd.lh.ldinc m1, %[ai], m0, m2"  /* a12*b17 */
@@ -1120,7 +1120,7 @@ void fe25519_mul(fe25519 r, const fe25519 a, const fe25519 b) {
             put_canonical_carry_aside()
 
             /* 19*(a13*b17 + a14*b16 + ... + a16*b14 + a17*b13) */
-            _ "addi.n    %[bi], %[b], 4 * %[limb_count]"
+            _ "addi.n    %[bi], %[b], 4 * %[word_count]"
             _ "lddec m2, %[bi]"
 
             _ "mula.dd.hh.ldinc m1, %[ai], m0, m2"  /* a13*b17 */
@@ -1163,7 +1163,7 @@ void fe25519_mul(fe25519 r, const fe25519 a, const fe25519 b) {
             put_canonical_carry_aside()
 
             /* 19*(a14*b17 + a15*b16 + a16*b15 + a17*b14) */
-            _ "addi.n    %[bi], %[b], 4 * %[limb_count]"
+            _ "addi.n    %[bi], %[b], 4 * %[word_count]"
             _ "lddec m2, %[bi]"
 
             _ "mula.dd.lh.ldinc m0, %[ai], m1, m2"  /* a14*b17 */
@@ -1203,7 +1203,7 @@ void fe25519_mul(fe25519 r, const fe25519 a, const fe25519 b) {
             put_canonical_carry_aside()
 
             /* 19*(a15*b17 + a16*b16 + a17*b15) */
-            _ "addi.n    %[bi], %[b], 4 * %[limb_count]"
+            _ "addi.n    %[bi], %[b], 4 * %[word_count]"
             _ "lddec m2, %[bi]"
 
             _ "mula.dd.hh.ldinc m0, %[ai], m1, m2"  /* a15*b17 */
@@ -1244,7 +1244,7 @@ void fe25519_mul(fe25519 r, const fe25519 a, const fe25519 b) {
             put_canonical_carry_aside()
 
             /* 19*(a16*b17 + a17*b16) */
-            _ "addi.n    %[bi], %[b], 4 * %[limb_count]"
+            _ "addi.n    %[bi], %[b], 4 * %[word_count]"
             _ "lddec m2, %[bi]"
 
             _ "mula.dd.lh                  m0, m2"  /* a16*b17 */
@@ -1265,8 +1265,8 @@ void fe25519_mul(fe25519 r, const fe25519 a, const fe25519 b) {
             /* Use address registers for this to reduce the number of
              * unproductive read/writes from/to ACC. Put a17 in carrylo
              * and b17 in carryhi since we don't need those anymore. */
-            _ "l16ui %[carrylo],   %[a],       4 * %[limb_count] - 4 + 2"
-            _ "l16ui %[carryhi],   %[b],       4 * %[limb_count] - 4 + 2"
+            _ "l16ui %[carrylo],   %[a],       4 * %[word_count] - 4 + 2"
+            _ "l16ui %[carryhi],   %[b],       4 * %[word_count] - 4 + 2"
             _ "mull  %[carrylo],   %[carrylo], %[nineteen]"
             _ "mull  %[carry19lo], %[carrylo], %[carryhi]"
             /* Note that for reasonably reduced inputs (TODO: make this
@@ -1291,7 +1291,7 @@ void fe25519_mul(fe25519 r, const fe25519 a, const fe25519 b) {
              * inputs. */
             /* Use ai to iterate over r */
             _ "mov.n     %[ai],        %[r]"
-            _ "movi.n    %[temp],      %[limb_count]"
+            _ "movi.n    %[temp],      %[word_count]"
             _ "loop      %[temp],      mul.endreduce"
         _ "mul.startreduce:"
 
@@ -1335,7 +1335,7 @@ void fe25519_mul(fe25519 r, const fe25519 a, const fe25519 b) {
           [temp]       "=&r" (temp),
           [rxeven]     "=&r" (rxeven),
           [rxodd]      "=&r" (rxodd)
-        : [limb_count] "i"   (ED25519_FE_LIMB_COUNT),
+        : [word_count] "i"   (ED25519_FE_LIMB_COUNT),
           [a] "r" (a),
           [b] "r" (b),
           [r] "r" (_r)
@@ -1352,12 +1352,7 @@ void fe25519_mul(fe25519 r, const fe25519 a, const fe25519 b) {
  */
 void fe25519_square(fe25519 r, const fe25519 a) {
 
-#if !FE3C_FAST_SQUARING
     fe25519_mul(r, a, a);
-#else
-    /* TODO: Implement optimized squaring */
-    fe25519_mul(r, a, a);
-#endif /* !FE3C_FAST_SQUARING */
 }
 
 /**

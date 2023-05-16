@@ -23,6 +23,10 @@ if (CONFIG_FE3C_SUPPORT_CURVE_ED25519)
         "${FE3C_UT_COMMON_SOURCE_DIR}/points/Test_points_ed25519.cpp"
         "${FE3C_UT_COMMON_SOURCE_DIR}/scalars/Test_scalars_ed25519.cpp"
         "${FE3C_UT_PORT_SOURCE_DIR}/field_elements/Test_field_elements_ed25519_32.cpp"
+
+        # These require a larger app partition to fit in (cf. PARTITION_TABLE_SINGLE_APP_LARGE),
+        # and so are disabled by default
+        # "${FE3C_UT_COMMON_SOURCE_DIR}/eddsa/Test_eddsa_cr_yp_to_ed25519.cpp"
     )
 endif()
 

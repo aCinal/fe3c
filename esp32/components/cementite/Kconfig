@@ -53,9 +53,9 @@ menu "cementite (fe3c)"
         depends on FE3C_SUPPORT_CURVE_ED448 && FE3C_COMB_METHOD
         default n
         help
-            Minimize the size of Ed448 precomputation tables when using the comb method.
-            On ESP32 this decreases the footprint size but has different effects on
-            performance depending on whether the 4-isogeny is used.
+            Minimize the size of Ed448 precomputation tables when using the comb method,
+            which decreases the memory footprint, but marginally decreases performance
+            as well.
 
     config FE3C_PARALLEL_COMB_METHOD
         bool "Use parallel comb method"
@@ -64,14 +64,6 @@ menu "cementite (fe3c)"
         help
             Use a parallel implementation of the comb method which yields great performance benefits
             in systems with small CPU load.
-
-    config FE3C_FAST_SQUARING
-        bool "Use optimized squaring in the field"
-        depends on FE3C_SUPPORT_CURVE_ED25519 || FE3C_SUPPORT_CURVE_ED448
-        default y
-        help
-            Use a dedicated routine for squaring in the field instead of reusing the multiplication
-            code.
 
     config FE3C_PORT_OVERRIDES
         bool "Use target-specific implementation"
