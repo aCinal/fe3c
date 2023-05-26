@@ -132,8 +132,6 @@ void hash_sha512(u8 * output, const struct iovec * iov, int iovcnt) {
 
 static inline void sha512_compress(u64 * state, const u8 * input_block, u64 * schedule, sha512_working_variables * work) {
 
-    /* TODO: Study libsodium/OpenSSL's implementation(s) and do some weak unrolling in the loop */
-
     sha512_prepare_message_schedule(schedule, input_block);
     /* Initialize the working variables */
     work->a = state[0];
@@ -185,8 +183,6 @@ static inline void sha512_prepare_message_schedule(u64 * schedule, const u8 * in
     /* Fill in the rest of the message schedule */
     for (int t = SHA512_BLOCK_SIZE_BYTES / 8; t < SHA512_MESSAGE_SCHEDULE_WORD_COUNT; t++) {
 
-        /* TODO: Optimize initializing the message schedule - this can be done in parallel to actually
-         * computing the hash */
         schedule[t] = \
             SSIG1(schedule[t - 2]) + \
             schedule[t - 7] + \

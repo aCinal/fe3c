@@ -241,9 +241,8 @@ static inline int ed448_is_ok_order(const point_ed448 * p) {
      * to check for low-order input points we must only check the resulting point
      * on the isogenous curve against the identity. */
 
-    /* TODO: Reject mixed-order points both for Ed448 and Ed25519. Note that the
-     * check for this would need to be done before applying the 4-isogeny which
-     * clears the cofactor. */
+    /* TODO: Consider adding a configuration option where mixed-order points are
+     * rejected, by checking that L times the point gives the group identity */
     point_ed448 e;
     ed448_identity(&e);
 
@@ -464,7 +463,6 @@ static void ed448_multiply_basepoint(point * rgen, const u8 * sraw) {
 
     point_ed448 * r = (point_ed448 *) rgen;
     u8 s[57];
-    /* TODO: Combine division by four with signed digit recoding */
     ed448_map_scalar_to_isogenous_curve(s, sraw);
 
     /* See src/points/points_ed448_isogeny.c for a description of the comb method algorithm used here.

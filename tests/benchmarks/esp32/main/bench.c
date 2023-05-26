@@ -63,8 +63,6 @@ static void benchmark_task(void * arg) {
         printf("[-] Curve Ed448 is not supported in the current build. Skipping stack dimensioning...\n");
     }
 
-    /* TODO: Consider disabling the scheduler during benchmarking
-     * (would require timer callback to be executed in an ISR) */
     bench_params params;
     params.get_random = bench_esp32_get_random;
     params.start_stopwatch = bench_esp32_start_stopwatch;

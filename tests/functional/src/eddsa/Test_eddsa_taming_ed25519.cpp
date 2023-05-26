@@ -402,7 +402,9 @@ FE3C_TEST(EDDSA_TAMING_ED25519, Test8) {
         .curve_id = EDDSA_CURVE_ED25519,
     };
     int verified = eddsa_verify(&req);
-    /* Fail the vector because of small order commitment */
+    /* Fail the vector because of small order commitment.
+     * Also note that its encoding is not canonical, as
+     * the sign bit is set for x=0. */
     FAIL_UNLESS_EQUAL(0, verified);
 }
 
@@ -421,7 +423,6 @@ FE3C_TEST(EDDSA_TAMING_ED25519, Test9) {
      * the signature either way because of non-canonical encoding and small order.
      */
 
-    /* TODO: Double check the paper. R.y = p-1 in this case which is canonical */
     const u8 message[] = \
         "\x9b\xed\xc2\x67\x42\x37\x25\xd4" \
         "\x73\x88\x86\x31\xeb\xf4\x59\x88" \
@@ -450,7 +451,9 @@ FE3C_TEST(EDDSA_TAMING_ED25519, Test9) {
         .curve_id = EDDSA_CURVE_ED25519,
     };
     int verified = eddsa_verify(&req);
-    /* Fail the vector because of small order commitment */
+    /* Fail the vector because of small order commitment.
+     * Also note that its encoding is not canonical, as
+     * the sign bit is set for x=0. */
     FAIL_UNLESS_EQUAL(0, verified);
 }
 

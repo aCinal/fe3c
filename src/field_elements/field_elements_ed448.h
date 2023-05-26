@@ -217,8 +217,6 @@ static inline void fe448_invert(fe448 r, const fe448 a) {
      * is also zero.
      */
 
-    /* TODO: Investigate other approaches to do this */
-
     /* Initialize r with the initial squaring and multiplication (this covers
      * the two leftmost ones in the exponent - since the first one corresponds
      * to a no-op) */
@@ -271,8 +269,6 @@ static inline void fe448_exp_p_minus_3_over_4(fe448 r, const fe448 a) {
      * i.e. it is a sequence of 223 ones, a zero, and another sequence of 222
      * ones. Use a square-and-multiply algorithm to obtain the result.
      */
-
-    /* TODO: Investigate other approaches to do this */
 
     /* Initialize r with the initial squaring and multiplication (this covers
      * the two leftmost ones in the exponent - since the first one corresponds

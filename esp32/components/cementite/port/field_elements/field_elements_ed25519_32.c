@@ -365,7 +365,6 @@ void fe25519_strong_reduce(fe25519 r, const fe25519 a) {
  */
 void fe25519_neg(fe25519 r, const fe25519 a) {
 
-    /* TODO: Assert that the input is weakly reduced, i.e. smaller than 2p */
     fe25519_sub_internal(r, fe25519_2p, a, 0);
 }
 
@@ -446,7 +445,6 @@ void fe25519_sub(fe25519 r, const fe25519 a, const fe25519 b) {
 
     /* Negate b and then add that to a */
     fe25519 _b;
-    /* TODO: Assert that b is weakly reduced, i.e. smaller than 2p */
     fe25519_sub_internal(_b, fe25519_2p, b, 0);
     fe25519_add(r, a, _b);
 }
@@ -1295,8 +1293,6 @@ void fe25519_mul(fe25519 r, const fe25519 a, const fe25519 b) {
             _ "loop      %[temp],      mul.endreduce"
         _ "mul.startreduce:"
 
-            /* TODO: Check if it is not faster to load both limbs as u32
-             * and then do shifts and masks */
             _ "l16ui     %[rxeven],    %[ai],        0"
             _ "l16ui     %[rxodd],     %[ai],        2"
 

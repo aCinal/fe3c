@@ -35,7 +35,6 @@ static inline int byte_equal(u8 x, u8 y) {
      */
     static inline void purge_secrets(void * secrets, size_t size) {
 
-        /* TODO: Use memset_s when available (when using C11) */
         volatile u8 * p = (volatile u8 *) secrets;
         while (size -- > 0) {
             *p++ = 0;

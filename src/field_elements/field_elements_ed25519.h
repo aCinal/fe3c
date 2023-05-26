@@ -185,8 +185,6 @@ static inline void fe25519_invert(fe25519 r, const fe25519 a) {
      * is also zero.
      */
 
-    /* TODO: Investigate other approaches to do this */
-
     /* Initialize r with the initial squaring and multiplication (this covers
      * the two leftmost ones in the exponent - since the first one corresponds
      * to a no-op) */
@@ -237,8 +235,6 @@ static inline void fe25519_exp_p_minus_5_over_8(fe25519 r, const fe25519 a) {
      * i.e. it is a sequence of 248 ones followed by 0xd = 0b1101 (250 consecutive
      * ones in total). Use a square-and-multiply algorithm to obtain the result.
      */
-
-    /* TODO: Investigate other approaches to do this */
 
     /* Initialize r with the initial squaring and multiplication (this covers
      * the two leftmost ones in the exponent - since the first one corresponds

@@ -342,8 +342,6 @@ void fe25519_mul(fe25519 r, const fe25519 a, const fe25519 b) {
     u128 b3 = b[3];
     u128 b4 = b[4];
 
-    /* TODO: Try using Karatsuba here */
-
     /* Fuse the multiplication with (weak) reduction using the identity:
      *
      *     a + b 2^255 = a + (2^255 - 19) b + 19 b = a + 19 b (mod p)

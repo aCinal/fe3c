@@ -171,8 +171,8 @@ void ed25519_point_double(point_ed25519 * r, const point_ed25519 * p, int set_ex
 
 static inline int ed25519_is_ok_order(const point_ed25519 * p) {
 
-    /* TODO: Check against predefined table of low-order points (or reject even mixed-order points
-     * by checking that L times the point gives the group identity) */
+    /* TODO: Consider adding a configuration option where mixed-order points are
+     * rejected, by checking that L times the point gives the group identity */
     point_ed25519 q;
     point_ed25519 e;
     ed25519_identity(&e);
