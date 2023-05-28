@@ -10,6 +10,7 @@ set(FE3C_SOURCES
 set(FE3C_DEFINES
     "FE3C_32BIT"
     "FE3C_LILENDIAN_TARGET"
+    "FE3C_PORT_OVERRIDES"
 )
 
 if (CONFIG_FE3C_ENABLE_SANITY_CHECKS)
@@ -42,31 +43,20 @@ if (CONFIG_FE3C_SKIP_ZEROIZATION)
     list(APPEND FE3C_DEFINES "FE3C_SKIP_ZEROIZATION")
 endif()
 
-if (CONFIG_FE3C_PORT_OVERRIDES)
-    # TODO: Remove this config after development
-    list(APPEND FE3C_DEFINES "FE3C_PORT_OVERRIDES")
-    set(FE3C_OVERRIDE_DIR "${FE3C_PORT_DIR}")
-else()
-    set(FE3C_OVERRIDE_DIR "${FE3C_SRC_DIR}")
-endif()
-
 if (CONFIG_FE3C_PARALLEL_COMB_METHOD)
     list(APPEND FE3C_SOURCES "${FE3C_PORT_DIR}/points/comb/comb_parallel.c")
 endif()
 
 if (CONFIG_FE3C_SUPPORT_CURVE_ED25519)
     list(APPEND FE3C_SOURCES "${FE3C_SRC_DIR}/curves/curve_ed25519.c")
-    list(APPEND FE3C_SOURCES "${FE3C_OVERRIDE_DIR}/scalars/scalars_ed25519_32.c")
-    list(APPEND FE3C_SOURCES "${FE3C_OVERRIDE_DIR}/field_elements/field_elements_ed25519_32.c")
-    list(APPEND FE3C_SOURCES "${FE3C_OVERRIDE_DIR}/hash_functions/hash_function_sha512.c")
-
-    if (CONFIG_FE3C_PORT_OVERRIDES)
-        list(APPEND FE3C_SOURCES "${FE3C_PORT_DIR}/hash_functions/hash_function_sha512_impl_sw.c")
-    endif()
+    list(APPEND FE3C_SOURCES "${FE3C_PORT_DIR}/scalars/scalars_ed25519_32.c")
+    list(APPEND FE3C_SOURCES "${FE3C_PORT_DIR}/field_elements/field_elements_ed25519_32.c")
+    list(APPEND FE3C_SOURCES "${FE3C_PORT_DIR}/hash_functions/hash_function_sha512.c")
+    list(APPEND FE3C_SOURCES "${FE3C_PORT_DIR}/hash_functions/hash_function_sha512_impl_sw.c")
 
     if (CONFIG_FE3C_COMB_METHOD)
         list(APPEND FE3C_SOURCES "${FE3C_SRC_DIR}/points/comb/comb_ed25519${ed25519_small_precomp_tag}.c")
-        list(APPEND FE3C_SOURCES "${FE3C_OVERRIDE_DIR}/points/comb/precomputation/precomputation_ed25519${ed25519_small_precomp_tag}_32.c")
+        list(APPEND FE3C_SOURCES "${FE3C_PORT_DIR}/points/comb/precomputation/precomputation_ed25519${ed25519_small_precomp_tag}_32.c")
     endif()
 
     if (CONFIG_FE3C_PARALLEL_COMB_METHOD)
@@ -88,12 +78,12 @@ endif()
 if (CONFIG_FE3C_SUPPORT_CURVE_ED448)
     list(APPEND FE3C_SOURCES "${FE3C_SRC_DIR}/curves/curve_ed448.c")
     list(APPEND FE3C_SOURCES "${FE3C_SRC_DIR}/hash_functions/hash_function_shake256.c")
-    list(APPEND FE3C_SOURCES "${FE3C_OVERRIDE_DIR}/scalars/scalars_ed448_32.c")
-    list(APPEND FE3C_SOURCES "${FE3C_OVERRIDE_DIR}/field_elements/field_elements_ed448_32.c")
+    list(APPEND FE3C_SOURCES "${FE3C_PORT_DIR}/scalars/scalars_ed448_32.c")
+    list(APPEND FE3C_SOURCES "${FE3C_PORT_DIR}/field_elements/field_elements_ed448_32.c")
 
     if (CONFIG_FE3C_COMB_METHOD)
         list(APPEND FE3C_SOURCES "${FE3C_SRC_DIR}/points/comb/comb_ed448${ed448_small_precomp_tag}.c")
-        list(APPEND FE3C_SOURCES "${FE3C_OVERRIDE_DIR}/points/comb/precomputation/precomputation_ed448${ed448_isogeny_tag}${ed448_small_precomp_tag}_32.c")
+        list(APPEND FE3C_SOURCES "${FE3C_PORT_DIR}/points/comb/precomputation/precomputation_ed448${ed448_isogeny_tag}${ed448_small_precomp_tag}_32.c")
     endif()
 
     if (CONFIG_FE3C_PARALLEL_COMB_METHOD)

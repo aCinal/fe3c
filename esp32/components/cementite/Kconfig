@@ -65,19 +65,9 @@ menu "cementite (fe3c)"
             Use a parallel implementation of the comb method which yields great performance benefits
             in systems with small CPU load.
 
-    config FE3C_PORT_OVERRIDES
-        bool "Use target-specific implementation"
-        depends on FE3C_SUPPORT_CURVE_ED25519 || FE3C_SUPPORT_CURVE_ED448
-        default y
-        help
-            Override common source files and definitions with target-specific ones, optimized
-            for ESP32. This option is included only for development purposes as disabling it
-            may decrease performance, increase binary size as well as create side-channel
-            vulnerabilities.
-
     config FE3C_USE_SHA512_HARDWARE
         bool "Use SHA512 hardware acceleration when possible"
-        depends on FE3C_PORT_OVERRIDES && FE3C_SUPPORT_CURVE_ED25519
+        depends on FE3C_SUPPORT_CURVE_ED25519
         default n
         help
             Use SHA512 hardware acceleration when possible. This will significantly

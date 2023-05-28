@@ -3,7 +3,6 @@ set(FE3C_UT_DEFINES
     "FE3C_FUNCTIONAL_TESTS_ESP32"
     "FE3C_32BIT"
     "FE3C_LILENDIAN_TARGET"
-    # TODO: Make sure we don't get a mismatch where the library is compiled without port overrides, but tests don't care
     "FE3C_PORT_OVERRIDES"
 )
 
