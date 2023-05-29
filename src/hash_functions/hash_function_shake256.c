@@ -77,7 +77,7 @@ void hash_shake256(u8 * output, const struct iovec * iov, int iovcnt) {
 static inline void absorb_block(shake256_state * state, const u8 * block, shake256_working_variables * working_variables) {
 
     /* XOR the block buffer with the state */
-    for (int j = 0; j < sizeof(state->outer_state) / sizeof(state->outer_state[0]); j++) {
+    for (size_t j = 0; j < sizeof(state->outer_state) / sizeof(state->outer_state[0]); j++) {
 
         state->outer_state[j] ^= load_64(&block[j << 3]);
     }
@@ -211,7 +211,7 @@ static inline void store_64(u8 * dst, const u64 * src, int bytecount) {
     (void) memcpy(dst, src, wordcount << 3);
 #else
     /* Big-endian target or endianness unknown (take the safe route) */
-    for (size_t i = 0; i < wordcount; i++) {
+    for (int i = 0; i < wordcount; i++) {
 
         dst[8 * i + 0] = (u8) (src[i] >> 0 * 8);
         dst[8 * i + 1] = (u8) (src[i] >> 1 * 8);
@@ -225,7 +225,7 @@ static inline void store_64(u8 * dst, const u64 * src, int bytecount) {
 #endif /* FE3C_LILENDIAN_TARGET */
     /* Set the trailer manually for either endianness to not risk reading
      * uninitialized stack later */
-    for (size_t j = 0; j < trailer; j++) {
+    for (int j = 0; j < trailer; j++) {
 
         dst[wordcount * 8 + j] = (u8) (src[wordcount] >> j * 8);
     }

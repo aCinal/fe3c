@@ -1,12 +1,6 @@
 #include <functional_tests.h>
 #include <field_elements/field_elements_ed448.h>
 
-#if FE3C_FUNCTIONAL_TESTS_HOST
-TEST_GROUP(FIELD_ELEMENTS_ED448_32) {
-
-};
-#endif /* FE3C_FUNCTIONAL_TESTS_HOST */
-
 FE3C_TEST(FIELD_ELEMENTS_ED448_32, EncodeMinusOne_EncodeCorrectly) {
 
     fe448 input = {

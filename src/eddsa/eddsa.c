@@ -161,8 +161,6 @@ int eddsa_verify(const eddsa_verify_request * req) {
     /* Note that point decoding may fail - we will still however continue with the verification to the end */
     point public_key;
     verified &= gops->decode(&public_key, req->public_key);
-    /* We also explicitly check for low order points when decoding and so we skip multiplying by
-     * the cofactor later when verifying the group equation */
     point commitment;
     verified &= gops->decode(&commitment, req->signature);
 
@@ -282,6 +280,8 @@ void eddsa_prehash(u8 * output, const u8 * input, size_t length, eddsa_curve cur
 }
 
 int eddsa_get_prehash_length(eddsa_curve curve_id) {
+
+    (void) curve_id;
 
     FE3C_SANITY_CHECK(curve_id < EDDSA_NUMBER_OF_SUPPORTED_CURVES, NULL);
     FE3C_SANITY_CHECK(curves[curve_id], NULL);

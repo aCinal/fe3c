@@ -40,7 +40,7 @@ AC_C_BIGENDIAN(
 
 # Set common flags
 AM_CPPFLAGS="$AM_CPPFLAGS"
-AM_CFLAGS="$AM_CFLAGS -Wall -Werror"
+AM_CFLAGS="$AM_CFLAGS -Wall -Werror -Wextra"
 AM_LDFLAGS="$AM_LDFLAGS"
 
 # Use libtool
