@@ -8,12 +8,17 @@ extern "C" {
 
 #include <global_defs.h>
 #include <field_elements/field_elements.h>
+#include <inttypes.h>
 
 #if FE3C_32BIT && FE3C_64BIT
     #error "Both FE3C_32BIT and FE3C_64BIT set!"
 #elif FE3C_32BIT
     #if !defined(FE448_STR)
-        #define FE448_STR "0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x"
+        #define FE448_STR \
+            "0x%" PRIx32 ", 0x%" PRIx32 ", 0x%" PRIx32 ", 0x%" PRIx32 ", " \
+            "0x%" PRIx32 ", 0x%" PRIx32 ", 0x%" PRIx32 ", 0x%" PRIx32 ", " \
+            "0x%" PRIx32 ", 0x%" PRIx32 ", 0x%" PRIx32 ", 0x%" PRIx32 ", " \
+            "0x%" PRIx32 ", 0x%" PRIx32 ", 0x%" PRIx32 ", 0x%" PRIx32
     #endif /* !defined(FE448_STR) */
     #if !defined(FE448_TO_STR)
         #define FE448_TO_STR(x) \
@@ -53,7 +58,9 @@ extern "C" {
     #endif /* !defined(ED448_ISOGENY_BASEPOINT_T) */
 #elif FE3C_64BIT
     #if !defined(FE448_STR)
-        #define FE448_STR "0x%lx, 0x%lx, 0x%lx, 0x%lx, 0x%lx, 0x%lx, 0x%lx, 0x%lx"
+        #define FE448_STR \
+            "0x%" PRIx64 ", 0x%" PRIx64 ", 0x%" PRIx64 ", 0x%" PRIx64 ", " \
+            "0x%" PRIx64 ", 0x%" PRIx64 ", 0x%" PRIx64 ", 0x%" PRIx64
     #endif /* !defined(FE448_STR) */
     #if !defined(FE448_TO_STR)
         #define FE448_TO_STR(x) \

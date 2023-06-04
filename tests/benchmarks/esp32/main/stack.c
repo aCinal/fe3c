@@ -62,7 +62,7 @@ void stack_dimensioning_for_curve(eddsa_curve curve_id) {
     );
     assert(pdPASS == ret);
     /* Wait for the child task to finish */
-    xSemaphoreTake(context.sem, portMAX_DELAY);
+    (void) xSemaphoreTake(context.sem, portMAX_DELAY);
 
     eddsa_verify_request verify_req = {
         .message = message,
@@ -84,7 +84,7 @@ void stack_dimensioning_for_curve(eddsa_curve curve_id) {
     );
     assert(pdPASS == ret);
     /* Wait for the child task to finish */
-    xSemaphoreTake(context.sem, portMAX_DELAY);
+    (void) xSemaphoreTake(context.sem, portMAX_DELAY);
 
     /* Destroy the semaphore */
     vSemaphoreDelete(context.sem);

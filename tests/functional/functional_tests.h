@@ -21,7 +21,7 @@
 
 #if FE3C_FUNCTIONAL_TESTS_ESP32
 
-/* Include the Unit framework header */
+/* Include the Unity framework header */
 #include <unity.h>
 #define FE3C_TEST(group, name)                 TEST_CASE(#name, #group)
 /* Provide wrappers around Unity macros */
