@@ -5,4 +5,5 @@ autom4te.cache/
 build/
 build-aux/
 configure
+doc
 Makefile.in

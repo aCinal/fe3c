@@ -4,6 +4,11 @@
 
 #pragma GCC visibility push(default)
 
+/**
+ * @defgroup eddsa EdDSA
+ * @{
+ */
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -33,13 +38,13 @@ typedef enum eddsa_curve {
 typedef struct eddsa_sign_request {
 
     /**
-     * @brief Output buffer for the signature (use eddsa_get_signature_length to obtain the necessary size)
+     * @brief Output buffer for the signature
      * @see eddsa_get_signature_length
      */
     u8 * signature;
 
     /**
-     * @brief Message over which the signature has been produced
+     * @brief Message on which the signature has been produced
      */
     const u8 * message;
 
@@ -57,7 +62,7 @@ typedef struct eddsa_sign_request {
     const u8 * public_key;
 
     /**
-     * @brief Pointer to context, can be NULL if context_length=0
+     * @brief Pointer to the context, can be NULL if context_length=0
      */
     const u8 * context;
 
@@ -79,6 +84,7 @@ typedef struct eddsa_sign_request {
 
     /**
      * @brief 1 to use a prehashed (PH) variant of EdDSA, 0 otherwise
+     * @warning Results are undefined if this field is set to anything other than 0 or 1
      */
     u8 phflag;
 
@@ -96,7 +102,7 @@ typedef struct eddsa_verify_request {
     const u8 * signature;
 
     /**
-     * @brief Message over which the signature has been produced
+     * @brief Message on which the signature has been produced
      */
     const u8 * message;
 
@@ -107,7 +113,7 @@ typedef struct eddsa_verify_request {
     const u8 * public_key;
 
     /**
-     * @brief Pointer to context, can be NULL if context_length=0
+     * @brief Pointer to the context, can be NULL if context_length=0
      */
     const u8 * context;
 
@@ -129,6 +135,7 @@ typedef struct eddsa_verify_request {
 
     /**
      * @brief 1 to use a prehashed (PH) variant of EdDSA, 0 otherwise
+     * @warning Results are undefined if this field is set to anything other than 0 or 1
      */
     u8 phflag;
 
@@ -154,7 +161,7 @@ int eddsa_verify(const eddsa_verify_request * req);
  * @param[out] public_key Output buffer for the public key
  * @param[in] secret_key Secret key
  * @param[in] curve_id Identifier of the curve
- * @note The buffer for both keys must be of adequate length
+ * @note The buffers for both keys must be of adequate length
  * @see eddsa_curve, eddsa_get_public_key_length, eddsa_get_secret_key_length
  */
 void eddsa_derive_public_key(u8 * public_key, const u8 * secret_key, eddsa_curve curve_id);
@@ -213,6 +220,9 @@ int eddsa_is_curve_supported(eddsa_curve curve_id);
 }
 #endif
 
+/**
+ * @}
+ */
 #pragma GCC visibility pop
 
 #endif /* __FE3C_EDDSA_H */
