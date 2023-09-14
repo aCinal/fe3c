@@ -304,29 +304,50 @@ static void ed448_points_add(point_ed448 * r, const point_ed448 * p, const point
     fe448_mul(r->Z, r->Z, C);
 }
 
+static inline void ed448_conditional_move(point_ed448 * r, const point_ed448 * p, int move) {
+
+    fe448_conditional_move(r->X, p->X, move);
+    fe448_conditional_move(r->Y, p->Y, move);
+    fe448_conditional_move(r->Z, p->Z, move);
+}
+
 #if !FE3C_COMB_METHOD
+static inline void ed448_conditional_swap(point_ed448 * r, point_ed448 * q, point_ed448 * temp, int swap) {
+
+    /* We could implement this more efficiently, but if someone is using
+     * naive scalar multiplication then they probably value space more
+     * than speed */
+    ed448_conditional_move(temp, r, swap);
+    ed448_conditional_move(r, q, swap);
+    ed448_conditional_move(q, temp, swap);
+}
+
 static inline void ed448_scalar_multiply(point_ed448 * r, const point_ed448 * p, const u8 * s) {
 
     FE3C_SANITY_CHECK(ed448_is_on_curve(p), ED448_STR, ED448_TO_STR(p));
 
-    point_ed448 R[2];
+    point_ed448 R[3];
     ed448_identity(&R[0]);
     R[1] = *p;
 
-    /* Do a simple Montgomery ladder. Note that the input scalar must have been pruned
-     * or reduced modulo the group order, so we can safely skip the top 8 bits of the
-     * buffer and start at bit 447. */
+    int bits[2] = { 0, 0 };
+    /* Do a simple "Montgomery ladder" (in the group). Note that the input scalar must have been pruned,
+     * or reduced modulo the group order, so we can safely skip the top 8 bits of the buffer and start
+     * at bit 447. */
     for (int i = 447; i >= 0; i--) {
 
         /* Recover the ith bit of the scalar */
-        int bit = array_bit(s, i);
-        ed448_points_add(&R[1 - bit], &R[1 - bit], &R[bit]);
-        ed448_point_double(&R[bit], &R[bit]);
+        bits[0] = array_bit(s, i);
+        ed448_conditional_swap(&R[0], &R[1], &R[2], bits[0] ^ bits[1]);
+        ed448_points_add(&R[1], &R[1], &R[0]);
+        ed448_point_double(&R[0], &R[0]);
+        bits[1] = bits[0];
     }
 
+    ed448_conditional_swap(&R[0], &R[1], &R[2], bits[1]);
     *r = R[0];
-
-    purge_secrets(&R[1], sizeof(R[1]));
+    purge_secrets(&R, sizeof(R));
+    purge_secrets(bits, sizeof(bits));
 }
 #endif /* !FE3C_COMB_METHOD */
 
@@ -443,13 +464,6 @@ static void ed448_point_negate(point * pgen) {
 
     point_ed448 * p = (point_ed448 *) pgen;
     fe448_neg(p->X, p->X);
-}
-
-static inline void ed448_conditional_move(point_ed448 * r, const point_ed448 * p, int move) {
-
-    fe448_conditional_move(r->X, p->X, move);
-    fe448_conditional_move(r->Y, p->Y, move);
-    fe448_conditional_move(r->Z, p->Z, move);
 }
 
 static void ed448_double_scalar_multiply(point * rgen, const u8 * s, const u8 * h, const point * pgen) {

@@ -33,7 +33,7 @@ void eddsa_sign(const eddsa_sign_request * req) {
     /* Buffers for hash function outputs/scalars */
     u8 hash_secret_key[2 * curve->b_in_bytes];
     u8 ephemeral_scalar[2 * curve->b_in_bytes];
-    u8 hash_commit_key_message[2 * curve->b_in_bytes];
+    u8 challenge_scalar[2 * curve->b_in_bytes];
 
     /* Buffers for the encoded elliptic curve points */
     u8 encoded_public_key_buffer[curve->b_in_bytes];
@@ -104,11 +104,11 @@ void eddsa_sign(const eddsa_sign_request * req) {
     iov[4].iov_len = curve->b_in_bytes;
     iov[5].iov_base = req->message;
     iov[5].iov_len = req->message_length;
-    h(hash_commit_key_message, iov, 6);
-    sops->reduce(hash_commit_key_message);
+    h(challenge_scalar, iov, 6);
+    sops->reduce(challenge_scalar);
 
     /* Compute H(R|A|M) s + r (notation as in RFC 8032) */
-    sops->muladd(&req->signature[curve->b_in_bytes], hash_commit_key_message, hash_secret_key, ephemeral_scalar);
+    sops->muladd(&req->signature[curve->b_in_bytes], challenge_scalar, hash_secret_key, ephemeral_scalar);
 
     /* Purge the stack reliably, i.e. memset all intermediate buffers to 0 */
     purge_secrets(hash_secret_key, sizeof(hash_secret_key));
@@ -147,8 +147,8 @@ int eddsa_verify(const eddsa_verify_request * req) {
     const curve * curve = curves[req->curve_id];
     /* iovec buffer for hash function requests */
     struct iovec iov[6];
-    /* Intermediate buffer for hash function output */
-    u8 digest[2 * curve->b_in_bytes];
+    /* Buffer for hash function output/scalar */
+    u8 challenge_scalar[2 * curve->b_in_bytes];
 
     /* Recover pointers to the virtual method tables for the group and the
      * scalars of that group (allow polymorphism) */
@@ -182,14 +182,14 @@ int eddsa_verify(const eddsa_verify_request * req) {
     iov[4].iov_len = curve->b_in_bytes;
     iov[5].iov_base = req->message;
     iov[5].iov_len = req->message_length;
-    h(digest, iov, 6);
+    h(challenge_scalar, iov, 6);
     /* Reduce the digest output as a scalar */
-    sops->reduce(digest);
+    sops->reduce(challenge_scalar);
 
     point pretender_point;
     /* Compute S*B - h*A */
     gops->point_negate(&public_key);
-    gops->double_scalar_multiply(&pretender_point, &req->signature[curve->b_in_bytes], digest, &public_key);
+    gops->double_scalar_multiply(&pretender_point, &req->signature[curve->b_in_bytes], challenge_scalar, &public_key);
     /* Check if S*B - h*A == R */
     verified &= gops->points_equal(&pretender_point, &commitment);
 

@@ -339,28 +339,51 @@ void ed25519_points_add(point_ed25519 * r, const point_ed25519 * p, const point_
     fe25519_mul(r->X, E, r->X);
 }
 
+static inline void ed25519_conditional_move(point_ed25519 * r, const point_ed25519 * p, int move) {
+
+    fe25519_conditional_move(r->X, p->X, move);
+    fe25519_conditional_move(r->Y, p->Y, move);
+    fe25519_conditional_move(r->Z, p->Z, move);
+    fe25519_conditional_move(r->T, p->T, move);
+}
+
 #if !FE3C_COMB_METHOD
+static inline void ed25519_conditional_swap(point_ed25519 * r, point_ed25519 * q, point_ed25519 * temp, int swap) {
+
+    /* We could implement this more efficiently, but if someone is using
+     * naive scalar multiplication then they probably value space more
+     * than speed */
+    ed25519_conditional_move(temp, r, swap);
+    ed25519_conditional_move(r, q, swap);
+    ed25519_conditional_move(q, temp, swap);
+}
+
 static inline void ed25519_scalar_multiply(point_ed25519 * r, const point_ed25519 * p, const u8 * s) {
 
     FE3C_SANITY_CHECK(ed25519_is_on_curve(p), ED25519_STR, ED25519_TO_STR(p));
 
-    point_ed25519 R[2];
+    point_ed25519 R[3];
     ed25519_identity(&R[0]);
     R[1] = *p;
 
-    /* Do a simple Montgomery ladder. Note that the input scalar must have been pruned, which
-     * results in bit 255 being cleared (and bit 254 being set), or reduced modulo the group order,
+    int bits[2] = { 0, 0 };
+    /* Do a simple "Montgomery ladder" (in the group). Note that the input scalar must have been pruned,
+     * which results in bit 255 being cleared (and bit 254 being set), or reduced modulo the group order,
      * in which case bit 255 will also be cleared, so we can safely skip it. */
     for (int i = 254; i >= 0; i--) {
 
         /* Recover the ith bit of the scalar */
-        int bit = array_bit(s, i);
-        ed25519_points_add(&R[1 - bit], &R[1 - bit], &R[bit]);
-        ed25519_point_double(&R[bit], &R[bit], 1);
+        bits[0] = array_bit(s, i);
+        ed25519_conditional_swap(&R[0], &R[1], &R[2], bits[0] ^ bits[1]);
+        ed25519_points_add(&R[1], &R[1], &R[0]);
+        ed25519_point_double(&R[0], &R[0], 1);
+        bits[1] = bits[0];
     }
 
+    ed25519_conditional_swap(&R[0], &R[1], &R[2], bits[1]);
     *r = R[0];
-    purge_secrets(&R[1], sizeof(R[1]));
+    purge_secrets(&R, sizeof(R));
+    purge_secrets(bits, sizeof(bits));
 }
 #endif /* !FE3C_COMB_METHOD */
 
@@ -476,14 +499,6 @@ static void ed25519_point_negate(point * pgen) {
     point_ed25519 * p = (point_ed25519 *) pgen;
     fe25519_neg(p->X, p->X);
     fe25519_neg(p->T, p->T);
-}
-
-static inline void ed25519_conditional_move(point_ed25519 * r, const point_ed25519 * p, int move) {
-
-    fe25519_conditional_move(r->X, p->X, move);
-    fe25519_conditional_move(r->Y, p->Y, move);
-    fe25519_conditional_move(r->Z, p->Z, move);
-    fe25519_conditional_move(r->T, p->T, move);
 }
 
 static void ed25519_double_scalar_multiply(point * rgen, const u8 * s, const u8 * h, const point * pgen) {
