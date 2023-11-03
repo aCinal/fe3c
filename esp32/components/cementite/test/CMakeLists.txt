@@ -46,10 +46,10 @@ if (CONFIG_FE3C_SUPPORT_CURVE_ED448)
 endif()
 
 idf_component_register(SRCS ${UT_SOURCES}
-                       INCLUDE_DIRS "${FE3C_UUT_COMMON_INCLUDE_DIR}"
-                                    "${FE3C_UUT_PORT_INCLUDE_DIR}"
-                                    "${FE3C_UUT_COMMON_SOURCE_DIR}"
-                       REQUIRES unity cementite)
+                       PRIV_INCLUDE_DIRS "${FE3C_UUT_COMMON_INCLUDE_DIR}"
+                                         "${FE3C_UUT_PORT_INCLUDE_DIR}"
+                                         "${FE3C_UUT_COMMON_SOURCE_DIR}"
+                       PRIV_REQUIRES unity cementite)
 
 if (CONFIG_FE3C_SUPPORT_CURVE_ED25519 OR CONFIG_FE3C_SUPPORT_CURVE_ED448)
     # Only set compile definitions if there is anything to compile

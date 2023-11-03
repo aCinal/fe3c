@@ -2,6 +2,8 @@ set(FE3C_ROOT_DIR "../../..")
 set(FE3C_SRC_DIR "${FE3C_ROOT_DIR}/src")
 set(FE3C_PORT_DIR "port")
 
+# TODO: Fall back to the reference implementation for RISC-V-based ESP32 chips (condition on CONFIG_IDF_TARGET_ARCH_XTENSA)
+
 set(FE3C_SOURCES
     "${FE3C_SRC_DIR}/eddsa/eddsa.c"
     "${FE3C_SRC_DIR}/curves/curves.c"
@@ -105,7 +107,7 @@ idf_component_register(SRCS ${FE3C_SOURCES}
 # and this way not risk any race conditions. Due to the two-pass nature of CMake
 # processing in esp-idf, requirements cannot depend on configuration options, so
 # specify this dependency always
-                        PRIV_REQUIRES mbedtls
+                       PRIV_REQUIRES mbedtls
 )
 
 target_compile_definitions(${COMPONENT_LIB} PRIVATE ${FE3C_DEFINES})

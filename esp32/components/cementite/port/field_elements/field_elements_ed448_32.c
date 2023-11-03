@@ -1096,43 +1096,25 @@ void fe448_mul(fe448 r, const fe448 a, const fe448 b) {
     u32 aux4;
     u32 carry;
 
-#define add_karatsuba(__src, __dst, __word)                \
-    _ "l32i  %[aux1], %[" #__src "], 4 * " #__word         \
-    _ "l32i  %[aux2], %[" #__src "], 4 * 8 + 4 * " #__word \
-    _ "add.n %[aux1], %[aux1],       %[aux2]"              \
-    _ "s32i  %[aux1], %[" #__dst "], 4 * " #__word
+    /* Compute (u+v) and (x+y) in a 2-way SIMD fashion by adding 32-bit
+     * words thus computing in parallel two 14-bit limb additions */
+    uplusv[0] = a[0] + a[ 8];
+    uplusv[1] = a[1] + a[ 9];
+    uplusv[2] = a[2] + a[10];
+    uplusv[3] = a[3] + a[11];
+    uplusv[4] = a[4] + a[12];
+    uplusv[5] = a[5] + a[13];
+    uplusv[6] = a[6] + a[14];
+    uplusv[7] = a[7] + a[15];
 
-    asm volatile(
-
-        add_karatsuba(a, uplusv, 0)
-        add_karatsuba(a, uplusv, 1)
-        add_karatsuba(a, uplusv, 2)
-        add_karatsuba(a, uplusv, 3)
-        add_karatsuba(a, uplusv, 4)
-        add_karatsuba(a, uplusv, 5)
-        add_karatsuba(a, uplusv, 6)
-        add_karatsuba(a, uplusv, 7)
-
-        add_karatsuba(b, xplusy, 0)
-        add_karatsuba(b, xplusy, 1)
-        add_karatsuba(b, xplusy, 2)
-        add_karatsuba(b, xplusy, 3)
-        add_karatsuba(b, xplusy, 4)
-        add_karatsuba(b, xplusy, 5)
-        add_karatsuba(b, xplusy, 6)
-        add_karatsuba(b, xplusy, 7)
-
-        : [uplusv]  "+&r" (uplusv),
-          [xplusy]  "+&r" (xplusy),
-          [aux1]    "=&r" (aux1),
-          [aux2]    "=&r" (aux2)
-
-        : [word_count] "i" (ED448_FE_LIMB_COUNT),
-          [a] "r" (a),
-          [b] "r" (b)
-
-        : "memory", "acc"
-    );
+    xplusy[0] = b[0] + b[ 8];
+    xplusy[1] = b[1] + b[ 9];
+    xplusy[2] = b[2] + b[10];
+    xplusy[3] = b[3] + b[11];
+    xplusy[4] = b[4] + b[12];
+    xplusy[5] = b[5] + b[13];
+    xplusy[6] = b[6] + b[14];
+    xplusy[7] = b[7] + b[15];
 
     /* Compute A = (u+v)(x+y) */
     AE = multiply_distinct_16_limbs(A, uplusv, xplusy);
