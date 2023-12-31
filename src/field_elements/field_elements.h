@@ -54,18 +54,6 @@ extern "C" {
 typedef fe_limb_type fe25519[ED25519_FE_LIMB_COUNT];
 typedef fe_limb_type fe448[ED448_FE_LIMB_COUNT];
 
-typedef union fe {
-
-#if FE3C_SUPPORT_CURVE_ED25519
-    fe25519 ed25519;
-#endif /* FE3C_SUPPORT_CURVE_ED25519 */
-
-#if FE3C_SUPPORT_CURVE_ED448
-    fe448 ed448;
-#endif /* FE3C_SUPPORT_CURVE_ED448 */
-
-} fe;
-
 #ifdef __cplusplus
 }
 #endif

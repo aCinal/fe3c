@@ -142,14 +142,14 @@ typedef struct eddsa_verify_request {
 } eddsa_verify_request;
 
 /**
- * @brief Produce an EdDSA signature over a given message
+ * @brief Produce an EdDSA signature on a given message
  * @param req A signature request structure
  * @see eddsa_sign_request
  */
 void eddsa_sign(const eddsa_sign_request * req);
 
 /**
- * @brief Verify an EdDSA signature over a given message
+ * @brief Verify an EdDSA signature on a given message
  * @param req A verification request structure
  * @return Non-zero value on verification success or zero on verification failure
  * @see eddsa_verify_request
