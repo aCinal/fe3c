@@ -16,7 +16,7 @@
     #include <sha/sha_dma.h>
 #else
     #include <sha/sha_block.h>
-#endif
+#endif /* SOC_SHA_SUPPORT_PARALLEL_ENG */
 
 static inline void sha512_compress(const u8 * input_block, u32 * first_block);
 static inline void sha512_read_final(u8 * output_buffer);
@@ -170,6 +170,16 @@ static inline void sha512_compress(const u8 * input_block, u32 * first_block) {
 static inline void sha512_read_final(u8 * output_buffer) {
 
     esp_sha_read_digest_state(SHA2_512, output_buffer);
+#if !FE3C_SKIP_ZEROIZATION
+    /* Erase the state of the accelerator */
+#if SOC_SHA_SUPPORT_DMA
+    u64 poison[SHA512_STATE_WORD_COUNT] = {};
+    esp_sha_write_digest_state(SHA2_512, poison);
+#else
+    u8 poison[SHA512_BLOCK_SIZE_BYTES] = {};
+    esp_sha_block(SHA2_512, poison, true);
+#endif /* SOC_SHA_SUPPORT_DMA */
+#endif /* !FE3C_SKIP_ZEROIZATION */
 }
 
 static inline void store_64(u8 * dst, const u64 * src, size_t wordcount) {
