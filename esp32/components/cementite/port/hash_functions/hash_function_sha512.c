@@ -7,14 +7,15 @@ void hash_sha512(u8 * output, const struct iovec * iov, int iovcnt) {
     sha512_impl impl_select = sha512_try_lock_hw();
     if (impl_select == sha512_hw_acceleration) {
 
-        sha512_impl_hw(output, iov, iovcnt);
+        /* Try relying on the hardware accelerator. If that fails, we fall back to software. */
+        int hw_error = sha512_impl_hw(output, iov, iovcnt);
         sha512_release_hw();
+        if (0 == hw_error) {
+            return;
+        }
 
-    } else {
-
-        sha512_impl_sw(output, iov, iovcnt);
+        /* Hardware failed us. Do it the boring way. */
     }
-#else
-    sha512_impl_sw(output, iov, iovcnt);
 #endif
+    sha512_impl_sw(output, iov, iovcnt);
 }

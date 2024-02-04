@@ -18,15 +18,17 @@
     #include <sha/sha_block.h>
 #endif /* SOC_SHA_SUPPORT_PARALLEL_ENG */
 
-static inline void sha512_compress(const u8 * input_block, u32 * first_block);
+static inline int sha512_compress(const u8 * input_block, u32 * first_block);
 static inline void sha512_read_final(u8 * output_buffer);
+static inline void sha512_purge_accelerator(void);
 static inline void store_64(u8 * dst, const u64 * src, size_t wordcount);
 
-void sha512_impl_hw(u8 * output, const struct iovec * iov, int iovcnt) {
+int sha512_impl_hw(u8 * output, const struct iovec * iov, int iovcnt) {
 
     FE3C_SANITY_CHECK(output, NULL);
     FE3C_SANITY_CHECK(iov || iovcnt == 0, NULL);
 
+    int ret = 0;
     /* Allocate an input block buffer of 1024 bits. SHA-512 processes the messages in
      * blocks of 1024 bits. The input message will be written into this buffer */
     u8 block_buffer[SHA512_BLOCK_SIZE_BYTES];
@@ -70,13 +72,23 @@ void sha512_impl_hw(u8 * output, const struct iovec * iov, int iovcnt) {
             (void) memcpy(&block_buffer[where_were_we], input, remaining_space);
             input += remaining_space;
             input_length -= remaining_space;
-            sha512_compress(block_buffer, &is_first_block);
+            /* TODO: Note that we are being wasteful with our calls to sha512_compress in the case
+             * when the SoC supports DMA-SHA (SOC_SHA_SUPPORT_DMA). We could offload partitioning
+             * each iovec into blocks and manually copying it into the accelerator to the DMA engine.
+             * This may be beneficial for large messages. */
+            if (sha512_compress(block_buffer, &is_first_block)) {
+                ret = -1;
+                goto out;
+            }
 
             /* Continue processing full 1024-bit blocks of the current input buffer (read it directly from the
              * input buffer not from the intermediate block buffer) */
             while (input_length >= SHA512_BLOCK_SIZE_BYTES) {
 
-                sha512_compress(input, &is_first_block);
+                if (sha512_compress(input, &is_first_block)) {
+                    ret = -1;
+                    goto out;
+                }
                 input += SHA512_BLOCK_SIZE_BYTES;
                 input_length -= SHA512_BLOCK_SIZE_BYTES;
             }
@@ -111,7 +123,10 @@ void sha512_impl_hw(u8 * output, const struct iovec * iov, int iovcnt) {
         block_buffer[where_were_we] = 0x80;
         where_were_we++;
         (void) memset(&block_buffer[where_were_we], 0, SHA512_BLOCK_SIZE_BYTES - where_were_we);
-        sha512_compress(block_buffer, &is_first_block);
+        if (sha512_compress(block_buffer, &is_first_block)) {
+            ret = -1;
+            goto out;
+        }
         /* Pad the next block with all zeroes up to the last 16 octets */
         (void) memset(block_buffer, 0, SHA512_BLOCK_SIZE_BYTES - 16);
     }
@@ -120,14 +135,27 @@ void sha512_impl_hw(u8 * output, const struct iovec * iov, int iovcnt) {
     store_64(&block_buffer[SHA512_BLOCK_SIZE_BYTES - 16], &message_length_high, 1);
     store_64(&block_buffer[SHA512_BLOCK_SIZE_BYTES - 8], &message_length_low, 1);
     /* Do one final block processing */
-    sha512_compress(block_buffer, &is_first_block);
+    if (sha512_compress(block_buffer, &is_first_block)) {
+        ret = -1;
+        goto out;
+    }
     /* Copy the final state to the output buffer */
     sha512_read_final(output);
-    /* Swap endianness in place */
+#if SOC_SHA_SUPPORT_PARALLEL_ENG
+    /* The parallel engine implementation is the only one true to its word (API) that actually returns
+     * the _state_, i.e., a sequence of big-endian 64-bit integers. DMA and block seem to operate
+     * internally in native endianness (little-endian) and calls to esp_sha_read_digest_state()
+     * return the state in native endianness as well. For parallel engine, swap the order manually */
     store_64(output, (u64 *) output, SHA512_STATE_WORD_COUNT);
+#endif /* SOC_SHA_SUPPORT_PARALLEL_ENG */
 
+out:
     /* Purge the block buffer */
     purge_secrets(block_buffer, sizeof(block_buffer));
+    /* Erase the state of the accelerator */
+    sha512_purge_accelerator();
+
+    return ret;
 }
 
 sha512_impl sha512_try_lock_hw(void) {
@@ -160,16 +188,27 @@ void sha512_release_hw(void) {
 #endif
 }
 
-static inline void sha512_compress(const u8 * input_block, u32 * first_block) {
+static inline int sha512_compress(const u8 * input_block, u32 * first_block) {
 
     u32 is_first_block = *first_block;
+#if SOC_SHA_SUPPORT_DMA
+    if (esp_sha_dma(SHA2_512, input_block, SHA512_BLOCK_SIZE_BYTES, NULL, 0, (bool) is_first_block)) {
+        return -1;
+    }
+#else
     esp_sha_block(SHA2_512, input_block, (bool) is_first_block);
+#endif
     *first_block = 0;
+    return 0;
 }
 
 static inline void sha512_read_final(u8 * output_buffer) {
 
     esp_sha_read_digest_state(SHA2_512, output_buffer);
+}
+
+static inline void sha512_purge_accelerator(void) {
+
 #if !FE3C_SKIP_ZEROIZATION
     /* Erase the state of the accelerator */
 #if SOC_SHA_SUPPORT_DMA

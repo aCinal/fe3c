@@ -215,7 +215,6 @@
     _ "movnez %[aux1],      %[aux2],      %[aux1]"           \
     _ "add.n  %[" #rhi "],  %[" #rhi "],  %[aux1]"
 
-
 static inline void sha512_compress(u64 * state, const u8 * input_block, u64 * schedule, sha512_working_variables * work);
 static inline void sha512_prepare_message_schedule(u64 * schedule, const u8 * input);
 static inline void store_64(u8 * dst, const u64 * src, size_t wordcount);
