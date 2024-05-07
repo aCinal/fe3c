@@ -126,7 +126,10 @@ static void parse_arguments(int argc, char **argv, fe3c_params * out) {
     };
 
     int option_index;
-    while (-1 != getopt_long(argc, argv, "", long_options, &option_index)) {
+    int ret;
+    while ((ret = getopt_long(argc, argv, "", long_options, &option_index)) != -1) {
+
+        FAIL_IF(ret == '?', "getopt_long() failed to handle argument: %s", argv[optind - 1]);
 
         switch (option_index) {
         case 0:
