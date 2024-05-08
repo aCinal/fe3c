@@ -540,468 +540,468 @@ static u32 multiply_distinct_16_limbs(fe_limb_type * restrict r, const fe_limb_t
     _ "wsr.acclo %[carrylo]"
 
     asm volatile(
-            /* Clear the accumulator */
-            _ "movi.n    %[temp], 0"
-            _ "wsr.acclo %[temp]"
-            _ "wsr.acchi %[temp]"
-            /* Initialize the shift amount register */
-            _ "ssai      14"
+        /* Clear the accumulator */
+        _ "movi.n    %[temp], 0"
+        _ "wsr.acclo %[temp]"
+        _ "wsr.acchi %[temp]"
+        /* Initialize the shift amount register */
+        _ "ssai      14"
 
-            _ "addi.n    %[ai], %[a], -4"
-            _ "ldinc m0, %[ai]"
-            _ "addi.n    %[bi], %[b],  4"
-            _ "lddec m2, %[bi]"
-            _ "mula.dd.ll                  m0, m2"  /* a0*b0 */
+        _ "addi.n    %[ai], %[a], -4"
+        _ "ldinc m0, %[ai]"
+        _ "addi.n    %[bi], %[b],  4"
+        _ "lddec m2, %[bi]"
+        _ "mula.dd.ll                  m0, m2"  /* a0*b0 */
 
-            commit_to_memory(r, 0)
+        commit_to_memory(r, 0)
 
 
-            _ "mula.dd.lh.ldinc m1, %[ai], m0, m2"  /* a0*b1 */
-            _ "mula.dd.hl                  m0, m2"  /* a1*b0 */
+        _ "mula.dd.lh.ldinc m1, %[ai], m0, m2"  /* a0*b1 */
+        _ "mula.dd.hl                  m0, m2"  /* a1*b0 */
 
-            commit_to_memory(r, 1)
+        commit_to_memory(r, 1)
 
 
-            _ "mula.dd.ll.lddec m0, %[ai], m1, m2"  /* a2*b0 */
-            _ "mula.dd.hh.ldinc m3, %[bi], m0, m2"  /* a1*b1 */
-            _ "mula.dd.ll                  m0, m3"  /* a0*b2 */
+        _ "mula.dd.ll.lddec m0, %[ai], m1, m2"  /* a2*b0 */
+        _ "mula.dd.hh.ldinc m3, %[bi], m0, m2"  /* a1*b1 */
+        _ "mula.dd.ll                  m0, m3"  /* a0*b2 */
 
-            commit_to_memory(r, 2)
+        commit_to_memory(r, 2)
 
 
-            _ "mula.dd.lh.ldinc m1, %[ai], m0, m3"  /* a0*b3 */
-            _ "mula.dd.hl.lddec m2, %[bi], m0, m3"  /* a1*b2 */
-            _ "mula.dd.lh.ldinc m0, %[ai], m1, m2"  /* a2*b1 */
-            _ "mula.dd.hl                  m1, m2"  /* a3*b0 */
+        _ "mula.dd.lh.ldinc m1, %[ai], m0, m3"  /* a0*b3 */
+        _ "mula.dd.hl.lddec m2, %[bi], m0, m3"  /* a1*b2 */
+        _ "mula.dd.lh.ldinc m0, %[ai], m1, m2"  /* a2*b1 */
+        _ "mula.dd.hl                  m1, m2"  /* a3*b0 */
 
 
-            commit_to_memory(r, 3)
+        commit_to_memory(r, 3)
 
 
-            _ "mula.dd.ll.lddec m1, %[ai], m0, m2"  /* a4*b0 */
-            _ "mula.dd.hh.ldinc m3, %[bi], m1, m2"  /* a3*b1 */
-            _ "mula.dd.ll.lddec m0, %[ai], m1, m3"  /* a2*b2 */
-            _ "mula.dd.hh.ldinc m2, %[bi], m0, m3"  /* a1*b3 */
+        _ "mula.dd.ll.lddec m1, %[ai], m0, m2"  /* a4*b0 */
+        _ "mula.dd.hh.ldinc m3, %[bi], m1, m2"  /* a3*b1 */
+        _ "mula.dd.ll.lddec m0, %[ai], m1, m3"  /* a2*b2 */
+        _ "mula.dd.hh.ldinc m2, %[bi], m0, m3"  /* a1*b3 */
 
-            _ "mula.dd.ll                  m0, m2"  /* a0*b4 */
+        _ "mula.dd.ll                  m0, m2"  /* a0*b4 */
 
-            commit_to_memory(r, 4)
+        commit_to_memory(r, 4)
 
 
-            _ "mula.dd.lh.ldinc m1, %[ai], m0, m2"  /* a0*b5 */
-            _ "mula.dd.hl.lddec m3, %[bi], m0, m2"  /* a1*b4 */
-            _ "mula.dd.lh.ldinc m0, %[ai], m1, m3"  /* a2*b3 */
-            _ "mula.dd.hl.lddec m2, %[bi], m1, m3"  /* a3*b2 */
+        _ "mula.dd.lh.ldinc m1, %[ai], m0, m2"  /* a0*b5 */
+        _ "mula.dd.hl.lddec m3, %[bi], m0, m2"  /* a1*b4 */
+        _ "mula.dd.lh.ldinc m0, %[ai], m1, m3"  /* a2*b3 */
+        _ "mula.dd.hl.lddec m2, %[bi], m1, m3"  /* a3*b2 */
 
-            _ "mula.dd.lh.ldinc m1, %[ai], m0, m2"  /* a4*b1 */
-            _ "mula.dd.hl                  m0, m2"  /* a5*b0 */
+        _ "mula.dd.lh.ldinc m1, %[ai], m0, m2"  /* a4*b1 */
+        _ "mula.dd.hl                  m0, m2"  /* a5*b0 */
 
-            commit_to_memory(r, 5)
+        commit_to_memory(r, 5)
 
 
-            _ "mula.dd.ll.lddec m0, %[ai], m1, m2"  /* a6*b0 */
-            _ "mula.dd.hh.ldinc m3, %[bi], m0, m2"  /* a5*b1 */
-            _ "mula.dd.ll.lddec m1, %[ai], m0, m3"  /* a4*b2 */
-            _ "mula.dd.hh.ldinc m2, %[bi], m1, m3"  /* a3*b3 */
+        _ "mula.dd.ll.lddec m0, %[ai], m1, m2"  /* a6*b0 */
+        _ "mula.dd.hh.ldinc m3, %[bi], m0, m2"  /* a5*b1 */
+        _ "mula.dd.ll.lddec m1, %[ai], m0, m3"  /* a4*b2 */
+        _ "mula.dd.hh.ldinc m2, %[bi], m1, m3"  /* a3*b3 */
 
-            _ "mula.dd.ll.lddec m0, %[ai], m1, m2"  /* a2*b4 */
-            _ "mula.dd.hh.ldinc m3, %[bi], m0, m2"  /* a1*b5 */
-            _ "mula.dd.ll                  m0, m3"  /* a0*b6 */
+        _ "mula.dd.ll.lddec m0, %[ai], m1, m2"  /* a2*b4 */
+        _ "mula.dd.hh.ldinc m3, %[bi], m0, m2"  /* a1*b5 */
+        _ "mula.dd.ll                  m0, m3"  /* a0*b6 */
 
-            commit_to_memory(r, 6)
+        commit_to_memory(r, 6)
 
 
-            _ "mula.dd.lh.ldinc m1, %[ai], m0, m3"  /* a0*b7 */
-            _ "mula.dd.hl.lddec m2, %[bi], m0, m3"  /* a1*b6 */
-            _ "mula.dd.lh.ldinc m0, %[ai], m1, m2"  /* a2*b5 */
-            _ "mula.dd.hl.lddec m3, %[bi], m1, m2"  /* a3*b4 */
+        _ "mula.dd.lh.ldinc m1, %[ai], m0, m3"  /* a0*b7 */
+        _ "mula.dd.hl.lddec m2, %[bi], m0, m3"  /* a1*b6 */
+        _ "mula.dd.lh.ldinc m0, %[ai], m1, m2"  /* a2*b5 */
+        _ "mula.dd.hl.lddec m3, %[bi], m1, m2"  /* a3*b4 */
 
-            _ "mula.dd.lh.ldinc m1, %[ai], m0, m3"  /* a4*b3 */
-            _ "mula.dd.hl.lddec m2, %[bi], m0, m3"  /* a5*b2 */
-            _ "mula.dd.lh.ldinc m0, %[ai], m1, m2"  /* a6*b1 */
-            _ "mula.dd.hl                  m1, m2"  /* a7*b0 */
+        _ "mula.dd.lh.ldinc m1, %[ai], m0, m3"  /* a4*b3 */
+        _ "mula.dd.hl.lddec m2, %[bi], m0, m3"  /* a5*b2 */
+        _ "mula.dd.lh.ldinc m0, %[ai], m1, m2"  /* a6*b1 */
+        _ "mula.dd.hl                  m1, m2"  /* a7*b0 */
 
 
-            commit_to_memory(r, 7)
+        commit_to_memory(r, 7)
 
 
-            _ "mula.dd.ll.lddec m1, %[ai], m0, m2"  /* a8*b0 */
-            _ "mula.dd.hh.ldinc m3, %[bi], m1, m2"  /* a7*b1 */
-            _ "mula.dd.ll.lddec m0, %[ai], m1, m3"  /* a6*b2 */
-            _ "mula.dd.hh.ldinc m2, %[bi], m0, m3"  /* a5*b3 */
+        _ "mula.dd.ll.lddec m1, %[ai], m0, m2"  /* a8*b0 */
+        _ "mula.dd.hh.ldinc m3, %[bi], m1, m2"  /* a7*b1 */
+        _ "mula.dd.ll.lddec m0, %[ai], m1, m3"  /* a6*b2 */
+        _ "mula.dd.hh.ldinc m2, %[bi], m0, m3"  /* a5*b3 */
 
-            _ "mula.dd.ll.lddec m1, %[ai], m0, m2"  /* a4*b4 */
-            _ "mula.dd.hh.ldinc m3, %[bi], m1, m2"  /* a3*b5 */
-            _ "mula.dd.ll.lddec m0, %[ai], m1, m3"  /* a2*b6 */
-            _ "mula.dd.hh.ldinc m2, %[bi], m0, m3"  /* a1*b7 */
+        _ "mula.dd.ll.lddec m1, %[ai], m0, m2"  /* a4*b4 */
+        _ "mula.dd.hh.ldinc m3, %[bi], m1, m2"  /* a3*b5 */
+        _ "mula.dd.ll.lddec m0, %[ai], m1, m3"  /* a2*b6 */
+        _ "mula.dd.hh.ldinc m2, %[bi], m0, m3"  /* a1*b7 */
 
-            _ "mula.dd.ll                  m0, m2"  /* a0*b8 */
+        _ "mula.dd.ll                  m0, m2"  /* a0*b8 */
 
-            commit_to_memory(r, 8)
+        commit_to_memory(r, 8)
 
 
-            _ "mula.dd.lh.ldinc m1, %[ai], m0, m2"  /* a0*b9 */
-            _ "mula.dd.hl.lddec m3, %[bi], m0, m2"  /* a1*b8 */
-            _ "mula.dd.lh.ldinc m0, %[ai], m1, m3"  /* a2*b7 */
-            _ "mula.dd.hl.lddec m2, %[bi], m1, m3"  /* a3*b6 */
+        _ "mula.dd.lh.ldinc m1, %[ai], m0, m2"  /* a0*b9 */
+        _ "mula.dd.hl.lddec m3, %[bi], m0, m2"  /* a1*b8 */
+        _ "mula.dd.lh.ldinc m0, %[ai], m1, m3"  /* a2*b7 */
+        _ "mula.dd.hl.lddec m2, %[bi], m1, m3"  /* a3*b6 */
 
-            _ "mula.dd.lh.ldinc m1, %[ai], m0, m2"  /* a4*b5 */
-            _ "mula.dd.hl.lddec m3, %[bi], m0, m2"  /* a5*b4 */
-            _ "mula.dd.lh.ldinc m0, %[ai], m1, m3"  /* a6*b3 */
-            _ "mula.dd.hl.lddec m2, %[bi], m1, m3"  /* a7*b2 */
+        _ "mula.dd.lh.ldinc m1, %[ai], m0, m2"  /* a4*b5 */
+        _ "mula.dd.hl.lddec m3, %[bi], m0, m2"  /* a5*b4 */
+        _ "mula.dd.lh.ldinc m0, %[ai], m1, m3"  /* a6*b3 */
+        _ "mula.dd.hl.lddec m2, %[bi], m1, m3"  /* a7*b2 */
 
-            _ "mula.dd.lh.ldinc m1, %[ai], m0, m2"  /* a8*b1 */
-            _ "mula.dd.hl                  m0, m2"  /* a9*b0 */
+        _ "mula.dd.lh.ldinc m1, %[ai], m0, m2"  /* a8*b1 */
+        _ "mula.dd.hl                  m0, m2"  /* a9*b0 */
 
-            commit_to_memory(r, 9)
+        commit_to_memory(r, 9)
 
 
-            _ "mula.dd.ll.lddec m0, %[ai], m1, m2"  /* a10*b0 */
-            _ "mula.dd.hh.ldinc m3, %[bi], m0, m2"  /* a9*b1 */
-            _ "mula.dd.ll.lddec m1, %[ai], m0, m3"  /* a8*b2 */
-            _ "mula.dd.hh.ldinc m2, %[bi], m1, m3"  /* a7*b3 */
+        _ "mula.dd.ll.lddec m0, %[ai], m1, m2"  /* a10*b0 */
+        _ "mula.dd.hh.ldinc m3, %[bi], m0, m2"  /* a9*b1 */
+        _ "mula.dd.ll.lddec m1, %[ai], m0, m3"  /* a8*b2 */
+        _ "mula.dd.hh.ldinc m2, %[bi], m1, m3"  /* a7*b3 */
 
-            _ "mula.dd.ll.lddec m0, %[ai], m1, m2"  /* a6*b4 */
-            _ "mula.dd.hh.ldinc m3, %[bi], m0, m2"  /* a5*b5 */
-            _ "mula.dd.ll.lddec m1, %[ai], m0, m3"  /* a4*b6 */
-            _ "mula.dd.hh.ldinc m2, %[bi], m1, m3"  /* a3*b7 */
+        _ "mula.dd.ll.lddec m0, %[ai], m1, m2"  /* a6*b4 */
+        _ "mula.dd.hh.ldinc m3, %[bi], m0, m2"  /* a5*b5 */
+        _ "mula.dd.ll.lddec m1, %[ai], m0, m3"  /* a4*b6 */
+        _ "mula.dd.hh.ldinc m2, %[bi], m1, m3"  /* a3*b7 */
 
-            _ "mula.dd.ll.lddec m0, %[ai], m1, m2"  /* a2*b8 */
-            _ "mula.dd.hh.ldinc m3, %[bi], m0, m2"  /* a1*b9 */
-            _ "mula.dd.ll                  m0, m3"  /* a0*b10 */
+        _ "mula.dd.ll.lddec m0, %[ai], m1, m2"  /* a2*b8 */
+        _ "mula.dd.hh.ldinc m3, %[bi], m0, m2"  /* a1*b9 */
+        _ "mula.dd.ll                  m0, m3"  /* a0*b10 */
 
-            commit_to_memory(r, 10)
+        commit_to_memory(r, 10)
 
 
-            _ "mula.dd.lh.ldinc m1, %[ai], m0, m3"  /* a0*b11 */
-            _ "mula.dd.hl.lddec m2, %[bi], m0, m3"  /* a1*b10 */
-            _ "mula.dd.lh.ldinc m0, %[ai], m1, m2"  /* a2*b9 */
-            _ "mula.dd.hl.lddec m3, %[bi], m1, m2"  /* a3*b8 */
+        _ "mula.dd.lh.ldinc m1, %[ai], m0, m3"  /* a0*b11 */
+        _ "mula.dd.hl.lddec m2, %[bi], m0, m3"  /* a1*b10 */
+        _ "mula.dd.lh.ldinc m0, %[ai], m1, m2"  /* a2*b9 */
+        _ "mula.dd.hl.lddec m3, %[bi], m1, m2"  /* a3*b8 */
 
-            _ "mula.dd.lh.ldinc m1, %[ai], m0, m3"  /* a4*b7 */
-            _ "mula.dd.hl.lddec m2, %[bi], m0, m3"  /* a5*b6 */
-            _ "mula.dd.lh.ldinc m0, %[ai], m1, m2"  /* a6*b5 */
-            _ "mula.dd.hl.lddec m3, %[bi], m1, m2"  /* a7*b4 */
+        _ "mula.dd.lh.ldinc m1, %[ai], m0, m3"  /* a4*b7 */
+        _ "mula.dd.hl.lddec m2, %[bi], m0, m3"  /* a5*b6 */
+        _ "mula.dd.lh.ldinc m0, %[ai], m1, m2"  /* a6*b5 */
+        _ "mula.dd.hl.lddec m3, %[bi], m1, m2"  /* a7*b4 */
 
-            _ "mula.dd.lh.ldinc m1, %[ai], m0, m3"  /* a8*b3 */
-            _ "mula.dd.hl.lddec m2, %[bi], m0, m3"  /* a9*b2 */
-            _ "mula.dd.lh.ldinc m0, %[ai], m1, m2"  /* a10*b1 */
-            _ "mula.dd.hl                  m1, m2"  /* a11*b0 */
+        _ "mula.dd.lh.ldinc m1, %[ai], m0, m3"  /* a8*b3 */
+        _ "mula.dd.hl.lddec m2, %[bi], m0, m3"  /* a9*b2 */
+        _ "mula.dd.lh.ldinc m0, %[ai], m1, m2"  /* a10*b1 */
+        _ "mula.dd.hl                  m1, m2"  /* a11*b0 */
 
 
-            commit_to_memory(r, 11)
+        commit_to_memory(r, 11)
 
 
-            _ "mula.dd.ll.lddec m1, %[ai], m0, m2"  /* a12*b0 */
-            _ "mula.dd.hh.ldinc m3, %[bi], m1, m2"  /* a11*b1 */
-            _ "mula.dd.ll.lddec m0, %[ai], m1, m3"  /* a10*b2 */
-            _ "mula.dd.hh.ldinc m2, %[bi], m0, m3"  /* a9*b3 */
+        _ "mula.dd.ll.lddec m1, %[ai], m0, m2"  /* a12*b0 */
+        _ "mula.dd.hh.ldinc m3, %[bi], m1, m2"  /* a11*b1 */
+        _ "mula.dd.ll.lddec m0, %[ai], m1, m3"  /* a10*b2 */
+        _ "mula.dd.hh.ldinc m2, %[bi], m0, m3"  /* a9*b3 */
 
-            _ "mula.dd.ll.lddec m1, %[ai], m0, m2"  /* a8*b4 */
-            _ "mula.dd.hh.ldinc m3, %[bi], m1, m2"  /* a7*b5 */
-            _ "mula.dd.ll.lddec m0, %[ai], m1, m3"  /* a6*b6 */
-            _ "mula.dd.hh.ldinc m2, %[bi], m0, m3"  /* a5*b7 */
+        _ "mula.dd.ll.lddec m1, %[ai], m0, m2"  /* a8*b4 */
+        _ "mula.dd.hh.ldinc m3, %[bi], m1, m2"  /* a7*b5 */
+        _ "mula.dd.ll.lddec m0, %[ai], m1, m3"  /* a6*b6 */
+        _ "mula.dd.hh.ldinc m2, %[bi], m0, m3"  /* a5*b7 */
 
-            _ "mula.dd.ll.lddec m1, %[ai], m0, m2"  /* a4*b8 */
-            _ "mula.dd.hh.ldinc m3, %[bi], m1, m2"  /* a3*b9 */
-            _ "mula.dd.ll.lddec m0, %[ai], m1, m3"  /* a2*b10 */
-            _ "mula.dd.hh.ldinc m2, %[bi], m0, m3"  /* a1*b11 */
+        _ "mula.dd.ll.lddec m1, %[ai], m0, m2"  /* a4*b8 */
+        _ "mula.dd.hh.ldinc m3, %[bi], m1, m2"  /* a3*b9 */
+        _ "mula.dd.ll.lddec m0, %[ai], m1, m3"  /* a2*b10 */
+        _ "mula.dd.hh.ldinc m2, %[bi], m0, m3"  /* a1*b11 */
 
-            _ "mula.dd.ll                  m0, m2"  /* a0*b12 */
+        _ "mula.dd.ll                  m0, m2"  /* a0*b12 */
 
-            commit_to_memory(r, 12)
+        commit_to_memory(r, 12)
 
 
-            _ "mula.dd.lh.ldinc m1, %[ai], m0, m2"  /* a0*b13 */
-            _ "mula.dd.hl.lddec m3, %[bi], m0, m2"  /* a1*b12 */
-            _ "mula.dd.lh.ldinc m0, %[ai], m1, m3"  /* a2*b11 */
-            _ "mula.dd.hl.lddec m2, %[bi], m1, m3"  /* a3*b10 */
+        _ "mula.dd.lh.ldinc m1, %[ai], m0, m2"  /* a0*b13 */
+        _ "mula.dd.hl.lddec m3, %[bi], m0, m2"  /* a1*b12 */
+        _ "mula.dd.lh.ldinc m0, %[ai], m1, m3"  /* a2*b11 */
+        _ "mula.dd.hl.lddec m2, %[bi], m1, m3"  /* a3*b10 */
 
-            _ "mula.dd.lh.ldinc m1, %[ai], m0, m2"  /* a4*b9 */
-            _ "mula.dd.hl.lddec m3, %[bi], m0, m2"  /* a5*b8 */
-            _ "mula.dd.lh.ldinc m0, %[ai], m1, m3"  /* a6*b7 */
-            _ "mula.dd.hl.lddec m2, %[bi], m1, m3"  /* a7*b6 */
+        _ "mula.dd.lh.ldinc m1, %[ai], m0, m2"  /* a4*b9 */
+        _ "mula.dd.hl.lddec m3, %[bi], m0, m2"  /* a5*b8 */
+        _ "mula.dd.lh.ldinc m0, %[ai], m1, m3"  /* a6*b7 */
+        _ "mula.dd.hl.lddec m2, %[bi], m1, m3"  /* a7*b6 */
 
-            _ "mula.dd.lh.ldinc m1, %[ai], m0, m2"  /* a8*b5 */
-            _ "mula.dd.hl.lddec m3, %[bi], m0, m2"  /* a9*b4 */
-            _ "mula.dd.lh.ldinc m0, %[ai], m1, m3"  /* a10*b3 */
-            _ "mula.dd.hl.lddec m2, %[bi], m1, m3"  /* a11*b2 */
+        _ "mula.dd.lh.ldinc m1, %[ai], m0, m2"  /* a8*b5 */
+        _ "mula.dd.hl.lddec m3, %[bi], m0, m2"  /* a9*b4 */
+        _ "mula.dd.lh.ldinc m0, %[ai], m1, m3"  /* a10*b3 */
+        _ "mula.dd.hl.lddec m2, %[bi], m1, m3"  /* a11*b2 */
 
-            _ "mula.dd.lh.ldinc m1, %[ai], m0, m2"  /* a12*b1 */
-            _ "mula.dd.hl                  m0, m2"  /* a13*b0 */
+        _ "mula.dd.lh.ldinc m1, %[ai], m0, m2"  /* a12*b1 */
+        _ "mula.dd.hl                  m0, m2"  /* a13*b0 */
 
-            commit_to_memory(r, 13)
+        commit_to_memory(r, 13)
 
 
-            _ "mula.dd.ll.lddec m0, %[ai], m1, m2"  /* a14*b0 */
-            _ "mula.dd.hh.ldinc m3, %[bi], m0, m2"  /* a13*b1 */
-            _ "mula.dd.ll.lddec m1, %[ai], m0, m3"  /* a12*b2 */
-            _ "mula.dd.hh.ldinc m2, %[bi], m1, m3"  /* a11*b3 */
+        _ "mula.dd.ll.lddec m0, %[ai], m1, m2"  /* a14*b0 */
+        _ "mula.dd.hh.ldinc m3, %[bi], m0, m2"  /* a13*b1 */
+        _ "mula.dd.ll.lddec m1, %[ai], m0, m3"  /* a12*b2 */
+        _ "mula.dd.hh.ldinc m2, %[bi], m1, m3"  /* a11*b3 */
 
-            _ "mula.dd.ll.lddec m0, %[ai], m1, m2"  /* a10*b4 */
-            _ "mula.dd.hh.ldinc m3, %[bi], m0, m2"  /* a9*b5 */
-            _ "mula.dd.ll.lddec m1, %[ai], m0, m3"  /* a8*b6 */
-            _ "mula.dd.hh.ldinc m2, %[bi], m1, m3"  /* a7*b7 */
+        _ "mula.dd.ll.lddec m0, %[ai], m1, m2"  /* a10*b4 */
+        _ "mula.dd.hh.ldinc m3, %[bi], m0, m2"  /* a9*b5 */
+        _ "mula.dd.ll.lddec m1, %[ai], m0, m3"  /* a8*b6 */
+        _ "mula.dd.hh.ldinc m2, %[bi], m1, m3"  /* a7*b7 */
 
-            _ "mula.dd.ll.lddec m0, %[ai], m1, m2"  /* a6*b8 */
-            _ "mula.dd.hh.ldinc m3, %[bi], m0, m2"  /* a5*b9 */
-            _ "mula.dd.ll.lddec m1, %[ai], m0, m3"  /* a4*b10 */
-            _ "mula.dd.hh.ldinc m2, %[bi], m1, m3"  /* a3*b11 */
+        _ "mula.dd.ll.lddec m0, %[ai], m1, m2"  /* a6*b8 */
+        _ "mula.dd.hh.ldinc m3, %[bi], m0, m2"  /* a5*b9 */
+        _ "mula.dd.ll.lddec m1, %[ai], m0, m3"  /* a4*b10 */
+        _ "mula.dd.hh.ldinc m2, %[bi], m1, m3"  /* a3*b11 */
 
-            _ "mula.dd.ll.lddec m0, %[ai], m1, m2"  /* a2*b12 */
-            _ "mula.dd.hh.ldinc m3, %[bi], m0, m2"  /* a1*b13 */
-            _ "mula.dd.ll                  m0, m3"  /* a0*b14 */
+        _ "mula.dd.ll.lddec m0, %[ai], m1, m2"  /* a2*b12 */
+        _ "mula.dd.hh.ldinc m3, %[bi], m0, m2"  /* a1*b13 */
+        _ "mula.dd.ll                  m0, m3"  /* a0*b14 */
 
-            commit_to_memory(r, 14)
+        commit_to_memory(r, 14)
 
 
-            _ "mula.dd.lh.ldinc m1, %[ai], m0, m3"  /* a0*b15 */
-            _ "mula.dd.hl.lddec m2, %[bi], m0, m3"  /* a1*b14 */
-            _ "mula.dd.lh.ldinc m0, %[ai], m1, m2"  /* a2*b13 */
-            _ "mula.dd.hl.lddec m3, %[bi], m1, m2"  /* a3*b12 */
+        _ "mula.dd.lh.ldinc m1, %[ai], m0, m3"  /* a0*b15 */
+        _ "mula.dd.hl.lddec m2, %[bi], m0, m3"  /* a1*b14 */
+        _ "mula.dd.lh.ldinc m0, %[ai], m1, m2"  /* a2*b13 */
+        _ "mula.dd.hl.lddec m3, %[bi], m1, m2"  /* a3*b12 */
 
-            _ "mula.dd.lh.ldinc m1, %[ai], m0, m3"  /* a4*b11 */
-            _ "mula.dd.hl.lddec m2, %[bi], m0, m3"  /* a5*b10 */
-            _ "mula.dd.lh.ldinc m0, %[ai], m1, m2"  /* a6*b9 */
-            _ "mula.dd.hl.lddec m3, %[bi], m1, m2"  /* a7*b8 */
+        _ "mula.dd.lh.ldinc m1, %[ai], m0, m3"  /* a4*b11 */
+        _ "mula.dd.hl.lddec m2, %[bi], m0, m3"  /* a5*b10 */
+        _ "mula.dd.lh.ldinc m0, %[ai], m1, m2"  /* a6*b9 */
+        _ "mula.dd.hl.lddec m3, %[bi], m1, m2"  /* a7*b8 */
 
-            _ "mula.dd.lh.ldinc m1, %[ai], m0, m3"  /* a8*b7 */
-            _ "mula.dd.hl.lddec m2, %[bi], m0, m3"  /* a9*b6 */
-            _ "mula.dd.lh.ldinc m0, %[ai], m1, m2"  /* a10*b5 */
-            _ "mula.dd.hl.lddec m3, %[bi], m1, m2"  /* a11*b4 */
+        _ "mula.dd.lh.ldinc m1, %[ai], m0, m3"  /* a8*b7 */
+        _ "mula.dd.hl.lddec m2, %[bi], m0, m3"  /* a9*b6 */
+        _ "mula.dd.lh.ldinc m0, %[ai], m1, m2"  /* a10*b5 */
+        _ "mula.dd.hl.lddec m3, %[bi], m1, m2"  /* a11*b4 */
 
-            _ "mula.dd.lh.ldinc m1, %[ai], m0, m3"  /* a12*b3 */
-            _ "mula.dd.hl.lddec m2, %[bi], m0, m3"  /* a13*b2 */
-            _ "mula.dd.lh                  m1, m2"  /* a14*b1 */
-            _ "mula.dd.hl                  m1, m2"  /* a15*b0 */
+        _ "mula.dd.lh.ldinc m1, %[ai], m0, m3"  /* a12*b3 */
+        _ "mula.dd.hl.lddec m2, %[bi], m0, m3"  /* a13*b2 */
+        _ "mula.dd.lh                  m1, m2"  /* a14*b1 */
+        _ "mula.dd.hl                  m1, m2"  /* a15*b0 */
 
 
-            commit_to_memory(r, 15)
+        commit_to_memory(r, 15)
 
 
-            _ "mula.dd.hh.ldinc m3, %[bi], m1, m2"  /* a15*b1 */
-            _ "mula.dd.ll.lddec m0, %[ai], m1, m3"  /* a14*b2 */
-            _ "mula.dd.hh.ldinc m2, %[bi], m0, m3"  /* a13*b3 */
-            _ "mula.dd.ll.lddec m1, %[ai], m0, m2"  /* a12*b4 */
+        _ "mula.dd.hh.ldinc m3, %[bi], m1, m2"  /* a15*b1 */
+        _ "mula.dd.ll.lddec m0, %[ai], m1, m3"  /* a14*b2 */
+        _ "mula.dd.hh.ldinc m2, %[bi], m0, m3"  /* a13*b3 */
+        _ "mula.dd.ll.lddec m1, %[ai], m0, m2"  /* a12*b4 */
 
-            _ "mula.dd.hh.ldinc m3, %[bi], m1, m2"  /* a11*b5 */
-            _ "mula.dd.ll.lddec m0, %[ai], m1, m3"  /* a10*b6 */
-            _ "mula.dd.hh.ldinc m2, %[bi], m0, m3"  /* a9*b7 */
-            _ "mula.dd.ll.lddec m1, %[ai], m0, m2"  /* a8*b8 */
+        _ "mula.dd.hh.ldinc m3, %[bi], m1, m2"  /* a11*b5 */
+        _ "mula.dd.ll.lddec m0, %[ai], m1, m3"  /* a10*b6 */
+        _ "mula.dd.hh.ldinc m2, %[bi], m0, m3"  /* a9*b7 */
+        _ "mula.dd.ll.lddec m1, %[ai], m0, m2"  /* a8*b8 */
 
-            _ "mula.dd.hh.ldinc m3, %[bi], m1, m2"  /* a7*b9 */
-            _ "mula.dd.ll.lddec m0, %[ai], m1, m3"  /* a6*b10 */
-            _ "mula.dd.hh.ldinc m2, %[bi], m0, m3"  /* a5*b11 */
-            _ "mula.dd.ll.lddec m1, %[ai], m0, m2"  /* a4*b12 */
+        _ "mula.dd.hh.ldinc m3, %[bi], m1, m2"  /* a7*b9 */
+        _ "mula.dd.ll.lddec m0, %[ai], m1, m3"  /* a6*b10 */
+        _ "mula.dd.hh.ldinc m2, %[bi], m0, m3"  /* a5*b11 */
+        _ "mula.dd.ll.lddec m1, %[ai], m0, m2"  /* a4*b12 */
 
-            _ "mula.dd.hh.ldinc m3, %[bi], m1, m2"  /* a3*b13 */
-            _ "mula.dd.ll.lddec m0, %[ai], m1, m3"  /* a2*b14 */
-            _ "mula.dd.hh                  m0, m3"  /* a1*b15 */
+        _ "mula.dd.hh.ldinc m3, %[bi], m1, m2"  /* a3*b13 */
+        _ "mula.dd.ll.lddec m0, %[ai], m1, m3"  /* a2*b14 */
+        _ "mula.dd.hh                  m0, m3"  /* a1*b15 */
 
-            commit_to_memory(r, 16)
+        commit_to_memory(r, 16)
 
 
-            _ "ldinc m1, %[ai]"
-            _ "mula.dd.lh.lddec m2, %[bi], m1, m3"  /* a2*b15 */
-            _ "mula.dd.hl.ldinc m0, %[ai], m1, m3"  /* a3*b14 */
-            _ "mula.dd.lh.lddec m3, %[bi], m0, m2"  /* a4*b13 */
-            _ "mula.dd.hl.ldinc m1, %[ai], m0, m2"  /* a5*b12 */
+        _ "ldinc m1, %[ai]"
+        _ "mula.dd.lh.lddec m2, %[bi], m1, m3"  /* a2*b15 */
+        _ "mula.dd.hl.ldinc m0, %[ai], m1, m3"  /* a3*b14 */
+        _ "mula.dd.lh.lddec m3, %[bi], m0, m2"  /* a4*b13 */
+        _ "mula.dd.hl.ldinc m1, %[ai], m0, m2"  /* a5*b12 */
 
-            _ "mula.dd.lh.lddec m2, %[bi], m1, m3"  /* a6*b11 */
-            _ "mula.dd.hl.ldinc m0, %[ai], m1, m3"  /* a7*b10 */
-            _ "mula.dd.lh.lddec m3, %[bi], m0, m2"  /* a8*b9 */
-            _ "mula.dd.hl.ldinc m1, %[ai], m0, m2"  /* a9*b8 */
+        _ "mula.dd.lh.lddec m2, %[bi], m1, m3"  /* a6*b11 */
+        _ "mula.dd.hl.ldinc m0, %[ai], m1, m3"  /* a7*b10 */
+        _ "mula.dd.lh.lddec m3, %[bi], m0, m2"  /* a8*b9 */
+        _ "mula.dd.hl.ldinc m1, %[ai], m0, m2"  /* a9*b8 */
 
-            _ "mula.dd.lh.lddec m2, %[bi], m1, m3"  /* a10*b7 */
-            _ "mula.dd.hl.ldinc m0, %[ai], m1, m3"  /* a11*b6 */
-            _ "mula.dd.lh.lddec m3, %[bi], m0, m2"  /* a12*b5 */
-            _ "mula.dd.hl.ldinc m1, %[ai], m0, m2"  /* a13*b4 */
+        _ "mula.dd.lh.lddec m2, %[bi], m1, m3"  /* a10*b7 */
+        _ "mula.dd.hl.ldinc m0, %[ai], m1, m3"  /* a11*b6 */
+        _ "mula.dd.lh.lddec m3, %[bi], m0, m2"  /* a12*b5 */
+        _ "mula.dd.hl.ldinc m1, %[ai], m0, m2"  /* a13*b4 */
 
-            _ "mula.dd.lh                  m1, m3"  /* a14*b3 */
-            _ "mula.dd.hl                  m1, m3"  /* a15*b2 */
+        _ "mula.dd.lh                  m1, m3"  /* a14*b3 */
+        _ "mula.dd.hl                  m1, m3"  /* a15*b2 */
 
-            commit_to_memory(r, 17)
+        commit_to_memory(r, 17)
 
 
-            _ "mula.dd.hh.ldinc m2, %[bi], m1, m3"  /* a15*b3 */
-            _ "mula.dd.ll.lddec m0, %[ai], m1, m2"  /* a14*b4 */
-            _ "mula.dd.hh.ldinc m3, %[bi], m0, m2"  /* a13*b5 */
-            _ "mula.dd.ll.lddec m1, %[ai], m0, m3"  /* a12*b6 */
+        _ "mula.dd.hh.ldinc m2, %[bi], m1, m3"  /* a15*b3 */
+        _ "mula.dd.ll.lddec m0, %[ai], m1, m2"  /* a14*b4 */
+        _ "mula.dd.hh.ldinc m3, %[bi], m0, m2"  /* a13*b5 */
+        _ "mula.dd.ll.lddec m1, %[ai], m0, m3"  /* a12*b6 */
 
-            _ "mula.dd.hh.ldinc m2, %[bi], m1, m3"  /* a11*b7 */
-            _ "mula.dd.ll.lddec m0, %[ai], m1, m2"  /* a10*b8 */
-            _ "mula.dd.hh.ldinc m3, %[bi], m0, m2"  /* a9*b9 */
-            _ "mula.dd.ll.lddec m1, %[ai], m0, m3"  /* a8*b10 */
+        _ "mula.dd.hh.ldinc m2, %[bi], m1, m3"  /* a11*b7 */
+        _ "mula.dd.ll.lddec m0, %[ai], m1, m2"  /* a10*b8 */
+        _ "mula.dd.hh.ldinc m3, %[bi], m0, m2"  /* a9*b9 */
+        _ "mula.dd.ll.lddec m1, %[ai], m0, m3"  /* a8*b10 */
 
-            _ "mula.dd.hh.ldinc m2, %[bi], m1, m3"  /* a7*b11 */
-            _ "mula.dd.ll.lddec m0, %[ai], m1, m2"  /* a6*b12 */
-            _ "mula.dd.hh.ldinc m3, %[bi], m0, m2"  /* a5*b13 */
-            _ "mula.dd.ll.lddec m1, %[ai], m0, m3"  /* a4*b14 */
+        _ "mula.dd.hh.ldinc m2, %[bi], m1, m3"  /* a7*b11 */
+        _ "mula.dd.ll.lddec m0, %[ai], m1, m2"  /* a6*b12 */
+        _ "mula.dd.hh.ldinc m3, %[bi], m0, m2"  /* a5*b13 */
+        _ "mula.dd.ll.lddec m1, %[ai], m0, m3"  /* a4*b14 */
 
-            _ "mula.dd.hh                  m1, m3"  /* a3*b15 */
+        _ "mula.dd.hh                  m1, m3"  /* a3*b15 */
 
-            commit_to_memory(r, 18)
+        commit_to_memory(r, 18)
 
 
-            _ "ldinc m0, %[ai]"
-            _ "mula.dd.lh.lddec m2, %[bi], m0, m3"  /* a4*b15 */
-            _ "mula.dd.hl.ldinc m1, %[ai], m0, m3"  /* a5*b14 */
-            _ "mula.dd.lh.lddec m3, %[bi], m1, m2"  /* a6*b13 */
-            _ "mula.dd.hl.ldinc m0, %[ai], m1, m2"  /* a7*b12 */
+        _ "ldinc m0, %[ai]"
+        _ "mula.dd.lh.lddec m2, %[bi], m0, m3"  /* a4*b15 */
+        _ "mula.dd.hl.ldinc m1, %[ai], m0, m3"  /* a5*b14 */
+        _ "mula.dd.lh.lddec m3, %[bi], m1, m2"  /* a6*b13 */
+        _ "mula.dd.hl.ldinc m0, %[ai], m1, m2"  /* a7*b12 */
 
-            _ "mula.dd.lh.lddec m2, %[bi], m0, m3"  /* a8*b11 */
-            _ "mula.dd.hl.ldinc m1, %[ai], m0, m3"  /* a9*b10 */
-            _ "mula.dd.lh.lddec m3, %[bi], m1, m2"  /* a10*b9 */
-            _ "mula.dd.hl.ldinc m0, %[ai], m1, m2"  /* a11*b8 */
+        _ "mula.dd.lh.lddec m2, %[bi], m0, m3"  /* a8*b11 */
+        _ "mula.dd.hl.ldinc m1, %[ai], m0, m3"  /* a9*b10 */
+        _ "mula.dd.lh.lddec m3, %[bi], m1, m2"  /* a10*b9 */
+        _ "mula.dd.hl.ldinc m0, %[ai], m1, m2"  /* a11*b8 */
 
-            _ "mula.dd.lh.lddec m2, %[bi], m0, m3"  /* a12*b7 */
-            _ "mula.dd.hl.ldinc m1, %[ai], m0, m3"  /* a13*b6 */
-            _ "mula.dd.lh                  m1, m2"  /* a14*b5 */
-            _ "mula.dd.hl                  m1, m2"  /* a15*b4 */
+        _ "mula.dd.lh.lddec m2, %[bi], m0, m3"  /* a12*b7 */
+        _ "mula.dd.hl.ldinc m1, %[ai], m0, m3"  /* a13*b6 */
+        _ "mula.dd.lh                  m1, m2"  /* a14*b5 */
+        _ "mula.dd.hl                  m1, m2"  /* a15*b4 */
 
 
-            commit_to_memory(r, 19)
+        commit_to_memory(r, 19)
 
 
-            _ "mula.dd.hh.ldinc m3, %[bi], m1, m2"  /* a15*b5 */
-            _ "mula.dd.ll.lddec m0, %[ai], m1, m3"  /* a14*b6 */
-            _ "mula.dd.hh.ldinc m2, %[bi], m0, m3"  /* a13*b7 */
-            _ "mula.dd.ll.lddec m1, %[ai], m0, m2"  /* a12*b8 */
+        _ "mula.dd.hh.ldinc m3, %[bi], m1, m2"  /* a15*b5 */
+        _ "mula.dd.ll.lddec m0, %[ai], m1, m3"  /* a14*b6 */
+        _ "mula.dd.hh.ldinc m2, %[bi], m0, m3"  /* a13*b7 */
+        _ "mula.dd.ll.lddec m1, %[ai], m0, m2"  /* a12*b8 */
 
-            _ "mula.dd.hh.ldinc m3, %[bi], m1, m2"  /* a11*b9 */
-            _ "mula.dd.ll.lddec m0, %[ai], m1, m3"  /* a10*b10 */
-            _ "mula.dd.hh.ldinc m2, %[bi], m0, m3"  /* a9*b11 */
-            _ "mula.dd.ll.lddec m1, %[ai], m0, m2"  /* a8*b12 */
+        _ "mula.dd.hh.ldinc m3, %[bi], m1, m2"  /* a11*b9 */
+        _ "mula.dd.ll.lddec m0, %[ai], m1, m3"  /* a10*b10 */
+        _ "mula.dd.hh.ldinc m2, %[bi], m0, m3"  /* a9*b11 */
+        _ "mula.dd.ll.lddec m1, %[ai], m0, m2"  /* a8*b12 */
 
-            _ "mula.dd.hh.ldinc m3, %[bi], m1, m2"  /* a7*b13 */
-            _ "mula.dd.ll.lddec m0, %[ai], m1, m3"  /* a6*b14 */
-            _ "mula.dd.hh                  m0, m3"  /* a5*b15 */
+        _ "mula.dd.hh.ldinc m3, %[bi], m1, m2"  /* a7*b13 */
+        _ "mula.dd.ll.lddec m0, %[ai], m1, m3"  /* a6*b14 */
+        _ "mula.dd.hh                  m0, m3"  /* a5*b15 */
 
-            commit_to_memory(r, 20)
+        commit_to_memory(r, 20)
 
 
-            _ "ldinc m1, %[ai]"
-            _ "mula.dd.lh.lddec m2, %[bi], m1, m3"  /* a6*b15 */
-            _ "mula.dd.hl.ldinc m0, %[ai], m1, m3"  /* a7*b14 */
-            _ "mula.dd.lh.lddec m3, %[bi], m0, m2"  /* a8*b13 */
-            _ "mula.dd.hl.ldinc m1, %[ai], m0, m2"  /* a9*b12 */
+        _ "ldinc m1, %[ai]"
+        _ "mula.dd.lh.lddec m2, %[bi], m1, m3"  /* a6*b15 */
+        _ "mula.dd.hl.ldinc m0, %[ai], m1, m3"  /* a7*b14 */
+        _ "mula.dd.lh.lddec m3, %[bi], m0, m2"  /* a8*b13 */
+        _ "mula.dd.hl.ldinc m1, %[ai], m0, m2"  /* a9*b12 */
 
-            _ "mula.dd.lh.lddec m2, %[bi], m1, m3"  /* a10*b11 */
-            _ "mula.dd.hl.ldinc m0, %[ai], m1, m3"  /* a11*b10 */
-            _ "mula.dd.lh.lddec m3, %[bi], m0, m2"  /* a12*b9 */
-            _ "mula.dd.hl.ldinc m1, %[ai], m0, m2"  /* a13*b8 */
+        _ "mula.dd.lh.lddec m2, %[bi], m1, m3"  /* a10*b11 */
+        _ "mula.dd.hl.ldinc m0, %[ai], m1, m3"  /* a11*b10 */
+        _ "mula.dd.lh.lddec m3, %[bi], m0, m2"  /* a12*b9 */
+        _ "mula.dd.hl.ldinc m1, %[ai], m0, m2"  /* a13*b8 */
 
-            _ "mula.dd.lh                  m1, m3"  /* a14*b7 */
-            _ "mula.dd.hl                  m1, m3"  /* a15*b6 */
+        _ "mula.dd.lh                  m1, m3"  /* a14*b7 */
+        _ "mula.dd.hl                  m1, m3"  /* a15*b6 */
 
-            commit_to_memory(r, 21)
+        commit_to_memory(r, 21)
 
 
-            _ "mula.dd.hh.ldinc m2, %[bi], m1, m3"  /* a15*b7 */
-            _ "mula.dd.ll.lddec m0, %[ai], m1, m2"  /* a14*b8 */
-            _ "mula.dd.hh.ldinc m3, %[bi], m0, m2"  /* a13*b9 */
-            _ "mula.dd.ll.lddec m1, %[ai], m0, m3"  /* a12*b10 */
+        _ "mula.dd.hh.ldinc m2, %[bi], m1, m3"  /* a15*b7 */
+        _ "mula.dd.ll.lddec m0, %[ai], m1, m2"  /* a14*b8 */
+        _ "mula.dd.hh.ldinc m3, %[bi], m0, m2"  /* a13*b9 */
+        _ "mula.dd.ll.lddec m1, %[ai], m0, m3"  /* a12*b10 */
 
-            _ "mula.dd.hh.ldinc m2, %[bi], m1, m3"  /* a11*b11 */
-            _ "mula.dd.ll.lddec m0, %[ai], m1, m2"  /* a10*b12 */
-            _ "mula.dd.hh.ldinc m3, %[bi], m0, m2"  /* a9*b13 */
-            _ "mula.dd.ll.lddec m1, %[ai], m0, m3"  /* a8*b14 */
+        _ "mula.dd.hh.ldinc m2, %[bi], m1, m3"  /* a11*b11 */
+        _ "mula.dd.ll.lddec m0, %[ai], m1, m2"  /* a10*b12 */
+        _ "mula.dd.hh.ldinc m3, %[bi], m0, m2"  /* a9*b13 */
+        _ "mula.dd.ll.lddec m1, %[ai], m0, m3"  /* a8*b14 */
 
-            _ "mula.dd.hh                  m1, m3"  /* a7*b15 */
+        _ "mula.dd.hh                  m1, m3"  /* a7*b15 */
 
-            commit_to_memory(r, 22)
+        commit_to_memory(r, 22)
 
 
-            _ "ldinc m0, %[ai]"
-            _ "mula.dd.lh.lddec m2, %[bi], m0, m3"  /* a8*b15 */
-            _ "mula.dd.hl.ldinc m1, %[ai], m0, m3"  /* a9*b14 */
-            _ "mula.dd.lh.lddec m3, %[bi], m1, m2"  /* a10*b13 */
-            _ "mula.dd.hl.ldinc m0, %[ai], m1, m2"  /* a11*b12 */
+        _ "ldinc m0, %[ai]"
+        _ "mula.dd.lh.lddec m2, %[bi], m0, m3"  /* a8*b15 */
+        _ "mula.dd.hl.ldinc m1, %[ai], m0, m3"  /* a9*b14 */
+        _ "mula.dd.lh.lddec m3, %[bi], m1, m2"  /* a10*b13 */
+        _ "mula.dd.hl.ldinc m0, %[ai], m1, m2"  /* a11*b12 */
 
-            _ "mula.dd.lh.lddec m2, %[bi], m0, m3"  /* a12*b11 */
-            _ "mula.dd.hl.ldinc m1, %[ai], m0, m3"  /* a13*b10 */
-            _ "mula.dd.lh                  m1, m2"  /* a14*b9 */
-            _ "mula.dd.hl                  m1, m2"  /* a15*b8 */
+        _ "mula.dd.lh.lddec m2, %[bi], m0, m3"  /* a12*b11 */
+        _ "mula.dd.hl.ldinc m1, %[ai], m0, m3"  /* a13*b10 */
+        _ "mula.dd.lh                  m1, m2"  /* a14*b9 */
+        _ "mula.dd.hl                  m1, m2"  /* a15*b8 */
 
 
-            commit_to_memory(r, 23)
+        commit_to_memory(r, 23)
 
 
-            _ "mula.dd.hh.ldinc m3, %[bi], m1, m2"  /* a15*b9 */
-            _ "mula.dd.ll.lddec m0, %[ai], m1, m3"  /* a14*b10 */
-            _ "mula.dd.hh.ldinc m2, %[bi], m0, m3"  /* a13*b11 */
-            _ "mula.dd.ll.lddec m1, %[ai], m0, m2"  /* a12*b12 */
+        _ "mula.dd.hh.ldinc m3, %[bi], m1, m2"  /* a15*b9 */
+        _ "mula.dd.ll.lddec m0, %[ai], m1, m3"  /* a14*b10 */
+        _ "mula.dd.hh.ldinc m2, %[bi], m0, m3"  /* a13*b11 */
+        _ "mula.dd.ll.lddec m1, %[ai], m0, m2"  /* a12*b12 */
 
-            _ "mula.dd.hh.ldinc m3, %[bi], m1, m2"  /* a11*b13 */
-            _ "mula.dd.ll.lddec m0, %[ai], m1, m3"  /* a10*b14 */
-            _ "mula.dd.hh                  m0, m3"  /* a9*b15 */
+        _ "mula.dd.hh.ldinc m3, %[bi], m1, m2"  /* a11*b13 */
+        _ "mula.dd.ll.lddec m0, %[ai], m1, m3"  /* a10*b14 */
+        _ "mula.dd.hh                  m0, m3"  /* a9*b15 */
 
-            commit_to_memory(r, 24)
+        commit_to_memory(r, 24)
 
 
-            _ "ldinc m1, %[ai]"
-            _ "mula.dd.lh.lddec m2, %[bi], m1, m3"  /* a10*b15 */
-            _ "mula.dd.hl.ldinc m0, %[ai], m1, m3"  /* a11*b14 */
-            _ "mula.dd.lh.lddec m3, %[bi], m0, m2"  /* a12*b13 */
-            _ "mula.dd.hl.ldinc m1, %[ai], m0, m2"  /* a13*b12 */
+        _ "ldinc m1, %[ai]"
+        _ "mula.dd.lh.lddec m2, %[bi], m1, m3"  /* a10*b15 */
+        _ "mula.dd.hl.ldinc m0, %[ai], m1, m3"  /* a11*b14 */
+        _ "mula.dd.lh.lddec m3, %[bi], m0, m2"  /* a12*b13 */
+        _ "mula.dd.hl.ldinc m1, %[ai], m0, m2"  /* a13*b12 */
 
-            _ "mula.dd.lh                  m1, m3"  /* a14*b11 */
-            _ "mula.dd.hl                  m1, m3"  /* a15*b10 */
+        _ "mula.dd.lh                  m1, m3"  /* a14*b11 */
+        _ "mula.dd.hl                  m1, m3"  /* a15*b10 */
 
-            commit_to_memory(r, 25)
+        commit_to_memory(r, 25)
 
 
-            _ "mula.dd.hh.ldinc m2, %[bi], m1, m3"  /* a15*b11 */
-            _ "mula.dd.ll.lddec m0, %[ai], m1, m2"  /* a14*b12 */
-            _ "mula.dd.hh.ldinc m3, %[bi], m0, m2"  /* a13*b13 */
-            _ "mula.dd.ll.lddec m1, %[ai], m0, m3"  /* a12*b14 */
+        _ "mula.dd.hh.ldinc m2, %[bi], m1, m3"  /* a15*b11 */
+        _ "mula.dd.ll.lddec m0, %[ai], m1, m2"  /* a14*b12 */
+        _ "mula.dd.hh.ldinc m3, %[bi], m0, m2"  /* a13*b13 */
+        _ "mula.dd.ll.lddec m1, %[ai], m0, m3"  /* a12*b14 */
 
-            _ "mula.dd.hh                  m1, m3"  /* a11*b15 */
+        _ "mula.dd.hh                  m1, m3"  /* a11*b15 */
 
-            commit_to_memory(r, 26)
+        commit_to_memory(r, 26)
 
 
-            _ "ldinc m0, %[ai]"
-            _ "mula.dd.lh.lddec m2, %[bi], m0, m3"  /* a12*b15 */
-            _ "mula.dd.hl.ldinc m1, %[ai], m0, m3"  /* a13*b14 */
-            _ "mula.dd.lh                  m1, m2"  /* a14*b13 */
-            _ "mula.dd.hl                  m1, m2"  /* a15*b12 */
+        _ "ldinc m0, %[ai]"
+        _ "mula.dd.lh.lddec m2, %[bi], m0, m3"  /* a12*b15 */
+        _ "mula.dd.hl.ldinc m1, %[ai], m0, m3"  /* a13*b14 */
+        _ "mula.dd.lh                  m1, m2"  /* a14*b13 */
+        _ "mula.dd.hl                  m1, m2"  /* a15*b12 */
 
 
-            commit_to_memory(r, 27)
+        commit_to_memory(r, 27)
 
 
-            _ "mula.dd.hh.ldinc m3, %[bi], m1, m2"  /* a15*b13 */
-            _ "mula.dd.ll.lddec m0, %[ai], m1, m3"  /* a14*b14 */
-            _ "mula.dd.hh                  m0, m3"  /* a13*b15 */
+        _ "mula.dd.hh.ldinc m3, %[bi], m1, m2"  /* a15*b13 */
+        _ "mula.dd.ll.lddec m0, %[ai], m1, m3"  /* a14*b14 */
+        _ "mula.dd.hh                  m0, m3"  /* a13*b15 */
 
-            commit_to_memory(r, 28)
+        commit_to_memory(r, 28)
 
 
-            _ "ldinc m1, %[ai]"
-            _ "mula.dd.lh                  m1, m3"  /* a14*b15 */
-            _ "mula.dd.hl                  m1, m3"  /* a15*b14 */
+        _ "ldinc m1, %[ai]"
+        _ "mula.dd.lh                  m1, m3"  /* a14*b15 */
+        _ "mula.dd.hl                  m1, m3"  /* a15*b14 */
 
-            commit_to_memory(r, 29)
+        commit_to_memory(r, 29)
 
 
-            _ "mula.dd.hh                  m1, m3"  /* a15*b15 */
+        _ "mula.dd.hh                  m1, m3"  /* a15*b15 */
 
-            commit_to_memory(r, 30)
+        commit_to_memory(r, 30)
 
 
-            commit_to_memory(r, 31)
+        commit_to_memory(r, 31)
 
 
-        : [ai] "=&r" (ai),
-          [bi] "=&r" (bi),
-          [carrylo] "=&r" (carrylo),
-          [carryhi] "=&r" (carryhi),
-          [temp] "=&r" (temp)
-        : [word_count] "i" (ED448_FE_LIMB_COUNT),
-          [a] "r" (a),
-          [b] "r" (b),
-          [r] "r" (r)
+        : [ai]         "=&r" (ai),
+          [bi]         "=&r" (bi),
+          [carrylo]    "=&r" (carrylo),
+          [carryhi]    "=&r" (carryhi),
+          [temp]       "=&r" (temp)
+        : [word_count] "i"   (ED448_FE_LIMB_COUNT),
+          [a]          "r"   (a),
+          [b]          "r"   (b),
+          [r]          "r"   (r)
         : "memory", "acc"
     );
 

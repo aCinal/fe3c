@@ -1,6 +1,8 @@
 #include <hash_functions/hash_function_sha512.h>
 #include <port/hash_functions/hash_function_sha512_esp32.h>
 #include <utils/utils.h>
+#include <xtensa/config/core-isa.h>
+#include <xtensa/xtensa-versions.h>
 
 /* To reduce clutter, define a symbol for inline asm line termination */
 #define _ "\n\t"
@@ -203,6 +205,16 @@
  * @note There is limited support for aliasing, only ahi and alo may alias rhi and rlo,
  *       specifically rlo must be distinct from blo for the carry handling to work
  */
+#if XCHAL_HW_VERSION >= XTENSA_HWVERSION_RG_2015_0
+#define CONSTANT_TIME_U64_ADD(rlo, rhi, alo, ahi, blo, bhi)  \
+    /* Add the high parts */                                 \
+    _ "add.n  %[" #rhi "],  %[" #ahi "],  %[" #bhi "]"       \
+    /* Add the low parts */                                  \
+    _ "add.n  %[" #rlo "],  %[" #alo "],  %[" #blo "]"       \
+    /* Handle the overflow */                                \
+    _ "saltu  %[aux1],      %[" #rlo "],  %[" #blo "]"       \
+    _ "add.n  %[" #rhi "],  %[" #rhi "],  %[aux1]"
+#else
 #define CONSTANT_TIME_U64_ADD(rlo, rhi, alo, ahi, blo, bhi)  \
     /* Add the high parts */                                 \
     _ "add.n  %[" #rhi "],  %[" #ahi "],  %[" #bhi "]"       \
@@ -214,6 +226,7 @@
     _ "movi.n %[aux2],      1"                               \
     _ "movnez %[aux1],      %[aux2],      %[aux1]"           \
     _ "add.n  %[" #rhi "],  %[" #rhi "],  %[aux1]"
+#endif /* XCHAL_HW_VERSION >= XTENSA_HWVERSION_RG_2015_0 */
 
 static inline void sha512_compress(u64 * state, const u8 * input_block, u64 * schedule, sha512_working_variables * work);
 static inline void sha512_prepare_message_schedule(u64 * schedule, const u8 * input);
@@ -225,9 +238,6 @@ void sha512_impl_sw(u8 * output, const struct iovec * iov, int iovcnt) {
     FE3C_SANITY_CHECK(output, NULL);
     FE3C_SANITY_CHECK(iov || iovcnt == 0, NULL);
 
-    /* For big endian targets we could use the output buffer directly for the state
-     * and avoid a copy at the end, but we go for a more readable code by always
-     * allocating the state on stack */
     u64 state[SHA512_STATE_WORD_COUNT];
     /* Set the state to the initialization vector */
     (void) memcpy(state, state_initialization_vector, sizeof(state_initialization_vector));

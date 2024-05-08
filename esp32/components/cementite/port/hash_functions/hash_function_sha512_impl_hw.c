@@ -141,13 +141,6 @@ int sha512_impl_hw(u8 * output, const struct iovec * iov, int iovcnt) {
     }
     /* Copy the final state to the output buffer */
     sha512_read_final(output);
-#if SOC_SHA_SUPPORT_PARALLEL_ENG
-    /* The parallel engine implementation is the only one true to its word (API) that actually returns
-     * the _state_, i.e., a sequence of big-endian 64-bit integers. DMA and block seem to operate
-     * internally in native endianness (little-endian) and calls to esp_sha_read_digest_state()
-     * return the state in native endianness as well. For parallel engine, swap the order manually */
-    store_64(output, (u64 *) output, SHA512_STATE_WORD_COUNT);
-#endif /* SOC_SHA_SUPPORT_PARALLEL_ENG */
 
 out:
     /* Purge the block buffer */
@@ -205,6 +198,14 @@ static inline int sha512_compress(const u8 * input_block, u32 * first_block) {
 static inline void sha512_read_final(u8 * output_buffer) {
 
     esp_sha_read_digest_state(SHA2_512, output_buffer);
+
+#if SOC_SHA_SUPPORT_PARALLEL_ENG
+    /* The parallel engine implementation is the only one true to its word (API) that actually returns
+     * the _state_, i.e., a sequence of big-endian 64-bit integers. DMA and block seem to operate
+     * internally in native endianness (little-endian), and calls to esp_sha_read_digest_state()
+     * return the state in native endianness as well. For parallel engine, swap the order manually. */
+    store_64(output_buffer, (u64 *) output_buffer, SHA512_STATE_WORD_COUNT);
+#endif /* SOC_SHA_SUPPORT_PARALLEL_ENG */
 }
 
 static inline void sha512_purge_accelerator(void) {

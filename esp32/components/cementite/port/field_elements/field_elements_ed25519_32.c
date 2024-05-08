@@ -1,5 +1,7 @@
 #include <field_elements/field_elements_ed25519.h>
 #include <utils/utils.h>
+#include <xtensa/config/core-isa.h>
+#include <xtensa/xtensa-versions.h>
 
 #if !FE3C_32BIT
     #error "Build system inconsistency detected! field_elements_ed25519_32.c in use despite FE3C_32BIT not being set"
@@ -475,44 +477,53 @@ void fe25519_mul(fe25519 r, const fe25519 a, const fe25519 b) {
     u32 rxodd;
 
 /**
- * @brief Put the canonical part of the carry in carryhi | carrylo and clear the accumulator
+ * @brief Put the canonical part of a column in carryhi | carrylo and clear the accumulator
  */
-#define put_canonical_carry_aside() \
+#define put_canonical_aside() \
     _ "movi.n    %[carrylo], 0"     \
     _ "movi.n    %[carryhi], 0"     \
     _ "xsr.acclo %[carrylo]"        \
     _ "xsr.acchi %[carryhi]"
-#define put_canonical_carry_aside_small() \
+#define put_canonical_aside_small() \
     _ "movi.n    %[carrylo], 0"           \
     _ "movi.n    %[carryhi], 0"           \
     _ "xsr.acclo %[carrylo]"
 
+#if XCHAL_HW_VERSION >= XTENSA_HWVERSION_RG_2015_0
+#define handle_addition_overflow()                           \
+    _ "saltu     %[temp],      %[acccopylo], %[carrylo]"     \
+    _ "add.n     %[acccopyhi], %[acccopyhi], %[temp]"
+#else
+#define handle_addition_overflow()                           \
+    _ "minu      %[temp],      %[acccopylo], %[carrylo]"     \
+    _ "xor       %[temp],      %[temp],      %[carrylo]"     \
+    _ "movi.n    %[carrylo],   1"                            \
+    _ "movnez    %[temp],      %[carrylo],   %[temp]"        \
+    _ "add.n     %[acccopyhi], %[acccopyhi], %[temp]"
+#endif /* XCHAL_HW_VERSION >= XTENSA_HWVERSION_RG_2015_0 */
+
 /**
- * @brief Combine the canonical and overflow carries, extract the low 15 bits, and shift the ACC
- * @param __rx Register where the low 15 bits of the carry should
- *             be stored
+ * @brief Combine the canonical and overflow parts of a column, extract the low 15 bits,
+ *        and shift the ACC
+ * @param __rx Register where the low 15 bits of the column should be stored
  * @note ACCHI is 8-bits wide, so after shifting right by 15 bits (even after multiplication by 19)
  *       we know it is going to be zero. For this reason we do not bother to shift acccopyhi by 15
  *       and do wsr.acchi, instead we do xsr.acchi (exchange special register) with a zero register
  *       (carry19hi) immediately.
  */
-#define combine_carries(__rx)                                \
+#define combine_canonical_and_overflow(__rx)                 \
     /* Clear the high part of the accumulator immediately */ \
     _ "movi.n    %[carry19hi], 0"                            \
     _ "rsr.acclo %[carry19lo]"                               \
     _ "xsr.acchi %[carry19hi]"                               \
-    /* Combine the "canonical" and "overflow" carries */     \
+    /* Multiply the overflow part by nineteen */             \
     _ "mull      %[acccopylo], %[carry19lo], %[nineteen]"    \
     _ "muluh     %[acccopyhi], %[carry19lo], %[nineteen]"    \
-    /* Add the canonical carry */                            \
+    /* Add the canonical part */                             \
     _ "add.n     %[acccopyhi], %[acccopyhi], %[carryhi]"     \
     _ "add.n     %[acccopylo], %[acccopylo], %[carrylo]"     \
     /* Handle the addition overflow in constant time */      \
-    _ "minu      %[temp],      %[acccopylo], %[carrylo]"     \
-    _ "xor       %[temp],      %[temp],      %[carrylo]"     \
-    _ "movi.n    %[carrylo],   1"                            \
-    _ "movnez    %[temp],      %[carrylo],   %[temp]"        \
-    _ "add.n     %[acccopyhi], %[acccopyhi], %[temp]"        \
+    handle_addition_overflow()                               \
     /* carry19hi is below 256, so ignore the high word */    \
     _ "mull      %[carry19hi], %[carry19hi], %[nineteen]"    \
     _ "add.n     %[acccopyhi], %[acccopyhi], %[carry19hi]"   \
@@ -584,7 +595,7 @@ void fe25519_mul(fe25519 r, const fe25519 a, const fe25519 b) {
             _ "ldinc m0, %[ai]"
             _ "lddec m2, %[bi]"
             _ "mula.dd.ll                  m0, m2"  /* a0*b0 */
-            put_canonical_carry_aside_small()
+            put_canonical_aside_small()
 
             /* 19*(a0*b17 + a1*b16 + ... + a16*b1 + a17*b0) */
             _ "addi.n    %[bi], %[b], 4 * %[word_count]"
@@ -613,7 +624,7 @@ void fe25519_mul(fe25519 r, const fe25519 a, const fe25519 b) {
             _ "mula.dd.lh                  m0, m2"  /* a16*b1 */
             _ "mula.dd.hl                  m0, m2"  /* a17*b0 */
 
-            combine_carries(rxeven)
+            combine_canonical_and_overflow(rxeven)
 
         /* ------------------ Column i+j = 1 ------------------ */
             /* a0*b1 + a1*b0 */
@@ -623,7 +634,7 @@ void fe25519_mul(fe25519 r, const fe25519 a, const fe25519 b) {
             _ "lddec m2, %[bi]"
             _ "mula.dd.lh                  m0, m2"  /* a0*b1 */
             _ "mula.dd.hl                  m0, m2"  /* a1*b0 */
-            put_canonical_carry_aside()
+            put_canonical_aside()
 
             /* 19*(a1*b17 + a2*b16 + ... + a16*b2 + a17*b1) */
             _ "addi.n    %[bi], %[b], 4 * %[word_count]"
@@ -651,7 +662,7 @@ void fe25519_mul(fe25519 r, const fe25519 a, const fe25519 b) {
 
             _ "mula.dd.hh                  m0, m2"  /* a17*b1 */
 
-            combine_carries(rxodd)
+            combine_canonical_and_overflow(rxodd)
             commit_to_memory(0)
 
         /* ------------------ Column i+j = 2 ------------------ */
@@ -663,7 +674,7 @@ void fe25519_mul(fe25519 r, const fe25519 a, const fe25519 b) {
             _ "mula.dd.ll.lddec m3, %[bi], m0, m2"  /* a0*b2 */
             _ "mula.dd.hh.ldinc m1, %[ai], m0, m3"  /* a1*b1 */
             _ "mula.dd.ll                  m1, m3"  /* a2*b0 */
-            put_canonical_carry_aside()
+            put_canonical_aside()
 
             /* 19*(a2*b17 + a3*b16 + ... + a16*b3 + a17*b2) */
             _ "addi.n    %[bi], %[b], 4 * %[word_count]"
@@ -689,7 +700,7 @@ void fe25519_mul(fe25519 r, const fe25519 a, const fe25519 b) {
             _ "mula.dd.lh                  m0, m3"  /* a16*b3 */
             _ "mula.dd.hl                  m0, m3"  /* a17*b2 */
 
-            combine_carries(rxeven)
+            combine_canonical_and_overflow(rxeven)
 
         /* ------------------ Column i+j = 3 ------------------ */
             /* a0*b3 + a1*b2 + a2*b1 + a3*b0 */
@@ -703,7 +714,7 @@ void fe25519_mul(fe25519 r, const fe25519 a, const fe25519 b) {
             _ "mula.dd.lh                  m1, m3"  /* a2*b1 */
             _ "mula.dd.hl                  m1, m3"  /* a3*b0 */
 
-            put_canonical_carry_aside()
+            put_canonical_aside()
 
             /* 19*(a3*b17 + a4*b16 + ... + a16*b4 + a17*b3) */
             _ "addi.n    %[bi], %[b], 4 * %[word_count]"
@@ -728,7 +739,7 @@ void fe25519_mul(fe25519 r, const fe25519 a, const fe25519 b) {
             _ "mula.dd.ll.lddec m3, %[bi], m0, m2"  /* a16*b4 */
             _ "mula.dd.hh                  m0, m3"  /* a17*b3 */
 
-            combine_carries(rxodd)
+            combine_canonical_and_overflow(rxodd)
             commit_to_memory(1)
 
         /* ------------------ Column i+j = 4 ------------------ */
@@ -743,7 +754,7 @@ void fe25519_mul(fe25519 r, const fe25519 a, const fe25519 b) {
             _ "mula.dd.hh.ldinc m0, %[ai], m1, m2"  /* a3*b1 */
             _ "mula.dd.ll                  m0, m2"  /* a4*b0 */
 
-            put_canonical_carry_aside()
+            put_canonical_aside()
 
             /* 19*(a4*b17 + a4*b16 + ... + a16*b4 + a17*b4) */
             _ "addi.n    %[bi], %[b], 4 * %[word_count]"
@@ -767,7 +778,7 @@ void fe25519_mul(fe25519 r, const fe25519 a, const fe25519 b) {
             _ "mula.dd.lh                  m0, m2"  /* a16*b5 */
             _ "mula.dd.hl                  m0, m2"  /* a17*b4 */
 
-            combine_carries(rxeven)
+            combine_canonical_and_overflow(rxeven)
 
         /* ------------------ Column i+j = 5 ------------------ */
             /* a0*b5 + a1*b4 + ... + a4*b1 + a5*b0 */
@@ -783,7 +794,7 @@ void fe25519_mul(fe25519 r, const fe25519 a, const fe25519 b) {
             _ "mula.dd.lh                  m0, m2"  /* a4*b1 */
             _ "mula.dd.hl                  m0, m2"  /* a5*b0 */
 
-            put_canonical_carry_aside()
+            put_canonical_aside()
 
             /* 19*(a5*b17 + a6*b16 + ... + a16*b6 + a17*b5) */
             _ "addi.n    %[bi], %[b], 4 * %[word_count]"
@@ -806,7 +817,7 @@ void fe25519_mul(fe25519 r, const fe25519 a, const fe25519 b) {
 
             _ "mula.dd.hh                  m0, m2"  /* a17*b5 */
 
-            combine_carries(rxodd)
+            combine_canonical_and_overflow(rxodd)
             commit_to_memory(2)
 
 
@@ -826,7 +837,7 @@ void fe25519_mul(fe25519 r, const fe25519 a, const fe25519 b) {
             _ "mula.dd.hh.ldinc m1, %[ai], m0, m3"  /* a5*b1 */
             _ "mula.dd.ll                  m1, m3"  /* a6*b0 */
 
-            put_canonical_carry_aside()
+            put_canonical_aside()
 
             /* 19*(a6*b17 + a7*b16 + ... + a16*b7 + a17*b6) */
             _ "addi.n    %[bi], %[b], 4 * %[word_count]"
@@ -847,7 +858,7 @@ void fe25519_mul(fe25519 r, const fe25519 a, const fe25519 b) {
             _ "mula.dd.lh                  m0, m3"  /* a16*b7 */
             _ "mula.dd.hl                  m0, m3"  /* a17*b6 */
 
-            combine_carries(rxeven)
+            combine_canonical_and_overflow(rxeven)
 
         /* ------------------ Column i+j = 7 ------------------ */
             /* a0*b7 + a1*b6 + ... + a6*b1 + a7*b0 */
@@ -866,7 +877,7 @@ void fe25519_mul(fe25519 r, const fe25519 a, const fe25519 b) {
             _ "mula.dd.lh                  m1, m3"  /* a6*b1 */
             _ "mula.dd.hl                  m1, m3"  /* a7*b0 */
 
-            put_canonical_carry_aside()
+            put_canonical_aside()
 
             /* 19*(a7*b17 + a8*b16 + ... + a16*b8 + a17*b7) */
             _ "addi.n    %[bi], %[b], 4 * %[word_count]"
@@ -886,7 +897,7 @@ void fe25519_mul(fe25519 r, const fe25519 a, const fe25519 b) {
             _ "mula.dd.ll.lddec m3, %[bi], m0, m2"  /* a16*b8 */
             _ "mula.dd.hh                  m0, m3"  /* a17*b7 */
 
-            combine_carries(rxodd)
+            combine_canonical_and_overflow(rxodd)
             commit_to_memory(3)
 
 
@@ -907,7 +918,7 @@ void fe25519_mul(fe25519 r, const fe25519 a, const fe25519 b) {
             _ "mula.dd.hh.ldinc m0, %[ai], m1, m2"  /* a7*b1 */
             _ "mula.dd.ll                  m0, m2"  /* a8*b0 */
 
-            put_canonical_carry_aside()
+            put_canonical_aside()
 
             /* 19*(a8*b17 + a9*b16 + ... + a16*b9 + a17*b8) */
             _ "addi.n    %[bi], %[b], 4 * %[word_count]"
@@ -926,7 +937,7 @@ void fe25519_mul(fe25519 r, const fe25519 a, const fe25519 b) {
             _ "mula.dd.lh                  m0, m2"  /* a16*b9 */
             _ "mula.dd.hl                  m0, m2"  /* a17*b8 */
 
-            combine_carries(rxeven)
+            combine_canonical_and_overflow(rxeven)
 
 
         /* ------------------ Column i+j = 9 ------------------ */
@@ -949,7 +960,7 @@ void fe25519_mul(fe25519 r, const fe25519 a, const fe25519 b) {
             _ "mula.dd.lh                  m0, m2"  /* a8*b1 */
             _ "mula.dd.hl                  m0, m2"  /* a9*b0 */
 
-            put_canonical_carry_aside()
+            put_canonical_aside()
 
             /* 19*(a9*b17 + a10*b16 + ... + a16*b10 + a17*b9) */
             _ "addi.n    %[bi], %[b], 4 * %[word_count]"
@@ -967,7 +978,7 @@ void fe25519_mul(fe25519 r, const fe25519 a, const fe25519 b) {
 
             _ "mula.dd.hh                  m0, m2"  /* a17*b9 */
 
-            combine_carries(rxodd)
+            combine_canonical_and_overflow(rxodd)
             commit_to_memory(4)
 
 
@@ -992,7 +1003,7 @@ void fe25519_mul(fe25519 r, const fe25519 a, const fe25519 b) {
             _ "mula.dd.hh.ldinc m1, %[ai], m0, m3"  /* a9*b1 */
             _ "mula.dd.ll                  m1, m3"  /* a10*b0 */
 
-            put_canonical_carry_aside()
+            put_canonical_aside()
 
             /* 19*(a10*b17 + a11*b16 + ... + a16*b11 + a17*b10) */
             _ "addi.n    %[bi], %[b], 4 * %[word_count]"
@@ -1008,7 +1019,7 @@ void fe25519_mul(fe25519 r, const fe25519 a, const fe25519 b) {
             _ "mula.dd.lh                  m0, m3"  /* a16*b11 */
             _ "mula.dd.hl                  m0, m3"  /* a17*b10 */
 
-            combine_carries(rxeven)
+            combine_canonical_and_overflow(rxeven)
 
         /* ------------------ Column i+j = 11 ------------------ */
             /* a0*b11 + a1*b10 + ... + a10*b1 + a11*b0 */
@@ -1032,7 +1043,7 @@ void fe25519_mul(fe25519 r, const fe25519 a, const fe25519 b) {
             _ "mula.dd.lh                  m1, m3"  /* a10*b1 */
             _ "mula.dd.hl                  m1, m3"  /* a11*b0 */
 
-            put_canonical_carry_aside()
+            put_canonical_aside()
 
             /* 19*(a11*b17 + a12*b16 + ... + a16*b12 + a17*b11) */
             _ "addi.n    %[bi], %[b], 4 * %[word_count]"
@@ -1047,7 +1058,7 @@ void fe25519_mul(fe25519 r, const fe25519 a, const fe25519 b) {
             _ "mula.dd.ll.lddec m3, %[bi], m0, m2"  /* a16*b12 */
             _ "mula.dd.hh                  m0, m3"  /* a17*b11 */
 
-            combine_carries(rxodd)
+            combine_canonical_and_overflow(rxodd)
             commit_to_memory(5)
 
 
@@ -1074,7 +1085,7 @@ void fe25519_mul(fe25519 r, const fe25519 a, const fe25519 b) {
             _ "mula.dd.hh.ldinc m0, %[ai], m1, m2"  /* a11*b1 */
             _ "mula.dd.ll                  m0, m2"  /* a12*b0 */
 
-            put_canonical_carry_aside()
+            put_canonical_aside()
 
             /* 19*(a12*b17 + a13*b16 + ... + a16*b13 + a17*b12) */
             _ "addi.n    %[bi], %[b], 4 * %[word_count]"
@@ -1088,7 +1099,7 @@ void fe25519_mul(fe25519 r, const fe25519 a, const fe25519 b) {
             _ "mula.dd.lh                  m0, m2"  /* a16*b13 */
             _ "mula.dd.hl                  m0, m2"  /* a17*b12 */
 
-            combine_carries(rxeven)
+            combine_canonical_and_overflow(rxeven)
 
         /* ------------------ Column i+j = 13 ------------------ */
             /* a0*b13 + a1*b12 + ... + a12*b1 + a13*b0 */
@@ -1115,7 +1126,7 @@ void fe25519_mul(fe25519 r, const fe25519 a, const fe25519 b) {
             _ "mula.dd.lh                  m0, m2"  /* a12*b1 */
             _ "mula.dd.hl                  m0, m2"  /* a13*b0 */
 
-            put_canonical_carry_aside()
+            put_canonical_aside()
 
             /* 19*(a13*b17 + a14*b16 + ... + a16*b14 + a17*b13) */
             _ "addi.n    %[bi], %[b], 4 * %[word_count]"
@@ -1128,7 +1139,7 @@ void fe25519_mul(fe25519 r, const fe25519 a, const fe25519 b) {
 
             _ "mula.dd.hh                  m0, m2"  /* a17*b13 */
 
-            combine_carries(rxodd)
+            combine_canonical_and_overflow(rxodd)
             commit_to_memory(6)
 
 
@@ -1158,7 +1169,7 @@ void fe25519_mul(fe25519 r, const fe25519 a, const fe25519 b) {
             _ "mula.dd.hh.ldinc m1, %[ai], m0, m3"  /* a13*b1 */
             _ "mula.dd.ll                  m1, m3"  /* a14*b0 */
 
-            put_canonical_carry_aside()
+            put_canonical_aside()
 
             /* 19*(a14*b17 + a15*b16 + a16*b15 + a17*b14) */
             _ "addi.n    %[bi], %[b], 4 * %[word_count]"
@@ -1169,7 +1180,7 @@ void fe25519_mul(fe25519 r, const fe25519 a, const fe25519 b) {
             _ "mula.dd.lh                  m0, m3"  /* a16*b15 */
             _ "mula.dd.hl                  m0, m3"  /* a17*b14 */
 
-            combine_carries(rxeven)
+            combine_canonical_and_overflow(rxeven)
 
         /* ------------------ Column i+j = 15 ------------------ */
             /* a0*b15 + a1*b14 + ... + a14*b1 + a15*b0 */
@@ -1198,7 +1209,7 @@ void fe25519_mul(fe25519 r, const fe25519 a, const fe25519 b) {
             _ "mula.dd.lh                  m1, m3"  /* a14*b1 */
             _ "mula.dd.hl                  m1, m3"  /* a15*b0 */
 
-            put_canonical_carry_aside()
+            put_canonical_aside()
 
             /* 19*(a15*b17 + a16*b16 + a17*b15) */
             _ "addi.n    %[bi], %[b], 4 * %[word_count]"
@@ -1208,7 +1219,7 @@ void fe25519_mul(fe25519 r, const fe25519 a, const fe25519 b) {
             _ "mula.dd.ll.lddec m3, %[bi], m0, m2"  /* a16*b16 */
             _ "mula.dd.hh                  m0, m3"  /* a17*b15 */
 
-            combine_carries(rxodd)
+            combine_canonical_and_overflow(rxodd)
             commit_to_memory(7)
 
         /* ------------------ Column i+j = 16 ------------------ */
@@ -1239,7 +1250,7 @@ void fe25519_mul(fe25519 r, const fe25519 a, const fe25519 b) {
             _ "mula.dd.hh.ldinc m0, %[ai], m1, m2"  /* a15*b1 */
             _ "mula.dd.ll                  m0, m2"  /* a16*b0 */
 
-            put_canonical_carry_aside()
+            put_canonical_aside()
 
             /* 19*(a16*b17 + a17*b16) */
             _ "addi.n    %[bi], %[b], 4 * %[word_count]"
@@ -1248,7 +1259,7 @@ void fe25519_mul(fe25519 r, const fe25519 a, const fe25519 b) {
             _ "mula.dd.lh                  m0, m2"  /* a16*b17 */
             _ "mula.dd.hl                  m0, m2"  /* a17*b16 */
 
-            combine_carries(rxeven)
+            combine_canonical_and_overflow(rxeven)
             /* Commit limb 16 to memory at the same time clearing
              * limb 17 by making a 32-bit write */
             _ "s32i %[rxeven], %[r], 4 * 8"

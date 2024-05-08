@@ -95,7 +95,7 @@ typedef struct shake256_working_variables {
 
 /* Let the compiler allocate the array(s) according to their initializer(s) and later validate the size(s) */
 FE3C_COMPILE_TIME_SANITY_CHECK(sizeof(shake256_state) == SHAKE256_STATE_SIZE_BYTES);
-FE3C_COMPILE_TIME_SANITY_CHECK(sizeof(round_constants) / sizeof(round_constants[0]) == SHAKE256_ROUNDS_COUNT);
+FE3C_COMPILE_TIME_SANITY_CHECK(static_array_len(round_constants) == SHAKE256_ROUNDS_COUNT);
 /* The implementation assumes all needed bytes can be squeezed out in a single go, which requires they are
  * fewer than the size of the state */
 FE3C_COMPILE_TIME_SANITY_CHECK(SHAKE256_OUTPUT_SIZE_BYTES < SHAKE256_STATE_SIZE_BYTES);

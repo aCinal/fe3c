@@ -32,8 +32,8 @@ function(add_functional_test)
 
         set(UUT_SOURCES "")
         foreach(UUT_SOURCE ${ftest_UUT_SOURCES})
-            string(REPLACE "??" "${ARCHITECTURE}" __UT_SOURCE ${UUT_SOURCE})
-            list(APPEND UUT_SOURCES ${__UT_SOURCE})
+            string(REPLACE "??" "${ARCHITECTURE}" __UUT_SOURCE ${UUT_SOURCE})
+            list(APPEND UUT_SOURCES ${__UUT_SOURCE})
         endforeach()
 
         set(MOCK_SOURCES "")

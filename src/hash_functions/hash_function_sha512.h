@@ -80,8 +80,8 @@ typedef struct sha512_working_variables {
 } sha512_working_variables;
 
 /* Let the compiler allocate the array(s) according to their initializer(s) and later validate the size(s) */
-FE3C_COMPILE_TIME_SANITY_CHECK(sizeof(round_constants) / sizeof(round_constants[0]) == SHA512_MESSAGE_SCHEDULE_WORD_COUNT);
-FE3C_COMPILE_TIME_SANITY_CHECK(sizeof(state_initialization_vector) / sizeof(state_initialization_vector[0]) == SHA512_STATE_WORD_COUNT);
+FE3C_COMPILE_TIME_SANITY_CHECK(static_array_len(round_constants) == SHA512_MESSAGE_SCHEDULE_WORD_COUNT);
+FE3C_COMPILE_TIME_SANITY_CHECK(static_array_len(state_initialization_vector) == SHA512_STATE_WORD_COUNT);
 FE3C_COMPILE_TIME_SANITY_CHECK(sizeof(sha512_working_variables) / sizeof(u64) == SHA512_WORKING_VARIABLES_COUNT);
 
 #endif /* __FE3C_HASH_FUNCTIONS_HASH_FUNCTION_SHA512_H */
