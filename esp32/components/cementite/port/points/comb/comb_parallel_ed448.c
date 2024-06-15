@@ -8,9 +8,7 @@ static inline void ed448_identity(point_ed448 * p) {
     fe448_copy(p->X, fe448_zero);
     fe448_copy(p->Y, fe448_one);
     fe448_copy(p->Z, fe448_one);
-#if FE3C_ED448_ISOGENY
     fe448_copy(p->T, fe448_zero);
-#endif /* FE3C_ED448_ISOGENY */
 }
 
 void ed448_comb_loop(point_ed448 * result, const i8 * scalar_recoding, int odd) {

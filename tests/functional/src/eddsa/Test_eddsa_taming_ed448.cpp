@@ -276,13 +276,7 @@ FE3C_TEST(EDDSA_TAMING_ED448, Test4) {
         .curve_id = EDDSA_CURVE_ED448,
     };
     int verified = eddsa_verify(&req);
-#if FE3C_ED448_ISOGENY
-    /* Because of the 4-isogeny we do cofactored verification and so
-     * we expect success here */
     FAIL_UNLESS_EQUAL(1, verified);
-#else
-    FAIL_UNLESS_EQUAL(0, verified);
-#endif /* FE3C_ED448_ISOGENY */
 }
 
 FE3C_TEST(EDDSA_TAMING_ED448, Test5) {
@@ -335,14 +329,7 @@ FE3C_TEST(EDDSA_TAMING_ED448, Test5) {
         .curve_id = EDDSA_CURVE_ED448,
     };
     int verified = eddsa_verify(&req);
-
-#if FE3C_ED448_ISOGENY
-    /* Because of the 4-isogeny we do cofactored verification and so
-     * we expect success here */
     FAIL_UNLESS_EQUAL(1, verified);
-#else
-    FAIL_UNLESS_EQUAL(0, verified);
-#endif /* FE3C_ED448_ISOGENY */
 }
 
 FE3C_TEST(EDDSA_TAMING_ED448, Test6) {

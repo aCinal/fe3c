@@ -103,24 +103,6 @@ AS_IF([test "x$ed448" = "xyes"], AC_DEFINE([FE3C_SUPPORT_CURVE_ED448]), [])
 # -------------------------------------------------------------------------------------------
 # ----------------------------- Optional features/optimizations -----------------------------
 # -------------------------------------------------------------------------------------------
-ed448_isogeny="no"
-AC_ARG_ENABLE([ed448-isogeny],
-              [AS_HELP_STRING([--enable-ed448-isogeny],
-                              [Enable performing the Ed448 computations on a 4-isogenous curve, which
-                               may increase performance, but amounts to using cofactored verification,
-                               which may lead to consensus issues where different implementations
-                               disagree on the validity of maliciously constructed signatures.])],
-              [AS_IF([test "x$enableval" = "xyes"],
-                     [ed448_isogeny="yes"],
-
-                     [test "x$enableval" != "xno"],
-                     [AC_MSG_ERROR([bad value ${enableval} for --enable-ed448-isogeny])])],
-              [])
-AM_CONDITIONAL([FE3C_ED448_ISOGENY], [test "x$ed448_isogeny" = "xyes"])
-AS_IF([test "x$ed448_isogeny" = "xyes"], AC_DEFINE([FE3C_ED448_ISOGENY]), [])
-
-# -------------------------------------------------------------------------------------------
-
 ed25519_small_precomputation="no"
 AC_ARG_ENABLE([ed25519-small-precomputation],
               [AS_HELP_STRING([--enable-ed25519-small-precomputation],
@@ -267,7 +249,6 @@ AC_MSG_RESULT([
     Architecture:                           ${archbits}-bit
     Sanity checks enabled:                  ${sanity_checks}
 
-    Use 4-isogenous curve of Ed448:         ${ed448_isogeny}
     Optimized field element squaring:       ${fast_squaring}
     Comb method for scalar multiplication:  ${comb_method}
     Small precomputation tables:

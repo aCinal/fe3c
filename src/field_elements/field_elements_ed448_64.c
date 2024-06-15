@@ -9,10 +9,8 @@
 
 /* Elliptic curve constant d = -39081 */
 const fe448 ed448_d = { 0xffffffffff6756, 0xffffffffffffff, 0xffffffffffffff, 0xffffffffffffff, 0xfffffffffffffe, 0xffffffffffffff, 0xffffffffffffff, 0xffffffffffffff };
-#if FE3C_ED448_ISOGENY
 /* Twisted elliptic curve constant d' = d-1 */
 const fe448 ed448twist_d = { 0xffffffffff6755, 0xffffffffffffff, 0xffffffffffffff, 0xffffffffffffff, 0xfffffffffffffe, 0xffffffffffffff, 0xffffffffffffff, 0xffffffffffffff };
-#endif /* FE3C_ED448_ISOGENY */
 /* Additive identity in the field */
 const fe448 fe448_zero = { 0, 0, 0, 0, 0, 0, 0, 0 };
 /* Multiplicative identity in the field */

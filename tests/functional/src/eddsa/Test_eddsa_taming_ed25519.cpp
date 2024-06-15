@@ -224,8 +224,7 @@ FE3C_TEST(EDDSA_TAMING_ED25519, Test4) {
         .curve_id = EDDSA_CURVE_ED25519,
     };
     int verified = eddsa_verify(&req);
-    /* Expect rejection since we use cofactorless verification */
-    FAIL_UNLESS_EQUAL(0, verified);
+    FAIL_UNLESS_EQUAL(1, verified);
 }
 
 FE3C_TEST(EDDSA_TAMING_ED25519, Test5) {
@@ -267,8 +266,7 @@ FE3C_TEST(EDDSA_TAMING_ED25519, Test5) {
         .curve_id = EDDSA_CURVE_ED25519,
     };
     int verified = eddsa_verify(&req);
-    /* Expect rejection since we use cofactorless verification */
-    FAIL_UNLESS_EQUAL(0, verified);
+    FAIL_UNLESS_EQUAL(1, verified);
 }
 
 FE3C_TEST(EDDSA_TAMING_ED25519, Test6) {

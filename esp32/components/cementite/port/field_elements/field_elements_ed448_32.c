@@ -29,7 +29,6 @@ const fe448 ed448_d = {
     0x3fff3ffe, 0x3fff3fff, 0x3fff3fff, 0x3fff3fff,
     0x3fff3fff, 0x3fff3fff, 0x3fff3fff, 0x3fff3fff
 };
-#if FE3C_ED448_ISOGENY
 /* Twisted elliptic curve constant d' = d-1 */
 const fe448 ed448twist_d = {
     0x3ffd2755, 0x3fff3fff, 0x3fff3fff, 0x3fff3fff,
@@ -37,7 +36,6 @@ const fe448 ed448twist_d = {
     0x3fff3ffe, 0x3fff3fff, 0x3fff3fff, 0x3fff3fff,
     0x3fff3fff, 0x3fff3fff, 0x3fff3fff, 0x3fff3fff
 };
-#endif /* FE3C_ED448_ISOGENY */
 /* Additive identity in the field */
 const fe448 fe448_zero = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 /* Multiplicative identity in the field */
@@ -574,7 +572,6 @@ static u32 multiply_distinct_16_limbs(fe_limb_type * restrict r, const fe_limb_t
         _ "mula.dd.lh.ldinc m0, %[ai], m1, m2"  /* a2*b1 */
         _ "mula.dd.hl                  m1, m2"  /* a3*b0 */
 
-
         commit_to_memory(r, 3)
 
 
@@ -620,7 +617,6 @@ static u32 multiply_distinct_16_limbs(fe_limb_type * restrict r, const fe_limb_t
         _ "mula.dd.hl.lddec m2, %[bi], m0, m3"  /* a5*b2 */
         _ "mula.dd.lh.ldinc m0, %[ai], m1, m2"  /* a6*b1 */
         _ "mula.dd.hl                  m1, m2"  /* a7*b0 */
-
 
         commit_to_memory(r, 7)
 
@@ -687,7 +683,6 @@ static u32 multiply_distinct_16_limbs(fe_limb_type * restrict r, const fe_limb_t
         _ "mula.dd.hl.lddec m2, %[bi], m0, m3"  /* a9*b2 */
         _ "mula.dd.lh.ldinc m0, %[ai], m1, m2"  /* a10*b1 */
         _ "mula.dd.hl                  m1, m2"  /* a11*b0 */
-
 
         commit_to_memory(r, 11)
 
@@ -775,7 +770,6 @@ static u32 multiply_distinct_16_limbs(fe_limb_type * restrict r, const fe_limb_t
         _ "mula.dd.lh                  m1, m2"  /* a14*b1 */
         _ "mula.dd.hl                  m1, m2"  /* a15*b0 */
 
-
         commit_to_memory(r, 15)
 
 
@@ -859,7 +853,6 @@ static u32 multiply_distinct_16_limbs(fe_limb_type * restrict r, const fe_limb_t
         _ "mula.dd.lh                  m1, m2"  /* a14*b5 */
         _ "mula.dd.hl                  m1, m2"  /* a15*b4 */
 
-
         commit_to_memory(r, 19)
 
 
@@ -923,7 +916,6 @@ static u32 multiply_distinct_16_limbs(fe_limb_type * restrict r, const fe_limb_t
         _ "mula.dd.lh                  m1, m2"  /* a14*b9 */
         _ "mula.dd.hl                  m1, m2"  /* a15*b8 */
 
-
         commit_to_memory(r, 23)
 
 
@@ -966,7 +958,6 @@ static u32 multiply_distinct_16_limbs(fe_limb_type * restrict r, const fe_limb_t
         _ "mula.dd.hl.ldinc m1, %[ai], m0, m3"  /* a13*b14 */
         _ "mula.dd.lh                  m1, m2"  /* a14*b13 */
         _ "mula.dd.hl                  m1, m2"  /* a15*b12 */
-
 
         commit_to_memory(r, 27)
 

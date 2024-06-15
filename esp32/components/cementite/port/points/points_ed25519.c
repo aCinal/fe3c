@@ -73,56 +73,65 @@ static inline void ed25519_identity(point_ed25519 * p) {
     fe25519_copy(p->T, fe25519_zero);
 }
 
-static int ed25519_points_equal(const point * pgen, const point * qgen) {
+static void ed25519_point_negate(point * pgen) {
 
-    const point_ed25519 * p = (const point_ed25519 *) pgen;
-    const point_ed25519 * q = (const point_ed25519 *) qgen;
-
-    fe25519 lhs;
-    fe25519 rhs;
-
-    /* Check X1 Z2 = X2 Z1 */
-    fe25519_mul(lhs, p->X, q->Z);
-    fe25519_mul(rhs, q->X, p->Z);
-    fe25519_strong_reduce(lhs, lhs);
-    fe25519_strong_reduce(rhs, rhs);
-    int equal = fe25519_equal(lhs, rhs);
-
-    /* Check Y1 Z2 = Y2 Z1 */
-    fe25519_mul(lhs, p->Y, q->Z);
-    fe25519_mul(rhs, q->Y, p->Z);
-    fe25519_strong_reduce(lhs, lhs);
-    fe25519_strong_reduce(rhs, rhs);
-    equal &= fe25519_equal(lhs, rhs);
-
-    return equal;
+    point_ed25519 * p = (point_ed25519 *) pgen;
+    fe25519_neg(p->X, p->X);
+    fe25519_neg(p->T, p->T);
 }
 
-static void ed25519_encode(u8 * buf, const point * pgen) {
+static void ed25519_points_add(point_ed25519 * r, const point_ed25519 * p, const point_ed25519 * q) {
 
-    const point_ed25519 * p = (const point_ed25519 *) pgen;
-    fe25519 x;
-    fe25519 y;
-    fe25519 z_inv;
+    FE3C_SANITY_CHECK(ed25519_is_on_curve(p), ED25519_STR, ED25519_TO_STR(p));
+    FE3C_SANITY_CHECK(ed25519_is_on_curve(q), ED25519_STR, ED25519_TO_STR(q));
+    FE3C_SANITY_CHECK(ed25519_valid_extended_projective(p), ED25519_STR, ED25519_TO_STR(p));
+    FE3C_SANITY_CHECK(ed25519_valid_extended_projective(q), ED25519_STR, ED25519_TO_STR(q));
 
-    /* Affinize the point */
-    fe25519_invert(z_inv, p->Z);
-    fe25519_mul(x, p->X, z_inv);
-    fe25519_mul(y, p->Y, z_inv);
+    /* For optimal stack and cache usage we reduce the number of variables
+     * allocated relative to the algorithm description in RFC 8032. For
+     * clarity, the comments include the names of variables as they appear
+     * in RFC 8032. */
+    fe25519 A, B, E;
 
-    /* Encode the y-coordinate */
-    fe25519_encode(buf, y);
-    /* Encode the "sign" of the x-coordinate (parity) in the most
-     * significant bit of the last byte */
-    FE3C_SANITY_CHECK((buf[31] >> 7) == 0, "buf[31] = 0x%x", buf[31]);
-    buf[31] |= fe25519_lsb(x) << 7;
+    /* A := (Y1-X1)*(Y2-X2) */
+    fe25519_sub(A, p->Y, p->X);
+    fe25519_sub(B, q->Y, q->X);
+    fe25519_mul(A, A, B);
 
-    /* Zeroize intermediate results to not leak any secrets via projective coordinates
-     * (particularities of the representative of an equivalence class) */
-    purge_secrets(z_inv, sizeof(z_inv));
+    /* B := (Y1+X1)*(Y2+X2) */
+    fe25519_add(E, p->Y, p->X);
+    fe25519_add(B, q->Y, q->X);
+    fe25519_mul(B, E, B);
+
+    /* C := T1*2*d*T2 */
+    fe25519_mul(r->T, p->T, q->T);
+    fe25519_mul(r->T, r->T, ed25519_d);
+    fe25519_add(r->T, r->T, r->T);
+
+    /* D := Z1*2*Z2 */
+    fe25519_mul(r->Z, p->Z, q->Z);
+    fe25519_add(r->Z, r->Z, r->Z);
+
+    /* E := B-A */
+    fe25519_sub(E, B, A);
+    /* F := D-C */
+    fe25519_sub(r->X, r->Z, r->T);
+    /* G := D+C */
+    fe25519_add(r->Z, r->Z, r->T);
+    /* H := B+A */
+    fe25519_add(r->T, B, A);
+
+    /* Y3 := G*H */
+    fe25519_mul(r->Y, r->Z, r->T);
+    /* T3 := E*H */
+    fe25519_mul(r->T, E, r->T);
+    /* Z3 := F*G */
+    fe25519_mul(r->Z, r->X, r->Z);
+    /* X3 := E*F */
+    fe25519_mul(r->X, E, r->X);
 }
 
-void ed25519_point_double(point_ed25519 * r, const point_ed25519 * p, int set_extended_coordinate) {
+static void ed25519_point_double(point_ed25519 * r, const point_ed25519 * p, int set_extended_coordinate) {
 
     FE3C_SANITY_CHECK(ed25519_is_on_curve(p), ED25519_STR, ED25519_TO_STR(p));
 
@@ -169,23 +178,67 @@ void ed25519_point_double(point_ed25519 * r, const point_ed25519 * p, int set_ex
     }
 }
 
+static int ed25519_points_equal_modulo_cofactor(const point * pgen, const point * qgen) {
+
+    const point_ed25519 * p = (const point_ed25519 *) pgen;
+    const point_ed25519 * q = (const point_ed25519 *) qgen;
+
+    point_ed25519 pmq;
+
+    /* Compute the difference p-q */
+    pmq = *q;
+    ed25519_point_negate((point *) &pmq);
+    ed25519_points_add(&pmq, p, &pmq);
+    /* Double the difference three times to obtain cofactor (8) times the difference */
+    ed25519_point_double(&pmq, &pmq, 0);
+    ed25519_point_double(&pmq, &pmq, 0);
+    /* We ignore the extended coordinate, so it is safe to skip setting it */
+    ed25519_point_double(&pmq, &pmq, 0);
+
+    /* Check 8(p-q) against the identity */
+
+    /* Check X = 0 */
+    fe25519_strong_reduce(pmq.X, pmq.X);
+    int equal = fe25519_equal(fe25519_zero, pmq.X);
+
+    /* Check Y = Z */
+    fe25519_sub(pmq.T, pmq.Y, pmq.Z);
+    fe25519_strong_reduce(pmq.T, pmq.T);
+    equal &= fe25519_equal(fe25519_zero, pmq.T);
+
+    return equal;
+}
+
+static void ed25519_encode(u8 * buf, const point * pgen) {
+
+    const point_ed25519 * p = (const point_ed25519 *) pgen;
+    fe25519 x;
+    fe25519 y;
+    fe25519 z_inv;
+
+    /* Affinize the point */
+    fe25519_invert(z_inv, p->Z);
+    fe25519_mul(x, p->X, z_inv);
+    fe25519_mul(y, p->Y, z_inv);
+
+    /* Encode the y-coordinate */
+    fe25519_encode(buf, y);
+    /* Encode the "sign" of the x-coordinate (parity) in the most
+     * significant bit of the last byte */
+    FE3C_SANITY_CHECK((buf[31] >> 7) == 0, "buf[31] = 0x%x", buf[31]);
+    buf[31] |= fe25519_lsb(x) << 7;
+
+    /* Zeroize intermediate results to not leak any secrets via projective coordinates
+     * (particularities of the representative of an equivalence class) */
+    purge_secrets(z_inv, sizeof(z_inv));
+}
+
 static inline int ed25519_is_ok_order(const point_ed25519 * p) {
 
-    /* TODO: Consider adding a configuration option where mixed-order points are
-     * rejected, by checking that L times the point gives the group identity */
-    point_ed25519 q;
     point_ed25519 e;
     ed25519_identity(&e);
-
-    /* Double the point three times to obtain cofactor (8) times the point */
-    ed25519_point_double(&q, p, 0);
-    ed25519_point_double(&q, &q, 0);
-    /* Do not assume that the ed25519_points_equal implementation ignores the extended coordinate
-     * and set it in the doubling procedure */
-    ed25519_point_double(&q, &q, 1);
-
-    /* Check if equal to the identity */
-    return 1 - ed25519_points_equal((const point *) &q, (const point *) &e);
+    /* Check if p lies in the "cofactor subgroup" */
+    return 1 - ed25519_points_equal_modulo_cofactor((const point *) p, (const point *) &e);
 }
 
 static int ed25519_decode(point * pgen, const u8 * buf) {
@@ -292,57 +345,6 @@ static int ed25519_decode(point * pgen, const u8 * buf) {
     return success;
 }
 
-void ed25519_points_add(point_ed25519 * r, const point_ed25519 * p, const point_ed25519 * q) {
-
-    FE3C_SANITY_CHECK(ed25519_is_on_curve(p), ED25519_STR, ED25519_TO_STR(p));
-    FE3C_SANITY_CHECK(ed25519_is_on_curve(q), ED25519_STR, ED25519_TO_STR(q));
-    FE3C_SANITY_CHECK(ed25519_valid_extended_projective(p), ED25519_STR, ED25519_TO_STR(p));
-    FE3C_SANITY_CHECK(ed25519_valid_extended_projective(q), ED25519_STR, ED25519_TO_STR(q));
-
-    /* For optimal stack and cache usage we reduce the number of variables
-     * allocated relative to the algorithm description in RFC 8032. For
-     * clarity, the comments include the names of variables as they appear
-     * in RFC 8032. */
-    fe25519 A, B, E;
-
-    /* A := (Y1-X1)*(Y2-X2) */
-    fe25519_sub(A, p->Y, p->X);
-    fe25519_sub(B, q->Y, q->X);
-    fe25519_mul(A, A, B);
-
-    /* B := (Y1+X1)*(Y2+X2) */
-    fe25519_add(E, p->Y, p->X);
-    fe25519_add(B, q->Y, q->X);
-    fe25519_mul(B, E, B);
-
-    /* C := T1*2*d*T2 */
-    fe25519_mul(r->T, p->T, q->T);
-    fe25519_mul(r->T, r->T, ed25519_d);
-    fe25519_add(r->T, r->T, r->T);
-
-    /* D := Z1*2*Z2 */
-    fe25519_mul(r->Z, p->Z, q->Z);
-    fe25519_add(r->Z, r->Z, r->Z);
-
-    /* E := B-A */
-    fe25519_sub(E, B, A);
-    /* F := D-C */
-    fe25519_sub(r->X, r->Z, r->T);
-    /* G := D+C */
-    fe25519_add(r->Z, r->Z, r->T);
-    /* H := B+A */
-    fe25519_add(r->T, B, A);
-
-    /* Y3 := G*H */
-    fe25519_mul(r->Y, r->Z, r->T);
-    /* T3 := E*H */
-    fe25519_mul(r->T, E, r->T);
-    /* Z3 := F*G */
-    fe25519_mul(r->Z, r->X, r->Z);
-    /* X3 := E*F */
-    fe25519_mul(r->X, E, r->X);
-}
-
 static void ed25519_multiply_basepoint(point * rgen, const u8 * s) {
 
     point_ed25519 * r = (point_ed25519 *) rgen;
@@ -392,13 +394,6 @@ static void ed25519_multiply_basepoint(point * rgen, const u8 * s) {
     purge_secrets(&even_part, sizeof(even_part));
 }
 
-static void ed25519_point_negate(point * pgen) {
-
-    point_ed25519 * p = (point_ed25519 *) pgen;
-    fe25519_neg(p->X, p->X);
-    fe25519_neg(p->T, p->T);
-}
-
 static inline void ed25519_conditional_move(point_ed25519 * r, const point_ed25519 * p, int move) {
 
     fe25519_conditional_move(r->X, p->X, move);
@@ -446,7 +441,7 @@ static void ed25519_double_scalar_multiply(point * rgen, const u8 * s, const u8 
 }
 
 const group_ops ed25519_group_ops = {
-    .points_equal = ed25519_points_equal,
+    .points_equal_modulo_cofactor = ed25519_points_equal_modulo_cofactor,
     .encode = ed25519_encode,
     .decode = ed25519_decode,
     .multiply_basepoint = ed25519_multiply_basepoint,

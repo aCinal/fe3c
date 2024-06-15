@@ -33,14 +33,6 @@ if (CONFIG_FE3C_ED448_SMALL_PRECOMPUTATION)
     set(ed448_small_precomp_tag "_small")
 endif()
 
-if (CONFIG_FE3C_ED448_ISOGENY)
-    list(APPEND FE3C_DEFINES "FE3C_ED448_ISOGENY")
-    set(ed448_isogeny_tag "_isogeny")
-else()
-    # No isogeny in use, enforce small precomputation tables
-    set(ed448_small_precomp_tag "_small")
-endif()
-
 if (CONFIG_FE3C_SKIP_ZEROIZATION)
     list(APPEND FE3C_DEFINES "FE3C_SKIP_ZEROIZATION")
 endif()
@@ -85,15 +77,15 @@ if (CONFIG_FE3C_SUPPORT_CURVE_ED448)
 
     if (CONFIG_FE3C_COMB_METHOD)
         list(APPEND FE3C_SOURCES "${FE3C_SRC_DIR}/points/comb/comb_ed448${ed448_small_precomp_tag}.c")
-        list(APPEND FE3C_SOURCES "${FE3C_PORT_DIR}/points/comb/precomputation/precomputation_ed448${ed448_isogeny_tag}${ed448_small_precomp_tag}_32.c")
+        list(APPEND FE3C_SOURCES "${FE3C_PORT_DIR}/points/comb/precomputation/precomputation_ed448${ed448_small_precomp_tag}_32.c")
     endif()
 
     if (CONFIG_FE3C_PARALLEL_COMB_METHOD)
-        list(APPEND FE3C_SOURCES "${FE3C_PORT_DIR}/points/points_ed448${ed448_isogeny_tag}.c")
+        list(APPEND FE3C_SOURCES "${FE3C_PORT_DIR}/points/points_ed448.c")
         list(APPEND FE3C_SOURCES "${FE3C_PORT_DIR}/points/comb/comb_parallel_ed448.c")
     else()
         # No parallelism - use common group arithmetic
-        list(APPEND FE3C_SOURCES "${FE3C_SRC_DIR}/points/points_ed448${ed448_isogeny_tag}.c")
+        list(APPEND FE3C_SOURCES "${FE3C_SRC_DIR}/points/points_ed448.c")
     endif()
 
     list(APPEND FE3C_DEFINES "FE3C_SUPPORT_CURVE_ED448")

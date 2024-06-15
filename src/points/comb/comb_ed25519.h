@@ -18,7 +18,7 @@ typedef ed25519_precomp_internal ed25519_precomp;
 
 #else
 
-/* When not using the isogenous curve, store the affine representation only */
+/* Store the affine representation only */
 typedef struct ed25519_precomp_internal {
     fe25519 X;
     fe25519 Y;

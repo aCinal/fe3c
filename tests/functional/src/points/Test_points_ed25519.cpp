@@ -130,7 +130,7 @@ FE3C_TEST(POINTS_ED25519, MultiplyBasepoint_MultiplyByOrder_ResultInIdentity) {
     };
     point output;
     ed25519_group_ops.multiply_basepoint(&output, group_order);
-    int ok = ed25519_group_ops.points_equal(&identity, &output);
+    int ok = ed25519_group_ops.points_equal_modulo_cofactor(&identity, &output);
     FAIL_UNLESS_EQUAL(1, ok);
 }
 

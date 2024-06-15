@@ -1,6 +1,6 @@
-#if FE3C_ED448_ISOGENY && !FE3C_ED448_SMALL_PRECOMPUTATION
-    #error "Build system inconsistency detected! comb_ed448_small.c in use despite FE3C_ED448_ISOGENY being set and FE3C_ED448_SMALL_PRECOMPUTATION not being set"
-#endif /* FE3C_ED448_ISOGENY && !FE3C_ED448_SMALL_PRECOMPUTATION */
+#if !FE3C_ED448_SMALL_PRECOMPUTATION
+    #error "Build system inconsistency detected! comb_ed448_small.c in use despite FE3C_ED448_SMALL_PRECOMPUTATION not being set"
+#endif /* !FE3C_ED448_SMALL_PRECOMPUTATION */
 
 #include <points/comb/comb_ed448.h>
 #include <utils/utils.h>
@@ -9,9 +9,8 @@ static inline void ed448_comb_cmov(ed448_precomp * r, const ed448_precomp_intern
 
     fe448_conditional_move(r->X, p->X, move);
     fe448_conditional_move(r->Y, p->Y, move);
-    /* Note that for performance purposes we do not set the Z coordinate correctly at this point. This
-     * is done only once in ed448_comb_read_precomp. Similarly we do not redundantly set the extended
-     * T coordinate if the isogeny is in use. */
+    /* Note that for performance purposes we do not set the Z and T coordinates correctly at this point. This
+     * is done only once in ed448_comb_read_precomp. */
 }
 
 static inline void ed448_comb_cneg(ed448_precomp * p, int negate) {
@@ -53,13 +52,10 @@ void ed448_comb_read_precomp(ed448_precomp * r, u8 j, i8 ijt) {
     /* Negate the point if necessary */
     ed448_comb_cneg(r, negate);
 
-#if FE3C_ED448_ISOGENY
     /* Set the extended T coordinate to the correct value */
     fe448_mul(r->T, r->X, r->Y);
-#endif /* FE3C_ED448_ISOGENY */
 }
 
-#if FE3C_ED448_ISOGENY
 void ed448_comb_add_precomp(point_ed448 * r, const point_ed448 * p, const ed448_precomp * q) {
 
     /* For optimal stack and cache usage we reduce the number of variables
@@ -105,71 +101,3 @@ void ed448_comb_add_precomp(point_ed448 * r, const point_ed448 * p, const ed448_
     /* X3 := E*F */
     fe448_mul(r->X, E, r->X);
 }
-
-#else
-
-void ed448_comb_add_precomp(point_ed448 * r, const point_ed448 * p, const ed448_precomp * q) {
-
-    /* For optimal stack and cache usage we reduce the number of variables
-     * allocated relative to the algorithm description in RFC 8032. For
-     * clarity, the comments include the names of variables as they appear
-     * in RFC 8032. */
-    fe448 B, C;
-
-    /* A := Z1*Z2, but we know Z2=1 for precomputed points */
-    /* C := X1*X2 */
-    fe448_mul(C, p->X, q->X);
-    /* H := (X1+Y1)*(X2+Y2) */
-    fe448_add(B, p->X, p->Y);
-    fe448_add(r->X, q->X, q->Y);
-    fe448_mul(r->X, B, r->X);
-    /* D := Y1*Y2 */
-    fe448_mul(r->Y, p->Y, q->Y);
-
-    /* We need to compute:
-     *
-     *           E := d*C*D,   G := B+E,   F := B-E
-     *
-     * where B=A^2=(Z1)^2, and then finally:
-     *
-     *   X3 := A*F*(H-C-D), Y3 := A*G*(D-C), and Z3 := F*G
-     *
-     * Start by computing A*(H-C-D), A*(D-C) and E=d*C*D, this way we free up
-     * the C buffer which we immediately reuse for E. Also after doing this we
-     * can use r->Z for temporary storage while still supporting aliasing
-     * as we shall no longer access p->Z past this point.
-     */
-
-    /* Recall that r->X stores H and r->Y stores D,
-     * and so we compute A*(H-C-D) here */
-    fe448_sub(r->X, r->X, C);
-    fe448_sub(r->X, r->X, r->Y);
-    fe448_mul(r->X, r->X, p->Z);
-
-    /* Compute D-C */
-    fe448_sub(B, r->Y, C);
-    /* E := d*C*D */
-    fe448_mul(C, ed448_d, C);
-    fe448_mul(C, C, r->Y);
-    /* Set r->Y to A*(D-C) */
-    fe448_mul(r->Y, B, p->Z);
-    /* B := A^2 */
-    fe448_square(B, p->Z);
-    /* r->Z is free real estate at this point,
-     * reuse it for F (note that C stores the
-     * value of E at this point - we shall reuse
-     * it for G in a moment) */
-
-    /* F := B-E */
-    fe448_sub(r->Z, B, C);
-    /* G := B+E */
-    fe448_add(C, B, C);
-
-    /* Do the missing multiplications of X3 and Y3 by F and G, respectively */
-    fe448_mul(r->X, r->X, r->Z);
-    fe448_mul(r->Y, r->Y, C);
-    /* Compute Z3 as F*G */
-    fe448_mul(r->Z, r->Z, C);
-}
-
-#endif

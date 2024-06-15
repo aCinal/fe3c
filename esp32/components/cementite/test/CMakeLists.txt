@@ -6,11 +6,6 @@ set(FE3C_UT_DEFINES
     "FE3C_PORT_OVERRIDES"
 )
 
-if (CONFIG_FE3C_ED448_ISOGENY)
-    list(APPEND FE3C_UT_DEFINES "FE3C_ED448_ISOGENY")
-    set(ed448_isogeny_tag "_isogeny")
-endif()
-
 if (CONFIG_FE3C_SUPPORT_CURVE_ED25519)
     list(APPEND FE3C_UT_DEFINES "FE3C_SUPPORT_CURVE_ED25519")
     list(APPEND UT_SOURCES
@@ -39,7 +34,7 @@ if (CONFIG_FE3C_SUPPORT_CURVE_ED448)
         "${FE3C_UT_COMMON_SOURCE_DIR}/eddsa/Test_eddsa_taming_ed448.cpp"
         "${FE3C_UT_COMMON_SOURCE_DIR}/eddsa/Test_eddsa_wycheproof_ed448.cpp"
         "${FE3C_UT_COMMON_SOURCE_DIR}/hash_functions/Test_hash_function_shake256.cpp"
-        "${FE3C_UT_COMMON_SOURCE_DIR}/points/Test_points_ed448${ed448_isogeny_tag}.cpp"
+        "${FE3C_UT_COMMON_SOURCE_DIR}/points/Test_points_ed448.cpp"
         "${FE3C_UT_COMMON_SOURCE_DIR}/scalars/Test_scalars_ed448.cpp"
         "${FE3C_UT_PORT_SOURCE_DIR}/field_elements/Test_field_elements_ed448_32.cpp"
     )

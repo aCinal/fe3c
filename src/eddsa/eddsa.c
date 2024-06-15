@@ -190,8 +190,8 @@ int eddsa_verify(const eddsa_verify_request * req) {
     /* Compute S*B - h*A */
     gops->point_negate(&public_key);
     gops->double_scalar_multiply(&pretender_point, &req->signature[curve->b_in_bytes], challenge_scalar, &public_key);
-    /* Check if S*B - h*A == R */
-    verified &= gops->points_equal(&pretender_point, &commitment);
+    /* Check if 2^c*(S*B - h*A) == 2^c*R */
+    verified &= gops->points_equal_modulo_cofactor(&pretender_point, &commitment);
 
     return verified;
 }

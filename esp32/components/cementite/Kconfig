@@ -12,16 +12,6 @@ menu "cementite (fe3c)"
         help
             Enable support for the Ed448 curve.
 
-    config FE3C_ED448_ISOGENY
-        bool "Use 4-isogeny of Ed448"
-        depends on FE3C_SUPPORT_CURVE_ED448
-        default n
-        help
-            Enable performing the Ed448 computations on a 4-isogenous curve, which
-            may increase performance, but amounts to using cofactored verification,
-            which may lead to consensus issues where different implementations
-            disagree on the validity of maliciously constructed signatures.
-
     config FE3C_SKIP_ZEROIZATION
         bool "Skip secret zeroization"
         depends on FE3C_SUPPORT_CURVE_ED25519 || FE3C_SUPPORT_CURVE_ED448

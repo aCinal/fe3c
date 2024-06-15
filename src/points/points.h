@@ -22,9 +22,7 @@ typedef struct point_ed448 {
     fe448 X;
     fe448 Y;
     fe448 Z;
-#if FE3C_ED448_ISOGENY
     fe448 T;
-#endif /* FE3C_ED448_ISOGENY */
 } point_ed448;
 #endif /* FE3C_SUPPORT_CURVE_ED448 */
 
@@ -43,13 +41,13 @@ typedef union point {
 typedef struct group_ops {
 
     /**
-     * @brief Compare two Edwards curve points for equality
+     * @brief Compare two Edwards curve points for equality modulo the subgroup of order equal to the cofactor
      * @param[in] p Edwards curve point
      * @param[in] q Edwards curve point
      * @return 1 if p = q, 0 otherwise
      */
     __attribute__((warn_unused_result))
-    int (* points_equal)(const point * p, const point * q);
+    int (* points_equal_modulo_cofactor)(const point * p, const point * q);
 
     /**
      * @brief Encode an Edwards curve point
