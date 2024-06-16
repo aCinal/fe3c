@@ -302,7 +302,7 @@ static inline int ed448_is_ok_order(const point_ed448 * p) {
     /* Check Y = Z */
     fe448_sub(aux, p->Y, p->Z);
     fe448_strong_reduce(aux, aux);
-    equal &= fe448_equal(aux, aux);
+    equal &= fe448_equal(fe448_zero, aux);
 
     return 1 - equal;
 }
