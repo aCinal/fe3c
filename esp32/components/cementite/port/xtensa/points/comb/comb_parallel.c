@@ -1,4 +1,4 @@
-#include <port/points/comb/comb_parallel.h>
+#include "comb_parallel.h"
 #include <utils/utils.h>
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
@@ -6,11 +6,11 @@
 #include <freertos/queue.h>
 
 #if FE3C_SUPPORT_CURVE_ED25519
-    #include <port/points/comb/comb_parallel_ed25519.h>
+    #include "comb_parallel_ed25519.h"
 #endif /* FE3C_SUPPORT_CURVE_ED25519 */
 
 #if FE3C_SUPPORT_CURVE_ED448
-    #include <port/points/comb/comb_parallel_ed448.h>
+    #include "comb_parallel_ed448.h"
 #endif /* FE3C_SUPPORT_CURVE_ED448 */
 
 #define COMB_THREAD_STACK_SIZE  ( 2 * 1024 )

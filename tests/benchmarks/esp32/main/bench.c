@@ -26,14 +26,13 @@ typedef struct esp32_bench_stopwatch {
 void app_main(void) {
 
     /* Spawn a new task to have strict control over the stack size */
-    BaseType_t ret = xTaskCreatePinnedToCore(
+    BaseType_t ret = xTaskCreate(
         benchmark_task,
         "benchmark",
         BENCHMARK_TASK_STACK_DEPTH,
         NULL,
         BENCHMARK_TASK_PRIORITY,
-        NULL,
-        1
+        NULL
     );
     assert(pdPASS == ret);
 }

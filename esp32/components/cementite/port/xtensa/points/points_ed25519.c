@@ -1,13 +1,13 @@
 #if !FE3C_COMB_METHOD
-    #error "Build system inconsistency detected! port/points/points_ed25519.c in use despite FE3C_COMB_METHOD not being set"
+    #error "Build system inconsistency detected! points_ed25519.c in use despite FE3C_COMB_METHOD not being set"
 #endif /* !FE3C_COMB_METHOD */
 
 #include <points/points.h>
 #include <field_elements/field_elements_ed25519.h>
 #include <utils/utils.h>
 #include <points/comb/comb_ed25519.h>
-#include <port/points/comb/comb_parallel.h>
-#include <port/points/comb/comb_parallel_ed25519.h>
+#include "comb/comb_parallel.h"
+#include "comb/comb_parallel_ed25519.h"
 
 #define ED25519_STR \
     "    X = " FE25519_STR "\n" \

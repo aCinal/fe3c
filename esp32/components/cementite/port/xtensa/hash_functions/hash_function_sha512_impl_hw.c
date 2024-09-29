@@ -1,4 +1,4 @@
-#include <port/hash_functions/hash_function_sha512_esp32.h>
+#include "hash_function_sha512_esp32.h"
 #include <utils/utils.h>
 
 /* Redefine some constants instead of including hash_functions/hash_function_sha512.h, since the

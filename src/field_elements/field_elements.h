@@ -7,7 +7,7 @@ extern "C" {
 #endif
 
 #if FE3C_PORT_OVERRIDES
-    #include <port/field_elements/overrides.h>
+    #include <field_elements/port_overrides.h>
 #endif /* FE3C_PORT_OVERRIDES */
 
 #include <global_defs.h>

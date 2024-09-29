@@ -3,8 +3,19 @@ set(FE3C_UT_DEFINES
     "FE3C_FUNCTIONAL_TESTS_ESP32"
     "FE3C_32BIT"
     "FE3C_LILENDIAN_TARGET"
-    "FE3C_PORT_OVERRIDES"
 )
+
+set(FE3C_UUT_COMMON_SOURCE_DIR   "${CMAKE_SOURCE_DIR}/../../../src")
+set(FE3C_UUT_COMMON_INCLUDE_DIR  "${CMAKE_SOURCE_DIR}/../../../include")
+set(FE3C_UUT_PORT_INCLUDE_DIR    "${CMAKE_SOURCE_DIR}/../../../esp32/components/cementite/include")
+set(FE3C_UT_COMMON_SOURCE_DIR    "${CMAKE_SOURCE_DIR}/../src")
+if (CONFIG_IDF_TARGET_ARCH_XTENSA)
+    set(FE3C_UT_PORT_SOURCE_DIR "${CMAKE_SOURCE_DIR}/../../../esp32/components/cementite/test/port/xtensa")
+    list(APPEND FE3C_UT_DEFINES "FE3C_PORT_OVERRIDES")
+elseif (CONFIG_IDF_TARGET_ARCH_RISCV)
+    # No target-specific port available for RISC-V at this point
+    set(FE3C_UT_PORT_SOURCE_DIR ${FE3C_UT_COMMON_SOURCE_DIR})
+endif()
 
 if (CONFIG_FE3C_SUPPORT_CURVE_ED25519)
     list(APPEND FE3C_UT_DEFINES "FE3C_SUPPORT_CURVE_ED25519")

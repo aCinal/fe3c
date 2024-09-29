@@ -1,4 +1,4 @@
-#include <port/points/comb/comb_parallel_ed25519.h>
+#include "comb_parallel_ed25519.h"
 #include <points/comb/comb_ed25519.h>
 #include <field_elements/field_elements_ed25519.h>
 #include <utils/utils.h>

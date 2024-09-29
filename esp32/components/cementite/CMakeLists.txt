@@ -1,18 +1,22 @@
 set(FE3C_ROOT_DIR "../../..")
 set(FE3C_SRC_DIR "${FE3C_ROOT_DIR}/src")
-set(FE3C_PORT_DIR "port")
-
-# TODO: Fall back to the reference implementation for RISC-V-based ESP32 chips (condition on CONFIG_IDF_TARGET_ARCH_XTENSA)
-
-set(FE3C_SOURCES
-    "${FE3C_SRC_DIR}/eddsa/eddsa.c"
-    "${FE3C_SRC_DIR}/curves/curves.c"
-)
 
 set(FE3C_DEFINES
     "FE3C_32BIT"
     "FE3C_LILENDIAN_TARGET"
-    "FE3C_PORT_OVERRIDES"
+)
+
+if (CONFIG_IDF_TARGET_ARCH_XTENSA)
+    set(FE3C_PORT_DIR "port/xtensa")
+    list(APPEND FE3C_DEFINES "FE3C_PORT_OVERRIDES")
+elseif (CONFIG_IDF_TARGET_ARCH_RISCV)
+    # No target-specific port available for RISC-V at this point
+    set(FE3C_PORT_DIR ${FE3C_SRC_DIR})
+endif()
+
+set(FE3C_SOURCES
+    "${FE3C_SRC_DIR}/eddsa/eddsa.c"
+    "${FE3C_SRC_DIR}/curves/curves.c"
 )
 
 if (CONFIG_FE3C_ENABLE_SANITY_CHECKS)
@@ -46,7 +50,6 @@ if (CONFIG_FE3C_SUPPORT_CURVE_ED25519)
     list(APPEND FE3C_SOURCES "${FE3C_PORT_DIR}/scalars/scalars_ed25519_32.c")
     list(APPEND FE3C_SOURCES "${FE3C_PORT_DIR}/field_elements/field_elements_ed25519_32.c")
     list(APPEND FE3C_SOURCES "${FE3C_PORT_DIR}/hash_functions/hash_function_sha512.c")
-    list(APPEND FE3C_SOURCES "${FE3C_PORT_DIR}/hash_functions/hash_function_sha512_impl_sw.c")
 
     if (CONFIG_FE3C_COMB_METHOD)
         list(APPEND FE3C_SOURCES "${FE3C_SRC_DIR}/points/comb/comb_ed25519${ed25519_small_precomp_tag}.c")
@@ -93,7 +96,7 @@ endif()
 
 idf_component_register(SRCS ${FE3C_SOURCES}
                        INCLUDE_DIRS "${FE3C_ROOT_DIR}/include"
-                       PRIV_INCLUDE_DIRS "."
+                       PRIV_INCLUDE_DIRS "include"
                                          "${FE3C_SRC_DIR}"
 # We need a dependency to mbedtls when using the SHA-2 hardware, to use their API
 # and this way not risk any race conditions. Due to the two-pass nature of CMake

@@ -49,7 +49,7 @@ menu "cementite (fe3c)"
 
     config FE3C_PARALLEL_COMB_METHOD
         bool "Use parallel comb method"
-        depends on FE3C_COMB_METHOD
+        depends on FE3C_COMB_METHOD && IDF_TARGET_ARCH_XTENSA
         default n
         help
             Use a parallel implementation of the comb method which yields great performance benefits
@@ -57,7 +57,7 @@ menu "cementite (fe3c)"
 
     config FE3C_USE_SHA512_HARDWARE
         bool "Use SHA512 hardware acceleration when possible"
-        depends on FE3C_SUPPORT_CURVE_ED25519
+        depends on FE3C_SUPPORT_CURVE_ED25519 && IDF_TARGET_ARCH_XTENSA
         default n
         help
             Use SHA512 hardware acceleration when possible. This will significantly

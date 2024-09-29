@@ -4,12 +4,6 @@
 # CMakeLists in this exact order for cmake to work correctly
 cmake_minimum_required(VERSION 3.16)
 
-set(FE3C_UUT_COMMON_SOURCE_DIR   "${CMAKE_SOURCE_DIR}/../../../src")
-set(FE3C_UUT_COMMON_INCLUDE_DIR  "${CMAKE_SOURCE_DIR}/../../../include")
-set(FE3C_UUT_PORT_INCLUDE_DIR    "${CMAKE_SOURCE_DIR}/../../../esp32/components/cementite")
-set(FE3C_UT_COMMON_SOURCE_DIR    "${CMAKE_SOURCE_DIR}/../src")
-set(FE3C_UT_PORT_SOURCE_DIR      "${CMAKE_SOURCE_DIR}/../../../esp32/components/cementite/test/port")
-
 set(EXTRA_COMPONENT_DIRS         "${CMAKE_SOURCE_DIR}/../../../esp32/components")
 set(TEST_COMPONENTS              "cementite")
 
