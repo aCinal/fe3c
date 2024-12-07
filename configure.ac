@@ -153,19 +153,35 @@ AS_IF([test "x$fast_squaring" = "xyes"], AC_DEFINE([FE3C_FAST_SQUARING]), [])
 
 # -------------------------------------------------------------------------------------------
 
-comb_method="yes"
-AC_ARG_ENABLE([comb-method],
-              [AS_HELP_STRING([--disable-comb-method],
-                              [Disable comb method of scalar multiplication, which may reduce data footprint,
+ed25519_comb_method="yes"
+AC_ARG_ENABLE([ed25519-comb-method],
+              [AS_HELP_STRING([--disable-ed25519-comb-method],
+                              [Disable comb method of scalar multiplication for Ed25519, which may reduce data footprint,
                                but will definitely decrease performance])],
               [AS_IF([test "x$enableval" = "xno"],
-                     [comb_method="no"],
+                     [ed25519_comb_method="no"],
 
                      [test "x$enableval" != "xyes"],
-                     [AC_MSG_ERROR([bad value ${enableval} for --enable-comb-method])])],
+                     [AC_MSG_ERROR([bad value ${enableval} for --enable-ed25519-comb-method])])],
               [])
-AM_CONDITIONAL([FE3C_COMB_METHOD], [test "x$comb_method" = "xyes"])
-AS_IF([test "x$comb_method" = "xyes"], AC_DEFINE([FE3C_COMB_METHOD]), [])
+AM_CONDITIONAL([FE3C_ED25519_COMB_METHOD], [test "x$ed25519_comb_method" = "xyes"])
+AS_IF([test "x$ed25519_comb_method" = "xyes"], AC_DEFINE([FE3C_ED25519_COMB_METHOD]), [])
+
+# -------------------------------------------------------------------------------------------
+
+ed448_comb_method="yes"
+AC_ARG_ENABLE([ed448-comb-method],
+              [AS_HELP_STRING([--disable-ed448-comb-method],
+                              [Disable comb method of scalar multiplication for Ed448, which may reduce data footprint,
+                               but will definitely decrease performance])],
+              [AS_IF([test "x$enableval" = "xno"],
+                     [ed448_comb_method="no"],
+
+                     [test "x$enableval" != "xyes"],
+                     [AC_MSG_ERROR([bad value ${enableval} for --enable-ed448-comb-method])])],
+              [])
+AM_CONDITIONAL([FE3C_ED448_COMB_METHOD], [test "x$ed448_comb_method" = "xyes"])
+AS_IF([test "x$ed448_comb_method" = "xyes"], AC_DEFINE([FE3C_ED448_COMB_METHOD]), [])
 
 # -------------------------------------------------------------------------------------------
 
@@ -280,14 +296,16 @@ AC_MSG_RESULT([
 
     Architecture:                                             ${archbits}-bit
     Sanity checks enabled:                                    ${sanity_checks}
+    Skip secret zeroization on stack:                         ${skip_zeroization}
 
     Optimized field element squaring:                         ${fast_squaring}
-    Comb method for scalar multiplication:                    ${comb_method}
+    Comb method for scalar multiplication:
+        Ed25519:                                              ${ed25519_comb_method}
+        Ed448:                                                ${ed448_comb_method}
     Lattice basis reduction in double scalar multiplication:
         Ed25519:                                              ${ed25519_lattice_basis_reduction}
         Ed448:                                                ${ed448_lattice_basis_reduction}
     Small precomputation tables:
         Ed25519:                                              ${ed25519_small_precomputation}
         Ed448:                                                ${ed448_small_precomputation}
-    Skip secret zeroization on stack:                         ${skip_zeroization}
 ])

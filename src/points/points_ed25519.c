@@ -1,9 +1,9 @@
 #include <points/points.h>
 #include <field_elements/field_elements_ed25519.h>
 #include <utils/utils.h>
-#if FE3C_COMB_METHOD
+#if FE3C_ED25519_COMB_METHOD
     #include <points/comb/comb_ed25519.h>
-#endif /* FE3C_COMB_METHOD */
+#endif /* FE3C_ED25519_COMB_METHOD */
 #if FE3C_ED25519_LATTICE_BASIS_REDUCTION
     #include <points/lattice_basis_reduction/lattices_ed25519.h>
 #endif /* FE3C_ED25519_LATTICE_BASIS_REDUCTION */
@@ -23,7 +23,6 @@ static const point_ed25519 ed25519_basepoint = {
     .Z = ED25519_BASEPOINT_Z,
     .T = ED25519_BASEPOINT_T
 };
-
 #if FE3C_ED25519_LATTICE_BASIS_REDUCTION
 static const point_ed25519 ed25519_basepoint_times_2_128 = {
     .X = ED25519_BASEPOINT_TIMES_2_128_X,
@@ -361,7 +360,7 @@ static inline void ed25519_conditional_move(point_ed25519 *r, const point_ed2551
     fe25519_conditional_move(r->T, p->T, move);
 }
 
-#if !FE3C_COMB_METHOD
+#if !FE3C_ED25519_COMB_METHOD
 static inline void ed25519_conditional_swap(point_ed25519 *r, point_ed25519 *q, point_ed25519 *temp, int swap)
 {
     /* We could implement this more efficiently, but if someone is using
@@ -372,13 +371,12 @@ static inline void ed25519_conditional_swap(point_ed25519 *r, point_ed25519 *q, 
     ed25519_conditional_move(q, temp, swap);
 }
 
-static inline void ed25519_scalar_multiply(point_ed25519 *r, const point_ed25519 *p, const u8 *s)
+static inline void ed25519_multiply_basepoint_ladder(point_ed25519 *r, const u8 *s)
 {
-    FE3C_SANITY_CHECK(ed25519_is_on_curve(p), ED25519_STR, ED25519_TO_STR(p));
-
     point_ed25519 R[3];
     ed25519_identity(&R[0]);
-    R[1] = *p;
+    R[1] = ed25519_basepoint;
+    /* R[2] is an auxiliary buffer for swaps */
 
     int bits[2] = { 0, 0 };
     /* Do a simple "Montgomery ladder" (in the group). Note that the input scalar must have been pruned,
@@ -399,14 +397,9 @@ static inline void ed25519_scalar_multiply(point_ed25519 *r, const point_ed25519
     purge_secrets(&R, sizeof(R));
     purge_secrets(bits, sizeof(bits));
 }
-#endif /* !FE3C_COMB_METHOD */
-
-static void ed25519_multiply_basepoint(point *rgen, const u8 *s)
-{
-    point_ed25519 *r = (point_ed25519 *) rgen;
-#if !FE3C_COMB_METHOD
-    ed25519_scalar_multiply(r, &ed25519_basepoint, s);
 #else
+static inline void ed25519_multiply_basepoint_comb(point_ed25519 *r, const u8 *s)
+{
     /* Implement the comb method with signed digit scalar representation. Start by recoding the
      * scalar into an array of a columns S[d] each being an integer in signed digit representation
      * of length w (width-w SD), i.e. let:
@@ -505,7 +498,17 @@ static void ed25519_multiply_basepoint(point *rgen, const u8 *s)
     purge_secrets(recoding, sizeof(recoding));
     /* Clear the last accessed precomputed point */
     purge_secrets(&p, sizeof(p));
-#endif /* !FE3C_COMB_METHOD */
+}
+#endif /* !FE3C_ED25519_COMB_METHOD */
+
+static void ed25519_multiply_basepoint(point *rgen, const u8 *s)
+{
+    point_ed25519 *r = (point_ed25519 *) rgen;
+#if !FE3C_ED25519_COMB_METHOD
+    ed25519_multiply_basepoint_ladder(r, s);
+#else
+    ed25519_multiply_basepoint_comb(r, s);
+#endif /* !FE3C_ED25519_COMB_METHOD */
 }
 
 #if !FE3C_ED25519_LATTICE_BASIS_REDUCTION

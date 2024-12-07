@@ -6,28 +6,22 @@ menu "cementite (fe3c)"
         help
             Enable support for the Ed25519 curve.
 
-    config FE3C_SUPPORT_CURVE_ED448
-        bool "Enable support for the Ed448 curve"
-        default n
-        help
-            Enable support for the Ed448 curve.
-
-    config FE3C_SKIP_ZEROIZATION
-        bool "Skip secret zeroization"
-        depends on FE3C_SUPPORT_CURVE_ED25519 || FE3C_SUPPORT_CURVE_ED448
-        default n
-        help
-            Disable zeroization of intermediate results on stack, which may marginally increase
-            performance and reduce code footprint, but decreases security in systems where stack
-            is shared with unsafe code, which may read data left behind by crypto operations.
-
-    config FE3C_COMB_METHOD
-        bool "Use comb method for scalar multiplication"
-        depends on FE3C_SUPPORT_CURVE_ED25519 || FE3C_SUPPORT_CURVE_ED448
+    config FE3C_ED25519_COMB_METHOD
+        bool "Use comb method for Ed25519 scalar multiplication"
+        depends on FE3C_SUPPORT_CURVE_ED25519
         default y
         help
-            Enable comb method of scalar multiplication, which will increase data footprint,
+            Enable comb method of scalar multiplication for Ed25519, which will increase data footprint,
             but will hugely increase performance.
+
+    config FE3C_ED25519_SMALL_PRECOMPUTATION
+        bool "Use smaller comb method precomputation tables for Ed25519"
+        depends on FE3C_ED25519_COMB_METHOD
+        default y
+        help
+            Minimize the size of Ed25519 precomputation tables when using the comb method.
+            On ESP32 this seems to have no downside as it both reduces the memory
+            footprint and increases performance.
 
     config FE3C_ED25519_LATTICE_BASIS_REDUCTION
         bool "Use lattice basis reduction for Ed25519 verification"
@@ -37,40 +31,6 @@ menu "cementite (fe3c)"
             Enable lattice basis reduction (eprint:2020/454) during Ed25519 verification, which will increase
             code footprint, but may increase verification performance.
 
-    config FE3C_ED448_LATTICE_BASIS_REDUCTION
-        bool "Use lattice basis reduction for Ed448 verification"
-        depends on FE3C_SUPPORT_CURVE_ED448
-        default n
-        help
-            Enable lattice basis reduction (eprint:2020/454) during Ed448 verification, which will increase
-            code footprint, but may increase verification performance.
-
-    config FE3C_ED25519_SMALL_PRECOMPUTATION
-        bool "Use smaller comb method precomputation tables for Ed25519"
-        depends on FE3C_SUPPORT_CURVE_ED25519 && FE3C_COMB_METHOD
-        default y
-        help
-            Minimize the size of Ed25519 precomputation tables when using the comb method.
-            On ESP32 this seems to have no downside as it both reduces the memory
-            footprint and increases performance.
-
-    config FE3C_ED448_SMALL_PRECOMPUTATION
-        bool "Use smaller comb method precomputation tables for Ed448"
-        depends on FE3C_SUPPORT_CURVE_ED448 && FE3C_COMB_METHOD
-        default n
-        help
-            Minimize the size of Ed448 precomputation tables when using the comb method,
-            which decreases the memory footprint, but marginally decreases performance
-            as well.
-
-    config FE3C_PARALLEL_COMB_METHOD
-        bool "Use parallel comb method"
-        depends on FE3C_COMB_METHOD && IDF_TARGET_ARCH_XTENSA
-        default n
-        help
-            Use a parallel implementation of the comb method which yields great performance benefits
-            in systems with small CPU load.
-
     config FE3C_USE_SHA512_HARDWARE
         bool "Use SHA512 hardware acceleration when possible"
         depends on FE3C_SUPPORT_CURVE_ED25519 && IDF_TARGET_ARCH_XTENSA
@@ -79,6 +39,54 @@ menu "cementite (fe3c)"
             Use SHA512 hardware acceleration when possible. This will significantly
             reduce stack usage and increase performance for large messages, but may
             cause blocking for some SoC variants.
+
+    config FE3C_SUPPORT_CURVE_ED448
+        bool "Enable support for the Ed448 curve"
+        default n
+        help
+            Enable support for the Ed448 curve.
+
+    config FE3C_ED448_COMB_METHOD
+        bool "Use comb method for Ed448 scalar multiplication"
+        depends on FE3C_SUPPORT_CURVE_ED448
+        default y
+        help
+            Enable comb method of scalar multiplication for Ed448, which will increase data footprint,
+            but will hugely increase performance.
+
+    config FE3C_ED448_SMALL_PRECOMPUTATION
+        bool "Use smaller comb method precomputation tables for Ed448"
+        depends on FE3C_ED448_COMB_METHOD
+        default n
+        help
+            Minimize the size of Ed448 precomputation tables when using the comb method,
+            which decreases the memory footprint, but marginally decreases performance
+            as well.
+
+    config FE3C_ED448_LATTICE_BASIS_REDUCTION
+        bool "Use lattice basis reduction for Ed448 verification"
+        depends on FE3C_SUPPORT_CURVE_ED448
+        default n
+        help
+            Enable lattice basis reduction (eprint:2020/454) during Ed448 verification, which will increase
+            code footprint, but may increase verification performance.
+
+    config FE3C_PARALLEL_GROUP_OPS
+        bool "Use parallel group arithmetic when possible"
+        depends on IDF_TARGET_ARCH_XTENSA && (FE3C_SUPPORT_CURVE_ED25519 || FE3C_SUPPORT_CURVE_ED448)
+        default n
+        help
+            When possible, use parallel implementations of the group arithmetic which yield
+            great performance benefits in systems with small CPU load.
+
+    config FE3C_SKIP_ZEROIZATION
+        bool "Skip secret zeroization"
+        depends on FE3C_SUPPORT_CURVE_ED25519 || FE3C_SUPPORT_CURVE_ED448
+        default n
+        help
+            Disable zeroization of intermediate results on stack, which may marginally increase
+            performance and reduce code footprint, but decreases security in systems where stack
+            is shared with unsafe code, which may read data left behind by crypto operations.
 
     config FE3C_ENABLE_SANITY_CHECKS
         bool "Enable sanity checks"

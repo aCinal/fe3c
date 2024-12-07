@@ -1,9 +1,9 @@
 #include <points/points.h>
 #include <field_elements/field_elements_ed448.h>
 #include <utils/utils.h>
-#if FE3C_COMB_METHOD
+#if FE3C_ED448_COMB_METHOD
     #include <points/comb/comb_ed448.h>
-#endif /* FE3C_COMB_METHOD */
+#endif /* FE3C_ED448_COMB_METHOD */
 #if FE3C_ED448_LATTICE_BASIS_REDUCTION
     #include <points/lattice_basis_reduction/lattices_ed448.h>
 #endif /* FE3C_ED448_LATTICE_BASIS_REDUCTION */
@@ -23,7 +23,6 @@ static const point_ed448 ed448_basepoint = {
     .Z = ED448_BASEPOINT_Z,
     .T = ED448_BASEPOINT_T
 };
-
 #if FE3C_ED448_LATTICE_BASIS_REDUCTION
 static const point_ed448 ed448_basepoint_times_2_225 = {
     .X = ED448_BASEPOINT_TIMES_2_225_X,
@@ -446,7 +445,7 @@ static inline void ed448_conditional_move(point_ed448 *r, const point_ed448 *p, 
     fe448_conditional_move(r->T, p->T, move);
 }
 
-#if !FE3C_COMB_METHOD
+#if !FE3C_ED448_COMB_METHOD
 static inline void ed448_conditional_swap(point_ed448 *r, point_ed448 *q, point_ed448 *temp, int swap)
 {
     /* We could implement this more efficiently, but if someone is using
@@ -457,13 +456,12 @@ static inline void ed448_conditional_swap(point_ed448 *r, point_ed448 *q, point_
     ed448_conditional_move(q, temp, swap);
 }
 
-static inline void ed448_scalar_multiply(point_ed448 *r, const point_ed448 *p, const u8 *s)
+static inline void ed448_multiply_basepoint_ladder(point_ed448 *r, const u8 *s)
 {
-    FE3C_SANITY_CHECK(ed448_is_on_curve(p), ED448_STR, ED448_TO_STR(p));
-
     point_ed448 R[3];
     ed448_identity(&R[0]);
-    R[1] = *p;
+    R[1] = ed448_basepoint;
+    /* R[2] is an auxiliary buffer for swaps */
 
     int bits[2] = { 0, 0 };
     /* Do a simple "Montgomery ladder" (in the group). Note that the input scalar must have been pruned,
@@ -484,52 +482,9 @@ static inline void ed448_scalar_multiply(point_ed448 *r, const point_ed448 *p, c
     purge_secrets(&R, sizeof(R));
     purge_secrets(bits, sizeof(bits));
 }
-#endif /* !FE3C_COMB_METHOD */
-
-static inline void ed448_map_scalar_to_isogenous_curve(u8 r[57], const u8 s[57])
-{
-    /* Divide the scalar by four, i.e. the order of the isogeny, since applying the
-     * isogeny and its dual is equivalent to multiplying by four (the order) */
-
-    const u8 group_order[] = {
-        0xf3, 0x44, 0x58, 0xab, 0x92, 0xc2, 0x78, 0x23,
-        0x55, 0x8f, 0xc5, 0x8d, 0x72, 0xc2, 0x6c, 0x21,
-        0x90, 0x36, 0xd6, 0xae, 0x49, 0xdb, 0x4e, 0xc4,
-        0xe9, 0x23, 0xca, 0x7c, 0xff, 0xff, 0xff, 0xff,
-        0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
-        0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
-        0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x3f,
-        0x00
-    };
-
-    /* Let L denote the group order. Since L = 3 (mod 4) we have
-     * that if s = k (mod 4) then s + k*L = 0 (mod 4). Start by
-     * adding { 0, 1, 2, 3 } times the group order to the scalar
-     * to make it divisible by four */
-    u8 smod4 = s[0] & 0x3;
-    u16 chain = 0;
-    for (int i = 0; i < 57; i++) {
-
-        chain += s[i];
-        chain += (u16) group_order[i] * smod4;
-        r[i] = (u8) chain;
-        chain >>= 8;
-    }
-
-    for (int i = 0; i < 56; i++)
-        r[i] = (r[i + 1] << 6) | (r[i] >> 2);
-
-    r[56] = (u8)(chain << 6) | (r[56] >> 2);
-}
-
-static void ed448_multiply_basepoint(point *rgen, const u8 *sraw)
-{
-    point_ed448 *r = (point_ed448 *) rgen;
-    u8 s[57];
-    ed448_map_scalar_to_isogenous_curve(s, sraw);
-#if !FE3C_COMB_METHOD
-    ed448_scalar_multiply(r, &ed448_basepoint, s);
 #else
+static inline void ed448_multiply_basepoint_comb(point_ed448 *r, const u8 *s)
+{
     /* Implement the comb method with signed digit scalar representation. Start by recoding the
      * scalar into an array of a columns S[d] each being an integer in signed digit representation
      * of length w (width-w SD), i.e. let:
@@ -629,7 +584,55 @@ static void ed448_multiply_basepoint(point *rgen, const u8 *sraw)
     purge_secrets(recoding, sizeof(recoding));
     /* Clear the last accessed precomputed point */
     purge_secrets(&p, sizeof(p));
-#endif /* !FE3C_COMB_METHOD */
+}
+#endif /* !FE3C_ED448_COMB_METHOD */
+
+static inline void ed448_map_scalar_to_isogenous_curve(u8 r[57], const u8 s[57])
+{
+    /* Divide the scalar by four, i.e. the order of the isogeny, since applying the
+     * isogeny and its dual is equivalent to multiplying by four (the order) */
+
+    const u8 group_order[] = {
+        0xf3, 0x44, 0x58, 0xab, 0x92, 0xc2, 0x78, 0x23,
+        0x55, 0x8f, 0xc5, 0x8d, 0x72, 0xc2, 0x6c, 0x21,
+        0x90, 0x36, 0xd6, 0xae, 0x49, 0xdb, 0x4e, 0xc4,
+        0xe9, 0x23, 0xca, 0x7c, 0xff, 0xff, 0xff, 0xff,
+        0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+        0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+        0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x3f,
+        0x00
+    };
+
+    /* Let L denote the group order. Since L = 3 (mod 4) we have
+     * that if s = k (mod 4) then s + k*L = 0 (mod 4). Start by
+     * adding { 0, 1, 2, 3 } times the group order to the scalar
+     * to make it divisible by four */
+    u8 smod4 = s[0] & 0x3;
+    u16 chain = 0;
+    for (int i = 0; i < 57; i++) {
+
+        chain += s[i];
+        chain += (u16) group_order[i] * smod4;
+        r[i] = (u8) chain;
+        chain >>= 8;
+    }
+
+    for (int i = 0; i < 56; i++)
+        r[i] = (r[i + 1] << 6) | (r[i] >> 2);
+
+    r[56] = (u8)(chain << 6) | (r[56] >> 2);
+}
+
+static void ed448_multiply_basepoint(point *rgen, const u8 *sraw)
+{
+    point_ed448 *r = (point_ed448 *) rgen;
+    u8 s[57];
+    ed448_map_scalar_to_isogenous_curve(s, sraw);
+#if !FE3C_ED448_COMB_METHOD
+    ed448_multiply_basepoint_ladder(r, s);
+#else
+    ed448_multiply_basepoint_comb(r, s);
+#endif /* !FE3C_ED448_COMB_METHOD */
 }
 
 #if !FE3C_ED448_LATTICE_BASIS_REDUCTION

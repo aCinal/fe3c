@@ -18,19 +18,6 @@ __LIB__libcementite_la_SOURCES = \
     eddsa/eddsa.c \
     curves/curves.c
 
-if FE3C_ED25519_SMALL_PRECOMPUTATION
-ed25519_small_precomp_tag = _small
-else
-ed25519_small_precomp_tag =
-endif
-
-if FE3C_ED448_SMALL_PRECOMPUTATION
-ed448_small_precomp_tag = _small
-else
-ed448_small_precomp_tag =
-endif
-
-
 # ------------------------- Ed25519 sources -------------------------
 if FE3C_SUPPORT_CURVE_ED25519
 __LIB__libcementite_la_SOURCES += \
@@ -40,16 +27,28 @@ __LIB__libcementite_la_SOURCES += \
     scalars/scalars_ed25519_$(archbits).c \
     field_elements/field_elements_ed25519_$(archbits).c
 
-if FE3C_COMB_METHOD
+# --------------------------- Comb method ---------------------------
+if FE3C_ED25519_COMB_METHOD
+
+if FE3C_ED25519_SMALL_PRECOMPUTATION
+ed25519_small_precomp_tag = _small
+else
+ed25519_small_precomp_tag =
+endif
+
 __LIB__libcementite_la_SOURCES += \
     points/comb/comb_ed25519$(ed25519_small_precomp_tag).c \
     points/comb/precomputation/precomputation_ed25519$(ed25519_small_precomp_tag)_$(archbits).c
-endif
 
+endif
+# -------------------------------------------------------------------
+
+# --------------------- Lattice basis reduction ---------------------
 if FE3C_ED25519_LATTICE_BASIS_REDUCTION
 __LIB__libcementite_la_SOURCES += \
     points/lattice_basis_reduction/lattices_ed25519.c
 endif
+# -------------------------------------------------------------------
 
 endif
 # -------------------------------------------------------------------
@@ -63,16 +62,28 @@ __LIB__libcementite_la_SOURCES += \
     field_elements/field_elements_ed448_$(archbits).c \
     points/points_ed448.c
 
-if FE3C_COMB_METHOD
+# --------------------------- Comb method ---------------------------
+if FE3C_ED448_COMB_METHOD
+
+if FE3C_ED448_SMALL_PRECOMPUTATION
+ed448_small_precomp_tag = _small
+else
+ed448_small_precomp_tag =
+endif
+
 __LIB__libcementite_la_SOURCES += \
     points/comb/comb_ed448$(ed448_small_precomp_tag).c \
     points/comb/precomputation/precomputation_ed448$(ed448_small_precomp_tag)_$(archbits).c
-endif
 
+endif
+# -------------------------------------------------------------------
+
+# --------------------- Lattice basis reduction ---------------------
 if FE3C_ED448_LATTICE_BASIS_REDUCTION
 __LIB__libcementite_la_SOURCES += \
     points/lattice_basis_reduction/lattices_ed448.c
 endif
+# -------------------------------------------------------------------
 
 endif
 # -------------------------------------------------------------------

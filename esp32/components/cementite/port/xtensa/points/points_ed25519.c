@@ -1,13 +1,14 @@
-#if !FE3C_COMB_METHOD
-    #error "Build system inconsistency detected! points_ed25519.c in use despite FE3C_COMB_METHOD not being set"
-#endif /* !FE3C_COMB_METHOD */
+#if !FE3C_PARALLEL_GROUP_OPS
+    #error "Build system inconsistency detected! points_ed25519.c in use despite FE3C_PARALLEL_GROUP_OPS not being set"
+#endif /* !FE3C_PARALLEL_GROUP_OPS */
 
+#include "parallel.h"
 #include <points/points.h>
 #include <field_elements/field_elements_ed25519.h>
 #include <utils/utils.h>
-#include <points/comb/comb_ed25519.h>
-#include "comb/comb_parallel.h"
-#include "comb/comb_parallel_ed25519.h"
+#if FE3C_ED25519_COMB_METHOD
+    #include <points/comb/comb_ed25519.h>
+#endif /* FE3C_ED25519_COMB_METHOD */
 #if FE3C_ED25519_LATTICE_BASIS_REDUCTION
     #include <points/lattice_basis_reduction/lattices_ed25519.h>
 #endif /* FE3C_ED25519_LATTICE_BASIS_REDUCTION */
@@ -20,20 +21,34 @@
 #define ED25519_TO_STR(p) \
     FE25519_TO_STR((p)->X), FE25519_TO_STR((p)->Y), FE25519_TO_STR((p)->Z), FE25519_TO_STR((p)->T)
 
+#if FE3C_ED25519_COMB_METHOD
+struct ed25519_comb_work {
+    point_ed25519 *thread_result;
+    const i8 *scalar_recoding;
+};
+#else
+struct ed25519_ladder_work {
+    point_ed25519 *thread_result;
+    const point_ed25519 *basepoint;
+    const u8 *scalar;
+    int start_bit;
+    int stop_bit;
+};
+#endif /* FE3C_ED25519_COMB_METHOD */
+
 static const point_ed25519 ed25519_basepoint = {
     .X = ED25519_BASEPOINT_X,
     .Y = ED25519_BASEPOINT_Y,
     .Z = ED25519_BASEPOINT_Z,
     .T = ED25519_BASEPOINT_T
 };
-
-#if FE3C_ED25519_LATTICE_BASIS_REDUCTION
 static const point_ed25519 ed25519_basepoint_times_2_128 = {
     .X = ED25519_BASEPOINT_TIMES_2_128_X,
     .Y = ED25519_BASEPOINT_TIMES_2_128_Y,
     .Z = ED25519_BASEPOINT_TIMES_2_128_Z,
     .T = ED25519_BASEPOINT_TIMES_2_128_T
 };
+#if FE3C_ED25519_LATTICE_BASIS_REDUCTION
 static const point_ed25519 ed25519_basepoint_times_2_128_plus_1 = {
     .X = ED25519_BASEPOINT_TIMES_2_128_PLUS_1_X,
     .Y = ED25519_BASEPOINT_TIMES_2_128_PLUS_1_Y,
@@ -356,10 +371,111 @@ static int ed25519_decode(point *pgen, const u8 *buf)
     return success;
 }
 
-static void ed25519_multiply_basepoint(point *rgen, const u8 *s)
+static inline void ed25519_conditional_move(point_ed25519 *r, const point_ed25519 *p, int move)
 {
-    point_ed25519 *r = (point_ed25519 *) rgen;
+    fe25519_conditional_move(r->X, p->X, move);
+    fe25519_conditional_move(r->Y, p->Y, move);
+    fe25519_conditional_move(r->Z, p->Z, move);
+    fe25519_conditional_move(r->T, p->T, move);
+}
 
+#if !FE3C_ED25519_COMB_METHOD
+static inline void ed25519_conditional_swap(point_ed25519 *r, point_ed25519 *q, point_ed25519 *temp, int swap)
+{
+    /* We could implement this more efficiently, but if someone is using
+     * naive scalar multiplication then they probably value space more
+     * than speed */
+    ed25519_conditional_move(temp, r, swap);
+    ed25519_conditional_move(r, q, swap);
+    ed25519_conditional_move(q, temp, swap);
+}
+
+static void ed25519_scalar_multiply_partial(point_ed25519 *r, const point_ed25519 *p, const u8 *s, int start_bit, int stop_bit)
+{
+    point_ed25519 R[3];
+    ed25519_identity(&R[0]);
+    R[1] = *p;
+    /* R[2] is an auxiliary buffer for swaps */
+
+    int bits[2] = { 0, 0 };
+    for (int i = start_bit; i >= stop_bit; i--) {
+
+        /* Recover the ith bit of the scalar */
+        bits[0] = array_bit(s, i);
+        ed25519_conditional_swap(&R[0], &R[1], &R[2], bits[0] ^ bits[1]);
+        ed25519_points_add(&R[1], &R[1], &R[0]);
+        ed25519_point_double(&R[0], &R[0], 1);
+        bits[1] = bits[0];
+    }
+
+    ed25519_conditional_swap(&R[0], &R[1], &R[2], bits[1]);
+    *r = R[0];
+    purge_secrets(&R, sizeof(R));
+    purge_secrets(bits, sizeof(bits));
+}
+
+static void ed25519_ladder_parallel_callback(void *arg)
+{
+    struct ed25519_ladder_work *work = arg;
+    ed25519_scalar_multiply_partial(work->thread_result, work->basepoint, work->scalar, work->start_bit, work->stop_bit);
+}
+
+static inline void ed25519_multiply_basepoint_ladder(point_ed25519 *r, const u8 *s)
+{
+    point_ed25519 upper_half;
+    struct ed25519_ladder_work ladder_work = {
+        .thread_result = &upper_half,
+        .basepoint = &ed25519_basepoint_times_2_128,
+        .scalar = s,
+        .start_bit = 254,
+        .stop_bit = 128
+    };
+    struct parallel_work work = {
+        .func = ed25519_ladder_parallel_callback,
+        .arg = &ladder_work
+    };
+    int parallel = schedule_parallel_work(&work);
+    if (!parallel) {
+        /* Failed to offload the upper half to a worker thread,
+         * do everything ourselves */
+        ed25519_scalar_multiply_partial(r, &ed25519_basepoint, s, 254, 0);
+    } else {
+        /* Some of the work is being done in parallel, focus on the lower half */
+        ed25519_scalar_multiply_partial(r, &ed25519_basepoint, s, 127, 0);
+        /* Wait for the upper half */
+        wait_for_parallel_work();
+        /* Join the halves */
+        ed25519_points_add(r, r, &upper_half);
+        purge_secrets(&upper_half, sizeof(upper_half));
+    }
+}
+#else
+static void ed25519_comb_loop(point_ed25519 *result, const i8 *scalar_recoding, int odd)
+{
+    FE3C_SANITY_CHECK(0 == odd || 1 == odd, NULL);
+
+    ed25519_identity(result);
+    ed25519_precomp p;
+    for (int i = odd; i < 64; i += 2) {
+
+        /* We let the loop index run twice as fast and skip every other entry of recoding,
+         * but correct for it in the j index (j = i / 2) */
+        ed25519_comb_read_precomp(&p, i >> 1, scalar_recoding[i]);
+        ed25519_comb_add_precomp(result, result, &p);
+    }
+
+    /* Clear the last accessed precomputed point */
+    purge_secrets(&p, sizeof(p));
+}
+
+static void ed25519_comb_parallel_callback(void *arg)
+{
+    struct ed25519_comb_work *work = arg;
+    ed25519_comb_loop(work->thread_result, work->scalar_recoding, 0);
+}
+
+static inline void ed25519_multiply_basepoint_comb(point_ed25519 *r, const u8 *s)
+{
     /* See src/points/points_ed25519.c for a description of the comb method algorithm used here.
      * The core of the algorithm uses two loops iterating respectively over the odd and the even
      * indices of the signed digit recoding of the scalar. Try offloading one of the loops to a
@@ -368,13 +484,15 @@ static void ed25519_multiply_basepoint(point *rgen, const u8 *s)
     ed25519_comb_recode_scalar_into_width4_sd(recoding, s);
 
     point_ed25519 even_part;
-    comb_thread_work thread_work = {
-        .thread_result = (point *) &even_part,
-        .scalar_recoding = recoding,
-        .curve_id = EDDSA_CURVE_ED25519
+    struct ed25519_comb_work comb_work = {
+        .thread_result = &even_part,
+        .scalar_recoding = recoding
     };
-
-    int parallel = comb_dispatch_loop_to_thread(&thread_work);
+    struct parallel_work work = {
+        .func = ed25519_comb_parallel_callback,
+        .arg = &comb_work
+    };
+    int parallel = schedule_parallel_work(&work);
     if (!parallel) {
 
         /* Failed to offload the even indices loop to a worker thread,
@@ -390,11 +508,8 @@ static void ed25519_multiply_basepoint(point *rgen, const u8 *s)
     ed25519_point_double(r, r, 0);
     ed25519_point_double(r, r, 1);
 
-    if (parallel) {
-
-        /* Wait for the worker to finish */
-        comb_join_worker_thread();
-    }
+    if (parallel)
+        wait_for_parallel_work();
 
     /* Add the odd and even results */
     ed25519_points_add(r, r, &even_part);
@@ -403,6 +518,18 @@ static void ed25519_multiply_basepoint(point *rgen, const u8 *s)
     purge_secrets(recoding, sizeof(recoding));
     /* Clear the partial result from the stack */
     purge_secrets(&even_part, sizeof(even_part));
+}
+#endif /* !FE3C_ED25519_COMB_METHOD */
+
+static void ed25519_multiply_basepoint(point *rgen, const u8 *s)
+{
+    point_ed25519 *r = (point_ed25519 *) rgen;
+
+#if !FE3C_ED25519_COMB_METHOD
+    ed25519_multiply_basepoint_ladder(r, s);
+#else
+    ed25519_multiply_basepoint_comb(r, s);
+#endif /* !FE3C_ED25519_COMB_METHOD */
 }
 
 #if !FE3C_ED25519_LATTICE_BASIS_REDUCTION

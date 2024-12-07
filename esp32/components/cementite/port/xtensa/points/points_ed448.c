@@ -1,13 +1,15 @@
-#if !FE3C_COMB_METHOD
-    #error "Build system inconsistency detected! points_ed448.c in use despite FE3C_COMB_METHOD not being set"
-#endif /* !FE3C_COMB_METHOD */
+#if !FE3C_PARALLEL_GROUP_OPS
+    #error "Build system inconsistency detected! points_ed448.c in use despite FE3C_PARALLEL_GROUP_OPS not being set"
+#endif /* !FE3C_PARALLEL_GROUP_OPS */
+
+#include "parallel.h"
 
 #include <points/points.h>
 #include <field_elements/field_elements_ed448.h>
 #include <utils/utils.h>
-#include <points/comb/comb_ed448.h>
-#include "comb/comb_parallel.h"
-#include "comb/comb_parallel_ed448.h"
+#if FE3C_ED448_COMB_METHOD
+    #include <points/comb/comb_ed448.h>
+#endif /* FE3C_ED448_COMB_METHOD */
 #if FE3C_ED448_LATTICE_BASIS_REDUCTION
     #include <points/lattice_basis_reduction/lattices_ed448.h>
 #endif /* FE3C_ED448_LATTICE_BASIS_REDUCTION */
@@ -20,6 +22,21 @@
 #define ED448_TO_STR(p) \
     FE448_TO_STR((p)->X), FE448_TO_STR((p)->Y), FE448_TO_STR((p)->Z), FE448_TO_STR((p)->T)
 
+#if FE3C_ED448_COMB_METHOD
+struct ed448_comb_work {
+    point_ed448 *thread_result;
+    const i8 *scalar_recoding;
+};
+#else
+struct ed448_ladder_work {
+    point_ed448 *thread_result;
+    const point_ed448 *basepoint;
+    const u8 *scalar;
+    int start_bit;
+    int stop_bit;
+};
+#endif /* FE3C_ED448_COMB_METHOD */
+
 /* Note that the below basepoint is the basepoint on the 4-isogenous curve: y^2 - x^2 = 1 + (d-1)x^2y^2 */
 static const point_ed448 ed448_basepoint = {
     .X = ED448_BASEPOINT_X,
@@ -27,14 +44,13 @@ static const point_ed448 ed448_basepoint = {
     .Z = ED448_BASEPOINT_Z,
     .T = ED448_BASEPOINT_T
 };
-
-#if FE3C_ED448_LATTICE_BASIS_REDUCTION
 static const point_ed448 ed448_basepoint_times_2_225 = {
     .X = ED448_BASEPOINT_TIMES_2_225_X,
     .Y = ED448_BASEPOINT_TIMES_2_225_Y,
     .Z = ED448_BASEPOINT_TIMES_2_225_Z,
     .T = ED448_BASEPOINT_TIMES_2_225_T
 };
+#if FE3C_ED448_LATTICE_BASIS_REDUCTION
 static const point_ed448 ed448_basepoint_times_2_225_plus_1 = {
     .X = ED448_BASEPOINT_TIMES_2_225_PLUS_1_X,
     .Y = ED448_BASEPOINT_TIMES_2_225_PLUS_1_Y,
@@ -158,6 +174,7 @@ static void ed448_points_add(point_ed448 *r, const point_ed448 *p, const point_e
     fe448_mul(r->X, E, r->X);
 }
 
+
 static void ed448_point_double(point_ed448 *r, const point_ed448 *p, int set_extended_coordinate)
 {
     FE3C_SANITY_CHECK(ed448_is_on_curve(p), ED448_STR, ED448_TO_STR(p));
@@ -188,13 +205,6 @@ static void ed448_point_double(point_ed448 *r, const point_ed448 *p, int set_ext
     fe448_add(r->Z, r->Z, r->Z);
     /* F := C+G */
     fe448_add(r->Z, r->Z, G);
-#if FE3C_32BIT
-    /* Note that F is a result of addition of two variables
-     * which themselves were produced by additions. This amounts
-     * to four carries, which is the most we can handle in our 28-bit
-     * representation. Do a weak reduction before proceeding */
-    fe448_weak_reduce(r->Z, r->Z);
-#endif /* FE3C_32BIT */
 
     /* X3 := E*F */
     fe448_mul(r->X, r->T, r->Z);
@@ -441,12 +451,162 @@ static int ed448_decode(point *pgen, const u8 *buf)
     return success;
 }
 
+static inline void ed448_conditional_move(point_ed448 *r, const point_ed448 *p, int move)
+{
+    fe448_conditional_move(r->X, p->X, move);
+    fe448_conditional_move(r->Y, p->Y, move);
+    fe448_conditional_move(r->Z, p->Z, move);
+    fe448_conditional_move(r->T, p->T, move);
+}
+
+#if !FE3C_ED448_COMB_METHOD
+static inline void ed448_conditional_swap(point_ed448 *r, point_ed448 *q, point_ed448 *temp, int swap)
+{
+    /* We could implement this more efficiently, but if someone is using
+     * naive scalar multiplication then they probably value space more
+     * than speed */
+    ed448_conditional_move(temp, r, swap);
+    ed448_conditional_move(r, q, swap);
+    ed448_conditional_move(q, temp, swap);
+}
+
+static void ed448_scalar_multiply_partial(point_ed448 *r, const point_ed448 *p, const u8 *s, int start_bit, int stop_bit)
+{
+    point_ed448 R[3];
+    ed448_identity(&R[0]);
+    R[1] = *p;
+    /* R[2] is an auxiliary buffer for swaps */
+
+    int bits[2] = { 0, 0 };
+    for (int i = start_bit; i >= stop_bit; i--) {
+
+        /* Recover the ith bit of the scalar */
+        bits[0] = array_bit(s, i);
+        ed448_conditional_swap(&R[0], &R[1], &R[2], bits[0] ^ bits[1]);
+        ed448_points_add(&R[1], &R[1], &R[0]);
+        ed448_point_double(&R[0], &R[0], 1);
+        bits[1] = bits[0];
+    }
+
+    ed448_conditional_swap(&R[0], &R[1], &R[2], bits[1]);
+    *r = R[0];
+    purge_secrets(&R, sizeof(R));
+    purge_secrets(bits, sizeof(bits));
+}
+
+static void ed448_ladder_parallel_callback(void *arg)
+{
+    struct ed448_ladder_work *work = arg;
+    ed448_scalar_multiply_partial(work->thread_result, work->basepoint, work->scalar, work->start_bit, work->stop_bit);
+}
+
+static inline void ed448_multiply_basepoint_ladder(point_ed448 *r, const u8 *s)
+{
+    point_ed448 upper_half;
+    struct ed448_ladder_work ladder_work = {
+        .thread_result = &upper_half,
+        .basepoint = &ed448_basepoint_times_2_225,
+        .scalar = s,
+        .start_bit = 447,
+        .stop_bit = 225
+    };
+    struct parallel_work work = {
+        .func = ed448_ladder_parallel_callback,
+        .arg = &ladder_work
+    };
+    int parallel = schedule_parallel_work(&work);
+    if (!parallel) {
+        /* Failed to offload the upper half to a worker thread,
+         * do everything ourselves */
+        ed448_scalar_multiply_partial(r, &ed448_basepoint, s, 447, 0);
+    } else {
+        /* Some of the work is being done in parallel, focus on the lower half */
+        ed448_scalar_multiply_partial(r, &ed448_basepoint, s, 224, 0);
+        /* Wait for the upper half */
+        wait_for_parallel_work();
+        /* Join the halves */
+        ed448_points_add(r, r, &upper_half);
+        purge_secrets(&upper_half, sizeof(upper_half));
+    }
+}
+#else
+static void ed448_comb_loop(point_ed448 *result, const i8 *scalar_recoding, int odd)
+{
+    FE3C_SANITY_CHECK(0 == odd || 1 == odd, NULL);
+
+    ed448_identity(result);
+    ed448_precomp p;
+    for (int i = odd; i < 113; i += 2) {
+
+        /* We let the loop index run twice as fast and skip every other entry of recoding,
+         * but correct for it in the j index (j = i / 2) */
+        ed448_comb_read_precomp(&p, i >> 1, scalar_recoding[i]);
+        ed448_comb_add_precomp(result, result, &p);
+    }
+
+    /* Clear the last accessed precomputed point */
+    purge_secrets(&p, sizeof(p));
+}
+
+static void ed448_comb_parallel_callback(void *arg)
+{
+    struct ed448_comb_work *work = arg;
+    ed448_comb_loop(work->thread_result, work->scalar_recoding, 0);
+}
+
+static inline void ed448_multiply_basepoint_comb(point_ed448 *r, const u8 *s)
+{
+    /* See src/points/points_ed448.c for a description of the comb method algorithm used here.
+     * The core of the algorithm uses two loops iterating respectively over the odd and the even
+     * indices of the signed digit recoding of the scalar. Try offloading one of the loops to a
+     * separate thread to exploit parallelism. If not possible, fall back to a serial algorithm. */
+    i8 recoding[113];
+    ed448_comb_recode_scalar_into_width4_sd(recoding, s);
+
+    point_ed448 even_part;
+    struct ed448_comb_work comb_work = {
+        .thread_result = &even_part,
+        .scalar_recoding = recoding
+    };
+    struct parallel_work work = {
+        .func = ed448_comb_parallel_callback,
+        .arg = &comb_work
+    };
+    int parallel = schedule_parallel_work(&work);
+    if (!parallel) {
+
+        /* Failed to offload the even indices loop to a worker thread,
+         * fine... we'll do it ourselves */
+        ed448_comb_loop(&even_part, recoding, 0);
+    }
+
+    /* Do the odd indices loop */
+    ed448_comb_loop(r, recoding, 1);
+
+    ed448_point_double(r, r, 0);
+    ed448_point_double(r, r, 0);
+    ed448_point_double(r, r, 0);
+    ed448_point_double(r, r, 1);
+
+    if (parallel)
+        wait_for_parallel_work();
+
+    /* Add the odd and even results */
+    ed448_points_add(r, r, &even_part);
+
+    /* Clear the recoding of the secret scalar from the stack */
+    purge_secrets(recoding, sizeof(recoding));
+    /* Clear the partial result from the stack */
+    purge_secrets(&even_part, sizeof(even_part));
+}
+#endif /* !FE3C_ED448_COMB_METHOD */
+
 static inline void ed448_map_scalar_to_isogenous_curve(u8 r[57], const u8 s[57])
 {
     /* Divide the scalar by four, i.e. the order of the isogeny, since applying the
      * isogeny and its dual is equivalent to multiplying by four (the order) */
 
-    static const u8 group_order[] = {
+    const u8 group_order[] = {
         0xf3, 0x44, 0x58, 0xab, 0x92, 0xc2, 0x78, 0x23,
         0x55, 0x8f, 0xc5, 0x8d, 0x72, 0xc2, 0x6c, 0x21,
         0x90, 0x36, 0xd6, 0xae, 0x49, 0xdb, 0x4e, 0xc4,
@@ -473,6 +633,7 @@ static inline void ed448_map_scalar_to_isogenous_curve(u8 r[57], const u8 s[57])
 
     for (int i = 0; i < 56; i++)
         r[i] = (r[i + 1] << 6) | (r[i] >> 2);
+
     r[56] = (u8)(chain << 6) | (r[56] >> 2);
 }
 
@@ -481,50 +642,11 @@ static void ed448_multiply_basepoint(point *rgen, const u8 *sraw)
     point_ed448 *r = (point_ed448 *) rgen;
     u8 s[57];
     ed448_map_scalar_to_isogenous_curve(s, sraw);
-
-    /* See src/points/points_ed448.c for a description of the comb method algorithm used here.
-     * The core of the algorithm uses two loops iterating respectively over the odd and the even
-     * indices of the signed digit recoding of the scalar. Try offloading one of the loops to a
-     * separate thread to exploit parallelism. If not possible, fall back to a serial algorithm. */
-    i8 recoding[113];
-    ed448_comb_recode_scalar_into_width4_sd(recoding, s);
-
-    point_ed448 even_part;
-    comb_thread_work thread_work = {
-        .thread_result = (point *) &even_part,
-        .scalar_recoding = recoding,
-        .curve_id = EDDSA_CURVE_ED448
-    };
-
-    int parallel = comb_dispatch_loop_to_thread(&thread_work);
-    if (!parallel) {
-
-        /* Failed to offload the even indices loop to a worker thread,
-         * fine... we'll do it ourselves */
-        ed448_comb_loop(&even_part, recoding, 0);
-    }
-
-    /* Do the odd indices loop */
-    ed448_comb_loop(r, recoding, 1);
-
-    ed448_point_double(r, r, 0);
-    ed448_point_double(r, r, 0);
-    ed448_point_double(r, r, 0);
-    ed448_point_double(r, r, 1);
-
-    if (parallel) {
-
-        /* Wait for the worker to finish */
-        comb_join_worker_thread();
-    }
-
-    /* Add the odd and even results */
-    ed448_points_add(r, r, &even_part);
-
-    /* Clear the recoding of the secret scalar from the stack */
-    purge_secrets(recoding, sizeof(recoding));
-    /* Clear the partial result from the stack */
-    purge_secrets(&even_part, sizeof(even_part));
+#if !FE3C_ED448_COMB_METHOD
+    ed448_multiply_basepoint_ladder(r, s);
+#else
+    ed448_multiply_basepoint_comb(r, s);
+#endif /* !FE3C_ED448_COMB_METHOD */
 }
 
 #if !FE3C_ED448_LATTICE_BASIS_REDUCTION
@@ -582,9 +704,6 @@ static int ed448_check_group_equation(point *pubkey_gen, point *commit_gen, cons
      * value of [2^{224}]B to cut the number of point doublings in half.
      */
 
-    /* TODO: By making delta and delta_challenge 32 bytes we are leaking the internal
-     * workings of ed448_lattice_basis_reduction. Clean this up, basis-reduced
-     * values are 225 bits at most so 29 bytes. */
     u8 delta[32];
     int delta_negative;
     u8 delta_challenge[32];
