@@ -8,6 +8,7 @@ extern "C" {
 
 #include <stddef.h>
 #include <stdint.h>
+#include <inttypes.h>
 
 typedef uint64_t u64;
 typedef uint32_t u32;
@@ -32,7 +33,7 @@ typedef int8_t i8;
 /* Define POSIX-like struct iovec, but use const void pointer as we
  * only want to support gathering and not scattering */
 struct iovec {
-    const void * iov_base;
+    const void *iov_base;
     size_t iov_len;
 };
 

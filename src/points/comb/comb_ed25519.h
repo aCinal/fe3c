@@ -28,13 +28,13 @@ typedef point_ed25519 ed25519_precomp;
 
 #endif /* !FE3C_ED25519_SMALL_PRECOMPUTATION */
 
-void ed25519_comb_read_precomp(ed25519_precomp * r, u8 j, i8 ijt);
-void ed25519_comb_add_precomp(point_ed25519 * r, const point_ed25519 * p, const ed25519_precomp * q);
+void ed25519_comb_read_precomp(ed25519_precomp *r, u8 j, i8 ijt);
+void ed25519_comb_add_precomp(point_ed25519 *r, const point_ed25519 *p, const ed25519_precomp *q);
 
 extern const ed25519_precomp_internal ed25519_comb_precomp[32][8];
 
-static inline void ed25519_comb_recode_scalar_into_width4_sd(i8 recoding[64], const u8 s[32]) {
-
+static inline void ed25519_comb_recode_scalar_into_width4_sd(i8 recoding[64], const u8 s[32])
+{
     i8 carry;
 
     /* Split the scalar into base-16 unsigned representation */

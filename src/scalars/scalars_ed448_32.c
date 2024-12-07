@@ -33,8 +33,8 @@
 #define GROUP_ORDER_SUB_LIMB_6  0x63bb124
 #define GROUP_ORDER_SUB_LIMB_7  0x8335dc1
 
-static inline u32 load_32(const u8 src[8]) {
-
+static inline u32 load_32(const u8 src[4])
+{
     /* Integer encoding is always little endian according to RFC 8032 */
     u32 dst;
 #if FE3C_LILENDIAN_TARGET
@@ -50,8 +50,8 @@ static inline u32 load_32(const u8 src[8]) {
     return dst;
 }
 
-static int ed448_scalar_is_canonical(const u8 * s) {
-
+static int ed448_scalar_is_canonical(const u8 *s)
+{
     /* Load the scalar into fourteen 32-bit words (extended to 64 bits) */
     u64 s0  = load_32(&s[ 0 * 4]);
     u64 s1  = load_32(&s[ 1 * 4]);
@@ -96,8 +96,8 @@ static int ed448_scalar_is_canonical(const u8 * s) {
     return (s13 >> 63) & (s[56] == 0);
 }
 
-static void ed448_scalar_reduce(u8 * s) {
-
+static void ed448_scalar_reduce(u8 *s)
+{
     /* Ed448 reduction inputs can be 114 bytes long. Use intermediate 28-bit reduced-radix
      * representation during reduction. */
 
@@ -582,8 +582,8 @@ static void ed448_scalar_reduce(u8 * s) {
     purge_secrets(&mask, sizeof(mask));
 }
 
-static void ed448_scalars_muladd(u8 * r, const u8 * aa, const u8 * bb, const u8 * cc) {
-
+static void ed448_scalars_muladd(u8 *r, const u8 *aa, const u8 *bb, const u8 *cc)
+{
     /* Ed448 multiplication+addition inputs must be 57 (56) bytes long. Use intermediate
      * 28-bit reduced-radix representation. */
 

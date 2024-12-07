@@ -2,8 +2,8 @@
 #include <fe3c/eddsa.h>
 
 #if FE3C_FUNCTIONAL_TESTS_HOST
-TEST_GROUP(EDDSA_WYCHEPROOF_ED448) {
-
+TEST_GROUP(EDDSA_WYCHEPROOF_ED448)
+{
     /* Test vectors taken from Project Wycheproof (https://github.com/google/wycheproof/). Note that vectors tagged
      * as "SignatureWithGarbage", "TruncatedSignature", "CompressedSignature" are not included since their fault lies
      * in having signatures of invalid length. Fe3C does not perform checks on signature length and instead exposes
@@ -14,8 +14,8 @@ TEST_GROUP(EDDSA_WYCHEPROOF_ED448) {
 };
 #endif /* FE3C_FUNCTIONAL_TESTS_HOST */
 
-FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId1) {
-
+FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId1)
+{
     const u8 message[] = \
         "";
     const u8 signature[] = \
@@ -57,8 +57,8 @@ FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId1) {
     FAIL_UNLESS_EQUAL(1, verified);
 }
 
-FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId2) {
-
+FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId2)
+{
     const u8 message[] = \
         "\x78";
     const u8 signature[] = \
@@ -100,8 +100,8 @@ FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId2) {
     FAIL_UNLESS_EQUAL(1, verified);
 }
 
-FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId3) {
-
+FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId3)
+{
     const u8 message[] = \
         "\x54\x65\x73\x74";
     const u8 signature[] = \
@@ -143,8 +143,8 @@ FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId3) {
     FAIL_UNLESS_EQUAL(1, verified);
 }
 
-FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId4) {
-
+FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId4)
+{
     const u8 message[] = \
         "\x48\x65\x6c\x6c\x6f";
     const u8 signature[] = \
@@ -186,8 +186,8 @@ FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId4) {
     FAIL_UNLESS_EQUAL(1, verified);
 }
 
-FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId5) {
-
+FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId5)
+{
     const u8 message[] = \
         "\x31\x32\x33\x34\x30\x30";
     const u8 signature[] = \
@@ -229,8 +229,8 @@ FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId5) {
     FAIL_UNLESS_EQUAL(1, verified);
 }
 
-FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId6) {
-
+FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId6)
+{
     const u8 message[] = \
         "\x00\x00\x00\x00\x00\x00\x00\x00" \
         "\x00\x00\x00\x00";
@@ -273,8 +273,8 @@ FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId6) {
     FAIL_UNLESS_EQUAL(1, verified);
 }
 
-FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId7) {
-
+FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId7)
+{
     const u8 message[] = \
         "\x61\x61\x61\x61\x61\x61\x61\x61" \
         "\x61\x61\x61\x61\x61\x61\x61\x61" \
@@ -324,8 +324,8 @@ FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId7) {
     FAIL_UNLESS_EQUAL(1, verified);
 }
 
-FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId8) {
-
+FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId8)
+{
     const u8 message[] = \
         "\x20\x21\x22\x23\x24\x25\x26\x27" \
         "\x28\x29\x2a\x2b\x2c\x2d\x2e\x2f" \
@@ -375,8 +375,8 @@ FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId8) {
     FAIL_UNLESS_EQUAL(1, verified);
 }
 
-FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId9) {
-
+FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId9)
+{
     const u8 message[] = \
         "\xff\xff\xff\xff\xff\xff\xff\xff" \
         "\xff\xff\xff\xff\xff\xff\xff\xff";
@@ -419,8 +419,8 @@ FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId9) {
     FAIL_UNLESS_EQUAL(1, verified);
 }
 
-FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId10) {
-
+FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId10)
+{
     const u8 message[] = \
         "\x3f";
     const u8 signature[] = \
@@ -462,8 +462,8 @@ FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId10) {
     FAIL_UNLESS_EQUAL(0, verified);
 }
 
-FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId11) {
-
+FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId11)
+{
     const u8 message[] = \
         "\x3f";
     const u8 signature[] = \
@@ -505,8 +505,8 @@ FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId11) {
     FAIL_UNLESS_EQUAL(0, verified);
 }
 
-FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId12) {
-
+FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId12)
+{
     const u8 message[] = \
         "\x3f";
     const u8 signature[] = \
@@ -548,8 +548,8 @@ FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId12) {
     FAIL_UNLESS_EQUAL(0, verified);
 }
 
-FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId13) {
-
+FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId13)
+{
     const u8 message[] = \
         "\x3f";
     const u8 signature[] = \
@@ -591,8 +591,8 @@ FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId13) {
     FAIL_UNLESS_EQUAL(0, verified);
 }
 
-FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId14) {
-
+FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId14)
+{
     const u8 message[] = \
         "\x3f";
     const u8 signature[] = \
@@ -634,8 +634,8 @@ FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId14) {
     FAIL_UNLESS_EQUAL(0, verified);
 }
 
-FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId15) {
-
+FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId15)
+{
     const u8 message[] = \
         "\x3f";
     const u8 signature[] = \
@@ -677,8 +677,8 @@ FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId15) {
     FAIL_UNLESS_EQUAL(0, verified);
 }
 
-FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId16) {
-
+FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId16)
+{
     const u8 message[] = \
         "\x3f";
     const u8 signature[] = \
@@ -720,8 +720,8 @@ FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId16) {
     FAIL_UNLESS_EQUAL(0, verified);
 }
 
-FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId17) {
-
+FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId17)
+{
     const u8 message[] = \
         "\x3f";
     const u8 signature[] = \
@@ -763,8 +763,8 @@ FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId17) {
     FAIL_UNLESS_EQUAL(0, verified);
 }
 
-FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId18) {
-
+FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId18)
+{
     const u8 message[] = \
         "\x3f";
     const u8 signature[] = \
@@ -806,8 +806,8 @@ FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId18) {
     FAIL_UNLESS_EQUAL(0, verified);
 }
 
-FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId19) {
-
+FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId19)
+{
     const u8 message[] = \
         "\x3f";
     const u8 signature[] = \
@@ -849,8 +849,8 @@ FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId19) {
     FAIL_UNLESS_EQUAL(0, verified);
 }
 
-FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId20) {
-
+FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId20)
+{
     const u8 message[] = \
         "\x3f";
     const u8 signature[] = \
@@ -892,8 +892,8 @@ FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId20) {
     FAIL_UNLESS_EQUAL(0, verified);
 }
 
-FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId21) {
-
+FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId21)
+{
     const u8 message[] = \
         "\x3f";
     const u8 signature[] = \
@@ -935,8 +935,8 @@ FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId21) {
     FAIL_UNLESS_EQUAL(0, verified);
 }
 
-FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId22) {
-
+FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId22)
+{
     const u8 message[] = \
         "\x3f";
     const u8 signature[] = \
@@ -978,8 +978,8 @@ FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId22) {
     FAIL_UNLESS_EQUAL(0, verified);
 }
 
-FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId23) {
-
+FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId23)
+{
     const u8 message[] = \
         "\x3f";
     const u8 signature[] = \
@@ -1021,8 +1021,8 @@ FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId23) {
     FAIL_UNLESS_EQUAL(0, verified);
 }
 
-FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId24) {
-
+FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId24)
+{
     const u8 message[] = \
         "\x3f";
     const u8 signature[] = \
@@ -1064,8 +1064,8 @@ FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId24) {
     FAIL_UNLESS_EQUAL(0, verified);
 }
 
-FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId25) {
-
+FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId25)
+{
     const u8 message[] = \
         "\x3f";
     const u8 signature[] = \
@@ -1107,8 +1107,8 @@ FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId25) {
     FAIL_UNLESS_EQUAL(0, verified);
 }
 
-FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId26) {
-
+FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId26)
+{
     const u8 message[] = \
         "\x3f";
     const u8 signature[] = \
@@ -1150,8 +1150,8 @@ FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId26) {
     FAIL_UNLESS_EQUAL(0, verified);
 }
 
-FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId27) {
-
+FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId27)
+{
     const u8 message[] = \
         "\x3f";
     const u8 signature[] = \
@@ -1193,8 +1193,8 @@ FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId27) {
     FAIL_UNLESS_EQUAL(0, verified);
 }
 
-FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId28) {
-
+FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId28)
+{
     const u8 message[] = \
         "\x3f";
     const u8 signature[] = \
@@ -1236,8 +1236,8 @@ FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId28) {
     FAIL_UNLESS_EQUAL(0, verified);
 }
 
-FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId29) {
-
+FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId29)
+{
     const u8 message[] = \
         "\x3f";
     const u8 signature[] = \
@@ -1279,8 +1279,8 @@ FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId29) {
     FAIL_UNLESS_EQUAL(0, verified);
 }
 
-FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId42) {
-
+FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId42)
+{
     const u8 message[] = \
         "\x31\x32\x33\x34\x30\x30";
     const u8 signature[] = \
@@ -1322,8 +1322,8 @@ FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId42) {
     FAIL_UNLESS_EQUAL(0, verified);
 }
 
-FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId43) {
-
+FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId43)
+{
     const u8 message[] = \
         "\x31\x32\x33\x34\x30\x30";
     const u8 signature[] = \
@@ -1365,8 +1365,8 @@ FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId43) {
     FAIL_UNLESS_EQUAL(0, verified);
 }
 
-FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId44) {
-
+FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId44)
+{
     const u8 message[] = \
         "\x31\x32\x33\x34\x30\x30";
     const u8 signature[] = \
@@ -1408,8 +1408,8 @@ FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId44) {
     FAIL_UNLESS_EQUAL(0, verified);
 }
 
-FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId45) {
-
+FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId45)
+{
     const u8 message[] = \
         "\x31\x32\x33\x34\x30\x30";
     const u8 signature[] = \
@@ -1451,8 +1451,8 @@ FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId45) {
     FAIL_UNLESS_EQUAL(0, verified);
 }
 
-FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId46) {
-
+FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId46)
+{
     const u8 message[] = \
         "\x31\x32\x33\x34\x30\x30";
     const u8 signature[] = \
@@ -1494,8 +1494,8 @@ FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId46) {
     FAIL_UNLESS_EQUAL(0, verified);
 }
 
-FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId47) {
-
+FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId47)
+{
     const u8 message[] = \
         "\x31\x32\x33\x34\x30\x30";
     const u8 signature[] = \
@@ -1537,8 +1537,8 @@ FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId47) {
     FAIL_UNLESS_EQUAL(0, verified);
 }
 
-FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId48) {
-
+FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId48)
+{
     const u8 message[] = \
         "\x31\x32\x33\x34\x30\x30";
     const u8 signature[] = \
@@ -1580,8 +1580,8 @@ FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId48) {
     FAIL_UNLESS_EQUAL(0, verified);
 }
 
-FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId49) {
-
+FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId49)
+{
     const u8 message[] = \
         "\x31\x32\x33\x34\x30\x30";
     const u8 signature[] = \
@@ -1623,8 +1623,8 @@ FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId49) {
     FAIL_UNLESS_EQUAL(0, verified);
 }
 
-FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId50) {
-
+FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId50)
+{
     const u8 message[] = \
         "\x31\x32\x33\x34\x30\x30";
     const u8 signature[] = \
@@ -1666,8 +1666,8 @@ FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId50) {
     FAIL_UNLESS_EQUAL(0, verified);
 }
 
-FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId51) {
-
+FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId51)
+{
     const u8 message[] = \
         "\x31\x32\x33\x34\x30\x30";
     const u8 signature[] = \
@@ -1709,8 +1709,8 @@ FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId51) {
     FAIL_UNLESS_EQUAL(0, verified);
 }
 
-FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId52) {
-
+FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId52)
+{
     const u8 message[] = \
         "\x31\x32\x33\x34\x30\x30";
     const u8 signature[] = \
@@ -1752,8 +1752,8 @@ FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId52) {
     FAIL_UNLESS_EQUAL(0, verified);
 }
 
-FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId53) {
-
+FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId53)
+{
     const u8 message[] = \
         "\x31\x32\x33\x34\x30\x30";
     const u8 signature[] = \
@@ -1795,8 +1795,8 @@ FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId53) {
     FAIL_UNLESS_EQUAL(0, verified);
 }
 
-FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId54) {
-
+FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId54)
+{
     const u8 message[] = \
         "\x31\x32\x33\x34\x30\x30";
     const u8 signature[] = \
@@ -1838,8 +1838,8 @@ FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId54) {
     FAIL_UNLESS_EQUAL(0, verified);
 }
 
-FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId55) {
-
+FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId55)
+{
     const u8 message[] = \
         "\x31\x32\x33\x34\x30\x30";
     const u8 signature[] = \
@@ -1881,8 +1881,8 @@ FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId55) {
     FAIL_UNLESS_EQUAL(0, verified);
 }
 
-FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId56) {
-
+FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId56)
+{
     const u8 message[] = \
         "\x31\x32\x33\x34\x30\x30";
     const u8 signature[] = \
@@ -1924,8 +1924,8 @@ FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId56) {
     FAIL_UNLESS_EQUAL(0, verified);
 }
 
-FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId57) {
-
+FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId57)
+{
     const u8 message[] = \
         "\x31\x32\x33\x34\x30\x30";
     const u8 signature[] = \
@@ -1967,8 +1967,8 @@ FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId57) {
     FAIL_UNLESS_EQUAL(0, verified);
 }
 
-FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId58) {
-
+FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId58)
+{
     const u8 message[] = \
         "\x31\x32\x33\x34\x30\x30";
     const u8 signature[] = \
@@ -2010,8 +2010,8 @@ FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId58) {
     FAIL_UNLESS_EQUAL(0, verified);
 }
 
-FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId59) {
-
+FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId59)
+{
     const u8 message[] = \
         "\x31\x32\x33\x34\x30\x30";
     const u8 signature[] = \
@@ -2053,8 +2053,8 @@ FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId59) {
     FAIL_UNLESS_EQUAL(0, verified);
 }
 
-FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId60) {
-
+FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId60)
+{
     const u8 message[] = \
         "\x31\x32\x33\x34\x30\x30";
     const u8 signature[] = \
@@ -2096,8 +2096,8 @@ FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId60) {
     FAIL_UNLESS_EQUAL(0, verified);
 }
 
-FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId61) {
-
+FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId61)
+{
     const u8 message[] = \
         "\x31\x32\x33\x34\x30\x30";
     const u8 signature[] = \
@@ -2139,8 +2139,8 @@ FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId61) {
     FAIL_UNLESS_EQUAL(0, verified);
 }
 
-FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId62) {
-
+FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId62)
+{
     const u8 message[] = \
         "\x31\x32\x33\x34\x30\x30";
     const u8 signature[] = \
@@ -2182,8 +2182,8 @@ FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId62) {
     FAIL_UNLESS_EQUAL(0, verified);
 }
 
-FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId63) {
-
+FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId63)
+{
     const u8 message[] = \
         "\x31\x32\x33\x34\x30\x30";
     const u8 signature[] = \
@@ -2225,8 +2225,8 @@ FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId63) {
     FAIL_UNLESS_EQUAL(0, verified);
 }
 
-FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId64) {
-
+FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId64)
+{
     const u8 message[] = \
         "\x31\x32\x33\x34\x30\x30";
     const u8 signature[] = \
@@ -2268,8 +2268,8 @@ FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId64) {
     FAIL_UNLESS_EQUAL(0, verified);
 }
 
-FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId65) {
-
+FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId65)
+{
     const u8 message[] = \
         "\x31\x32\x33\x34\x30\x30";
     const u8 signature[] = \
@@ -2311,8 +2311,8 @@ FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId65) {
     FAIL_UNLESS_EQUAL(0, verified);
 }
 
-FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId66) {
-
+FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId66)
+{
     const u8 message[] = \
         "\x31\x32\x33\x34\x30\x30";
     const u8 signature[] = \
@@ -2354,8 +2354,8 @@ FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId66) {
     FAIL_UNLESS_EQUAL(0, verified);
 }
 
-FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId67) {
-
+FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId67)
+{
     const u8 message[] = \
         "\x31\x32\x33\x34\x30\x30";
     const u8 signature[] = \
@@ -2397,8 +2397,8 @@ FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId67) {
     FAIL_UNLESS_EQUAL(0, verified);
 }
 
-FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId68) {
-
+FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId68)
+{
     const u8 message[] = \
         "\x31\x32\x33\x34\x30\x30";
     const u8 signature[] = \
@@ -2440,8 +2440,8 @@ FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId68) {
     FAIL_UNLESS_EQUAL(0, verified);
 }
 
-FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId69) {
-
+FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId69)
+{
     const u8 message[] = \
         "\x31\x32\x33\x34\x30\x30";
     const u8 signature[] = \
@@ -2483,8 +2483,8 @@ FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId69) {
     FAIL_UNLESS_EQUAL(0, verified);
 }
 
-FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId70) {
-
+FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId70)
+{
     const u8 message[] = \
         "\x54\x65\x73\x74";
     const u8 signature[] = \
@@ -2526,8 +2526,8 @@ FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId70) {
     FAIL_UNLESS_EQUAL(0, verified);
 }
 
-FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId71) {
-
+FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId71)
+{
     const u8 message[] = \
         "\x54\x65\x73\x74";
     const u8 signature[] = \
@@ -2569,8 +2569,8 @@ FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId71) {
     FAIL_UNLESS_EQUAL(0, verified);
 }
 
-FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId72) {
-
+FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId72)
+{
     const u8 message[] = \
         "\x54\x65\x73\x74";
     const u8 signature[] = \
@@ -2612,8 +2612,8 @@ FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId72) {
     FAIL_UNLESS_EQUAL(0, verified);
 }
 
-FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId73) {
-
+FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId73)
+{
     const u8 message[] = \
         "\x54\x65\x73\x74";
     const u8 signature[] = \
@@ -2655,8 +2655,8 @@ FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId73) {
     FAIL_UNLESS_EQUAL(0, verified);
 }
 
-FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId74) {
-
+FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId74)
+{
     const u8 message[] = \
         "\x54\x65\x73\x74";
     const u8 signature[] = \
@@ -2698,8 +2698,8 @@ FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId74) {
     FAIL_UNLESS_EQUAL(0, verified);
 }
 
-FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId75) {
-
+FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId75)
+{
     const u8 message[] = \
         "\x54\x65\x73\x74";
     const u8 signature[] = \
@@ -2741,8 +2741,8 @@ FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId75) {
     FAIL_UNLESS_EQUAL(0, verified);
 }
 
-FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId76) {
-
+FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId76)
+{
     const u8 message[] = \
         "\x54\x65\x73\x74";
     const u8 signature[] = \
@@ -2784,8 +2784,8 @@ FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId76) {
     FAIL_UNLESS_EQUAL(0, verified);
 }
 
-FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId77) {
-
+FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId77)
+{
     const u8 message[] = \
         "\x54\x65\x73\x74";
     const u8 signature[] = \
@@ -2827,8 +2827,8 @@ FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId77) {
     FAIL_UNLESS_EQUAL(0, verified);
 }
 
-FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId78) {
-
+FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId78)
+{
     const u8 message[] = \
         "";
     const u8 signature[] = \
@@ -2870,8 +2870,8 @@ FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId78) {
     FAIL_UNLESS_EQUAL(1, verified);
 }
 
-FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId79) {
-
+FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId79)
+{
     const u8 message[] = \
         "\x03";
     const u8 signature[] = \
@@ -2913,8 +2913,8 @@ FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId79) {
     FAIL_UNLESS_EQUAL(1, verified);
 }
 
-FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId80) {
-
+FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId80)
+{
     const u8 message[] = \
         "\x03";
     const u8 signature[] = \
@@ -2956,8 +2956,8 @@ FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId80) {
     FAIL_UNLESS_EQUAL(0, verified);
 }
 
-FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId81) {
-
+FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId81)
+{
     const u8 message[] = \
         "\x0c\x3e\x54\x40\x74\xec\x63\xb0" \
         "\x26\x5e\x0c";
@@ -3000,8 +3000,8 @@ FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId81) {
     FAIL_UNLESS_EQUAL(1, verified);
 }
 
-FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId82) {
-
+FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId82)
+{
     const u8 message[] = \
         "\x64\xa6\x5f\x3c\xde\xdc\xdd\x66" \
         "\x81\x1e\x29\x15";
@@ -3044,8 +3044,8 @@ FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId82) {
     FAIL_UNLESS_EQUAL(1, verified);
 }
 
-FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId83) {
-
+FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId83)
+{
     const u8 message[] = \
         "\x64\xa6\x5f\x3c\xde\xdc\xdd\x66" \
         "\x81\x1e\x29\x15\xe7";
@@ -3088,8 +3088,8 @@ FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId83) {
     FAIL_UNLESS_EQUAL(1, verified);
 }
 
-FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId84) {
-
+FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId84)
+{
     const u8 message[] = \
         "\xbd\x0f\x6a\x37\x47\xcd\x56\x1b" \
         "\xdd\xdf\x46\x40\xa3\x32\x46\x1a" \
@@ -3138,8 +3138,8 @@ FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId84) {
     FAIL_UNLESS_EQUAL(1, verified);
 }
 
-FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId85) {
-
+FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId85)
+{
     const u8 message[] = \
         "\x15\x77\x75\x32\xb0\xbd\xd0\xd1" \
         "\x38\x9f\x63\x6c\x5f\x6b\x9b\xa7" \
@@ -3212,8 +3212,8 @@ FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId85) {
     FAIL_UNLESS_EQUAL(1, verified);
 }
 
-FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId86) {
-
+FE3C_TEST(EDDSA_WYCHEPROOF_ED448, TcId86)
+{
     const u8 message[] = \
         "\x6d\xdf\x80\x2e\x1a\xae\x49\x86" \
         "\x93\x5f\x7f\x98\x1b\xa3\xf0\x35" \

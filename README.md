@@ -100,31 +100,55 @@ Fe3C uses *cofactored* verification. This means that the Schnorr verification eq
 Below is the directory tree of the repository:
 
     .
-    ├── esp32                       # ESP32-specific sources and build files
-    │   └── components              # Directory to be set in esp-idf as EXTRA_COMPONENT_DIRS
-    │       └── cementite
-    │           ├── port            # Optimized ESP32-specific implementations of selected components
-    │           └── test            # ESP32-specific test cases
-    ├── examples                    # Example applications
-    │   ├── esp32
-    │   └── host
-    ├── include                     # Public interface headers
-    ├── src                         # Common source files
-    │   ├── curves                  # Edwards curves objects
-    │   ├── eddsa                   # Signature and verification algorithms
-    │   ├── field_elements          # Finite field arithmetic (mod p)
-    │   ├── hash_functions          # SHA-512 and SHAKE-256 implementations
-    │   ├── points                  # Group arithmetic
-    │   ├── scalars                 # Finite field arithmetic (mod L)
-    │   └── utils
+    ├── esp32                                         # ESP32-specific sources and build files
+    │   └── components                                # Directory to point EXTRA_COMPONENT_DIRS to in esp-idf
+    │       └── cementite
+    │           ├── include
+    │           │   └── field_elements
+    │           ├── port                              # Target-specific implementations
+    │           │   └── xtensa                        # Xtensa-specific implementations
+    │           │       ├── field_elements
+    │           │       ├── hash_functions
+    │           │       ├── points
+    │           │       │   └── comb
+    │           │       │       └── precomputation
+    │           │       └── scalars
+    │           └── test                              # ESP32 unit tests
+    │               └── port
+    │                   └── xtensa
+    │                       └── field_elements
+    ├── examples                                      # Example applications
+    │   ├── esp32
+    │   │   └── main
+    │   └── host
+    ├── include                                       # Public interface headers
+    │   └── fe3c
+    ├── src                                           # Common/reference source files
+    │   ├── curves                                    # Edwards curves objects
+    │   ├── eddsa                                     # Signature and verification algorithms (public functions)
+    │   ├── field_elements                            # Finite field arithmetic (mod p)
+    │   ├── hash_functions                            # SHA-512 and SHAKE-256 implementations
+    │   ├── points                                    # Group arithmetic
+    │   │   ├── comb                                  # Comb method
+    │   │   │   └── precomputation
+    │   │   └── lattice_basis_reduction               # Pornin's lattice basis reduction
+    │   ├── scalars                                   # Scalar field arithmetic (mod L)
+    │   └── utils                                     # Utility functions
     └── tests
-        ├── benchmarks              # Performance benchmarks
-        │   ├── esp32
-        │   └── host
-        └── functional              # Functional (unit) tests
-            ├── esp32               # Test suite build files for ESP32
-            ├── host                # Test suite build files for the host machine
-            └── src                 # Common unit test sources
+        ├── benchmarks                                # Performance benchmarks
+        │   ├── esp32
+        │   │   └── main
+        │   └── host
+        └── functional                                # Functional (unit) tests
+            ├── esp32                                 # Test suite build files for ESP32
+            │   └── main
+            ├── host                                  # Test suite build files for the host machine
+            │   ├── eddsa
+            │   ├── field_elements
+            │   ├── hash_functions
+            │   ├── points
+            │   └── scalars
+            └── src                                   # Common unit test sources
                 ├── eddsa
                 ├── field_elements
                 ├── hash_functions

@@ -23,8 +23,8 @@ const fe25519 fe25519_i = {
     0x20ea0b0, 0x186c9d2, 0x8f189d, 0x35697f, 0xbd0c60, 0x1fbd7a7, 0x2804c9e, 0x1e16569, 0x4fc1d, 0xae0c92
 };
 
-static inline u32 _load_32(const u8 src[4]) {
-
+static inline u32 _load_32(const u8 src[4])
+{
     /* Integer encoding is always little endian according to RFC 8032 */
     u32 dst;
 #if FE3C_LILENDIAN_TARGET
@@ -40,8 +40,8 @@ static inline u32 _load_32(const u8 src[4]) {
     return dst;
 }
 
-static inline void _store_32(u8 dst[4], u32 src) {
-
+static inline void store_32(u8 dst[4], u32 src)
+{
     /* Integer encoding is always little endian according to RFC 8032 */
 #if FE3C_LILENDIAN_TARGET
     (void) memcpy(dst, &src, 4);
@@ -59,8 +59,8 @@ static inline void _store_32(u8 dst[4], u32 src) {
  * @param r Destination field element
  * @param a Source field element
  */
-void fe25519_copy(fe25519 r, const fe25519 a) {
-
+void fe25519_copy(fe25519 r, const fe25519 a)
+{
     r[0] = a[0];
     r[1] = a[1];
     r[2] = a[2];
@@ -78,8 +78,8 @@ void fe25519_copy(fe25519 r, const fe25519 a) {
  * @param a Field element to check
  * @return 1 if a is in canonical form, 0 otherwise
  */
-static inline int fe25519_is_canonical(const fe25519 a) {
-
+static inline int fe25519_is_canonical(const fe25519 a)
+{
     int canonical = 1;
     canonical &= (a[0] <  0x3ffffed);
     canonical &= (a[1] <= 0x1ffffff);
@@ -101,8 +101,8 @@ static inline int fe25519_is_canonical(const fe25519 a) {
  * @return 1 if a = b, 0 otherwise
  * @note The elements should be reduced by the caller first
  */
-int fe25519_equal(const fe25519 a, const fe25519 b) {
-
+int fe25519_equal(const fe25519 a, const fe25519 b)
+{
     fe_limb_type sum = 0;
 
     /* Do an XOR between the two elements, if they are equal this should amount
@@ -137,8 +137,8 @@ int fe25519_equal(const fe25519 a, const fe25519 b) {
  * @param[in] move Flag deciding on the branch, if set to 0, r ::= r, and if set to 1, r ::= a
  * @note If move is set to anything other than 0 or 1, the results are undefined
  */
-void fe25519_conditional_move(fe25519 r, const fe25519 a, int move) {
-
+void fe25519_conditional_move(fe25519 r, const fe25519 a, int move)
+{
     /* Set the mask to 0x00000000 if move is 0 or to 0xFFFFFFFF if it is 1 */
     const fe_limb_type mask = (fe_limb_type)( -(i32) move );
 
@@ -201,8 +201,8 @@ void fe25519_conditional_move(fe25519 r, const fe25519 a, int move) {
  * @param[in] a Field element to be reduced
  * @note Note that the result need to be in canonical form, i.e. between 0 and p-1, it need only be less than 2p
  */
-void fe25519_weak_reduce(fe25519 r, const fe25519 a) {
-
+void fe25519_weak_reduce(fe25519 r, const fe25519 a)
+{
     /* Do a "relaxed" reduction (to borrow terminology form Michael Scott's "Slothful reduction" paper)
      * - this ensures the result is less than 2p (where p = 2^255 - 19) */
 
@@ -280,8 +280,8 @@ void fe25519_weak_reduce(fe25519 r, const fe25519 a) {
  * @param[in] a Field element to be reduced
  * @note The result is guaranteed to be in canonical form, i.e. between 0 and p-1
  */
-void fe25519_strong_reduce(fe25519 r, const fe25519 a) {
-
+void fe25519_strong_reduce(fe25519 r, const fe25519 a)
+{
     fe25519_weak_reduce(r, a);
     /* After the weak reduction r is congruent to a and less than 2p */
 
@@ -326,8 +326,8 @@ void fe25519_strong_reduce(fe25519 r, const fe25519 a) {
  * @param[out] r The result of negation
  * @param[in] a Element to be negated
  */
-void fe25519_neg(fe25519 r, const fe25519 a) {
-
+void fe25519_neg(fe25519 r, const fe25519 a)
+{
     /* Check against underflow */
     FE3C_SANITY_CHECK(a[0] <= 0x7ffffda, FE25519_STR, FE25519_TO_STR(a));
     FE3C_SANITY_CHECK(a[1] <= 0x3fffffe, FE25519_STR, FE25519_TO_STR(a));
@@ -359,8 +359,8 @@ void fe25519_neg(fe25519 r, const fe25519 a) {
  * @param[in] a Operand
  * @param[in] b Operand
  */
-void fe25519_add(fe25519 r, const fe25519 a, const fe25519 b) {
-
+void fe25519_add(fe25519 r, const fe25519 a, const fe25519 b)
+{
     r[0] = a[0] + b[0];
     r[1] = a[1] + b[1];
     r[2] = a[2] + b[2];
@@ -379,8 +379,8 @@ void fe25519_add(fe25519 r, const fe25519 a, const fe25519 b) {
  * @param[in] a Minuend
  * @param[in] b Subtrahend
  */
-void fe25519_sub(fe25519 r, const fe25519 a, const fe25519 b) {
-
+void fe25519_sub(fe25519 r, const fe25519 a, const fe25519 b)
+{
     /* Check against underflow */
     FE3C_SANITY_CHECK(b[0] <= 0x7ffffda, FE25519_STR, FE25519_TO_STR(b));
     FE3C_SANITY_CHECK(b[1] <= 0x3fffffe, FE25519_STR, FE25519_TO_STR(b));
@@ -414,8 +414,8 @@ void fe25519_sub(fe25519 r, const fe25519 a, const fe25519 b) {
  * @param[in] a Operand
  * @param[in] b Operand
  */
-void fe25519_mul(fe25519 r, const fe25519 a, const fe25519 b) {
-
+void fe25519_mul(fe25519 r, const fe25519 a, const fe25519 b)
+{
     u64 r0, r1, r2, r3, r4, r5, r6, r7, r8, r9;
 
     u64 a0 = a[0];
@@ -562,8 +562,8 @@ void fe25519_mul(fe25519 r, const fe25519 a, const fe25519 b) {
  * @param[out] r Result of the squaring, i.e. the product r = a a
  * @param[in] a Field element to square
  */
-void fe25519_square(fe25519 r, const fe25519 a) {
-
+void fe25519_square(fe25519 r, const fe25519 a)
+{
 #if !FE3C_FAST_SQUARING
     fe25519_mul(r, a, a);
 #else
@@ -662,8 +662,8 @@ void fe25519_square(fe25519 r, const fe25519 a) {
  * @param[out] buffer Output buffer for the encoded field element
  * @param[in] a Field element to encode
  */
-void fe25519_encode(u8 * buffer, fe25519 a) {
-
+void fe25519_encode(u8 *buffer, fe25519 a)
+{
     /* Canonicalize the element first */
     fe25519_strong_reduce(a, a);
 
@@ -708,14 +708,14 @@ void fe25519_encode(u8 * buffer, fe25519 a) {
     u32 t7 = ( a[8] >> 20 ) | ( a[9] << 6 );
 
     /* The field elements get encoded as little-endian byte strings according to RFC 8032 */
-    _store_32(&buffer[0 * 4], t0);
-    _store_32(&buffer[1 * 4], t1);
-    _store_32(&buffer[2 * 4], t2);
-    _store_32(&buffer[3 * 4], t3);
-    _store_32(&buffer[4 * 4], t4);
-    _store_32(&buffer[5 * 4], t5);
-    _store_32(&buffer[6 * 4], t6);
-    _store_32(&buffer[7 * 4], t7);
+    store_32(&buffer[0 * 4], t0);
+    store_32(&buffer[1 * 4], t1);
+    store_32(&buffer[2 * 4], t2);
+    store_32(&buffer[3 * 4], t3);
+    store_32(&buffer[4 * 4], t4);
+    store_32(&buffer[5 * 4], t5);
+    store_32(&buffer[6 * 4], t6);
+    store_32(&buffer[7 * 4], t7);
 }
 
 /**
@@ -725,8 +725,8 @@ void fe25519_encode(u8 * buffer, fe25519 a) {
  * @return 1 if decoding succeeded, 0 otherwise
  */
 __attribute__((warn_unused_result))
-int fe25519_decode(fe25519 r, const u8 * buffer) {
-
+int fe25519_decode(fe25519 r, const u8 *buffer)
+{
     r[0] = ( _load_32(&buffer[ 0]) >> 0 ) & LOW_26_BITS_MASK;
     /* Do not offset by 8 now (another 32 bits) since we have dropped 6 bits from buffer[3]. Offset
      * by 26 bits, i.e. 3 bytes of offset + 2 bits of shift*/

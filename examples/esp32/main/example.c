@@ -14,21 +14,21 @@ static void init_wifi(void);
 static void init_http_server(void);
 #if CONFIG_EXAMPLE_WIFI_MODE_STA
 static void tear_down_http_server(void);
-static void handle_sta_got_ip(void * arg, esp_event_base_t event_base, int32_t event_id, void * event_data);
-static void handle_wifi_disconnect(void * arg, esp_event_base_t event_base, int32_t event_id, void * event_data);
+static void handle_sta_got_ip(void *arg, esp_event_base_t event_base, int32_t event_id, void *event_data);
+static void handle_wifi_disconnect(void *arg, esp_event_base_t event_base, int32_t event_id, void *event_data);
 #endif /* CONFIG_EXAMPLE_WIFI_MODE_STA */
-static esp_err_t put_secret_key_handler(httpd_req_t * http_req);
-static esp_err_t get_public_key_handler(httpd_req_t * http_req);
-static esp_err_t sign_handler(httpd_req_t * http_req);
-static esp_err_t verify_handler(httpd_req_t * http_req);
-static eddsa_curve get_curve_from_query(httpd_req_t * http_req);
-static void bad_request(httpd_req_t * http_req);
-static void unsupported_curve(httpd_req_t * http_req);
-static esp_err_t read_request_body(httpd_req_t * http_req, u8 * buffer, size_t length);
+static esp_err_t put_secret_key_handler(httpd_req_t *http_req);
+static esp_err_t get_public_key_handler(httpd_req_t *http_req);
+static esp_err_t sign_handler(httpd_req_t *http_req);
+static esp_err_t verify_handler(httpd_req_t *http_req);
+static eddsa_curve get_curve_from_query(httpd_req_t *http_req);
+static void bad_request(httpd_req_t *http_req);
+static void unsupported_curve(httpd_req_t *http_req);
+static esp_err_t read_request_body(httpd_req_t *http_req, u8 *buffer, size_t length);
 
-static const char * TAG = "example";
-static u8 * secret_keys[EDDSA_NUMBER_OF_SUPPORTED_CURVES];
-static u8 * public_keys[EDDSA_NUMBER_OF_SUPPORTED_CURVES];
+static const char *TAG = "example";
+static u8 *secret_keys[EDDSA_NUMBER_OF_SUPPORTED_CURVES];
+static u8 *public_keys[EDDSA_NUMBER_OF_SUPPORTED_CURVES];
 static httpd_handle_t http_server;
 #if CONFIG_EXAMPLE_WIFI_MODE_STA
 static int connect_retry_count = 0;
@@ -61,8 +61,8 @@ static const httpd_uri_t uris[] = {
     }
 };
 
-void app_main(void) {
-
+void app_main(void)
+{
     /* Create initial keys for each supported curve */
     setup_initial_keys();
     /* Initialize the Wi-Fi */
@@ -73,8 +73,8 @@ void app_main(void) {
 #endif /* CONFIG_EXAMPLE_WIFI_MODE_SOFTAP */
 }
 
-static void setup_initial_keys(void) {
-
+static void setup_initial_keys(void)
+{
     eddsa_curve curves[] = { EDDSA_CURVE_ED25519, EDDSA_CURVE_ED448 };
 
     for (int i = 0; i < sizeof(curves) / sizeof(curves[0]); i++) {
@@ -98,8 +98,8 @@ static void setup_initial_keys(void) {
     }
 }
 
-static void init_wifi(void) {
-
+static void init_wifi(void)
+{
     ESP_ERROR_CHECK(nvs_flash_init());
     ESP_ERROR_CHECK(esp_netif_init());
     ESP_ERROR_CHECK(esp_event_loop_create_default());
@@ -161,8 +161,8 @@ static void init_wifi(void) {
 #endif
 }
 
-static void init_http_server(void) {
-
+static void init_http_server(void)
+{
     httpd_config_t config = HTTPD_DEFAULT_CONFIG();
     config.lru_purge_enable = true;
 
@@ -170,20 +170,18 @@ static void init_http_server(void) {
         config.server_port);
     ESP_ERROR_CHECK(httpd_start(&http_server, &config));
 
-    for (int i = 0; i < sizeof(uris) / sizeof(uris[0]); i++) {
-
+    for (int i = 0; i < sizeof(uris) / sizeof(uris[0]); i++)
         httpd_register_uri_handler(http_server, &uris[i]);
-    }
 }
 
 #if CONFIG_EXAMPLE_WIFI_MODE_STA
-static void tear_down_http_server(void) {
-
+static void tear_down_http_server(void)
+{
     ESP_ERROR_CHECK(httpd_stop(http_server));
 }
 
-static void handle_sta_got_ip(void * arg, esp_event_base_t event_base, int32_t event_id, void * event_data) {
-
+static void handle_sta_got_ip(void *arg, esp_event_base_t event_base, int32_t event_id, void *event_data)
+{
     (void) arg;
     (void) event_base;
     (void) event_id;
@@ -200,8 +198,8 @@ static void handle_sta_got_ip(void * arg, esp_event_base_t event_base, int32_t e
     init_http_server();
 }
 
-static void handle_wifi_disconnect(void * arg, esp_event_base_t event_base, int32_t event_id, void * event_data) {
-
+static void handle_wifi_disconnect(void *arg, esp_event_base_t event_base, int32_t event_id, void *event_data)
+{
     (void) arg;
     (void) event_base;
     (void) event_id;
@@ -224,8 +222,8 @@ static void handle_wifi_disconnect(void * arg, esp_event_base_t event_base, int3
 }
 #endif /* CONFIG_EXAMPLE_WIFI_MODE_STA */
 
-static esp_err_t put_secret_key_handler(httpd_req_t * http_req) {
-
+static esp_err_t put_secret_key_handler(httpd_req_t *http_req)
+{
     ESP_LOGD(TAG, "Handling put secret key request...");
     eddsa_curve curve = get_curve_from_query(http_req);
 
@@ -281,8 +279,8 @@ static esp_err_t put_secret_key_handler(httpd_req_t * http_req) {
     return ESP_OK;
 }
 
-static esp_err_t get_public_key_handler(httpd_req_t * http_req) {
-
+static esp_err_t get_public_key_handler(httpd_req_t *http_req)
+{
     ESP_LOGD(TAG, "Handling get public key request...");
     eddsa_curve curve = get_curve_from_query(http_req);
 
@@ -309,8 +307,8 @@ static esp_err_t get_public_key_handler(httpd_req_t * http_req) {
     return ESP_OK;
 }
 
-static esp_err_t sign_handler(httpd_req_t * http_req) {
-
+static esp_err_t sign_handler(httpd_req_t *http_req)
+{
     ESP_LOGD(TAG, "Handling sign request...");
     eddsa_curve curve = get_curve_from_query(http_req);
 
@@ -330,7 +328,7 @@ static esp_err_t sign_handler(httpd_req_t * http_req) {
         return ESP_OK;
     }
 
-    u8 * message = NULL;
+    u8 *message = NULL;
     if (http_req->content_len > 0) {
 
         message = malloc(http_req->content_len);
@@ -347,7 +345,7 @@ static esp_err_t sign_handler(httpd_req_t * http_req) {
     }
 
     /* Allocate the signature buffer on the heap to not strain the stack capacity */
-    u8 * signature = malloc(eddsa_get_signature_length(curve));
+    u8 *signature = malloc(eddsa_get_signature_length(curve));
     assert(signature);
 
     eddsa_sign_request sign_req = {
@@ -373,8 +371,8 @@ static esp_err_t sign_handler(httpd_req_t * http_req) {
     return ESP_OK;
 }
 
-static esp_err_t verify_handler(httpd_req_t * http_req) {
-
+static esp_err_t verify_handler(httpd_req_t *http_req)
+{
     ESP_LOGD(TAG, "Handling verify request...");
     eddsa_curve curve = get_curve_from_query(http_req);
 
@@ -406,7 +404,7 @@ static esp_err_t verify_handler(httpd_req_t * http_req) {
         return ESP_OK;
     }
 
-    u8 * payload = malloc(http_req->content_len);
+    u8 *payload = malloc(http_req->content_len);
     assert(payload);
     /* Read the signature and the message in one go */
     if (unlikely(ESP_OK != read_request_body(http_req, payload, http_req->content_len))) {
@@ -434,8 +432,8 @@ static esp_err_t verify_handler(httpd_req_t * http_req) {
     return ESP_OK;
 }
 
-static eddsa_curve get_curve_from_query(httpd_req_t * http_req) {
-
+static eddsa_curve get_curve_from_query(httpd_req_t *http_req)
+{
     /* Look for the query parameter denoting the curve */
     size_t query_len = httpd_req_get_url_query_len(http_req);
     if (query_len == 0) {
@@ -446,7 +444,7 @@ static eddsa_curve get_curve_from_query(httpd_req_t * http_req) {
     }
 
     /* Get the query string */
-    char * query = malloc(query_len + 1);
+    char *query = malloc(query_len + 1);
     assert(query);
     ESP_ERROR_CHECK(httpd_req_get_url_query_str(http_req, query, query_len + 1));
 
@@ -483,29 +481,27 @@ static eddsa_curve get_curve_from_query(httpd_req_t * http_req) {
     return curve;
 }
 
-static void bad_request(httpd_req_t * http_req) {
-
+static void bad_request(httpd_req_t *http_req)
+{
     ESP_ERROR_CHECK(httpd_resp_set_status(http_req, HTTPD_400));
     httpd_resp_send(http_req, NULL, 0);
 }
 
-static void unsupported_curve(httpd_req_t * http_req) {
-
+static void unsupported_curve(httpd_req_t *http_req)
+{
     ESP_ERROR_CHECK(httpd_resp_set_status(http_req, HTTPD_404));
     httpd_resp_send(http_req, "Unsupported curve", HTTPD_RESP_USE_STRLEN);
 }
 
-static esp_err_t read_request_body(httpd_req_t * http_req, u8 * buffer, size_t length) {
-
+static esp_err_t read_request_body(httpd_req_t *http_req, u8 *buffer, size_t length)
+{
     while (length > 0) {
 
         int received = httpd_req_recv(http_req, (char *) buffer, length);
         if (unlikely(received <= 0)) {
 
-            if (received == HTTPD_SOCK_ERR_TIMEOUT) {
-
+            if (received == HTTPD_SOCK_ERR_TIMEOUT)
                 httpd_resp_send_408(http_req);
-            }
             /* In case of error, returning ESP_FAIL will ensure that the underlying
              * socket is closed */
             return ESP_FAIL;

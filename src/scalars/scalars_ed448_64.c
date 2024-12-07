@@ -22,8 +22,8 @@
 #define GROUP_ORDER_SUB_LIMB_2  0xb65129c96fde93
 #define GROUP_ORDER_SUB_LIMB_3  0x8335dc163bb124
 
-static inline u64 load_64(const u8 src[8]) {
-
+static inline u64 load_64(const u8 src[8])
+{
     /* Integer encoding is always little endian according to RFC 8032 */
     u64 dst;
 #if FE3C_LILENDIAN_TARGET
@@ -43,8 +43,8 @@ static inline u64 load_64(const u8 src[8]) {
     return dst;
 }
 
-static inline u64 load_56(const u8 src[7]) {
-
+static inline u64 load_56(const u8 src[7])
+{
     /* Integer encoding is always little endian according to RFC 8032 */
     u64 dst;
 #if FE3C_LILENDIAN_TARGET
@@ -64,8 +64,8 @@ static inline u64 load_56(const u8 src[7]) {
     return dst;
 }
 
-static inline void store_56(u8 dst[7], u64 src) {
-
+static inline void store_56(u8 dst[7], u64 src)
+{
     /* Integer encoding is always little endian according to RFC 8032 */
 #if FE3C_LILENDIAN_TARGET
     (void) memcpy(dst, &src, 7);
@@ -81,8 +81,8 @@ static inline void store_56(u8 dst[7], u64 src) {
 #endif
 }
 
-static int ed448_scalar_is_canonical(const u8 * s) {
-
+static int ed448_scalar_is_canonical(const u8 *s)
+{
     /* Load the scalar into seven 64-bit words (extended to 128 bits) */
     u128 s0 = load_64(&s[0 * 8]);
     u128 s1 = load_64(&s[1 * 8]);
@@ -113,8 +113,8 @@ static int ed448_scalar_is_canonical(const u8 * s) {
     return (s6 >> 127) & (s[56] == 0);
 }
 
-static void ed448_scalar_reduce(u8 * s) {
-
+static void ed448_scalar_reduce(u8 *s)
+{
     /* Ed448 reduction inputs can be 114 bytes long. Use intermediate 56-bit reduced-radix
      * representation during reduction. */
 
@@ -331,8 +331,8 @@ static void ed448_scalar_reduce(u8 * s) {
     purge_secrets(&mask, sizeof(mask));
 }
 
-static void ed448_scalars_muladd(u8 * r, const u8 * aa, const u8 * bb, const u8 * cc) {
-
+static void ed448_scalars_muladd(u8 *r, const u8 *aa, const u8 *bb, const u8 *cc)
+{
     /* Ed448 multiplication+addition inputs must be 57 (56) bytes long. Use intermediate
      * 56-bit reduced-radix representation. */
 

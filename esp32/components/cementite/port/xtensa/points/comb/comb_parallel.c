@@ -17,7 +17,7 @@
 
 static StaticSemaphore_t worker_mutex_buffer;
 static StaticQueue_t work_queue_buffer;
-static comb_thread_work * work_queue_storage[1];
+static comb_thread_work *work_queue_storage[1];
 static StaticSemaphore_t completion_semaphore_buffer;
 static StackType_t worker_stack[COMB_THREAD_STACK_SIZE];
 static StaticTask_t worker_tcb;
@@ -34,14 +34,12 @@ static portMUX_TYPE init_spinlock = portMUX_INITIALIZER_UNLOCKED;
 static int initialized = 0;
 
 static void comb_lazy_init(void);
-static void comb_worker_body(void * arg);
+static void comb_worker_body(void *arg);
 
-int comb_dispatch_loop_to_thread(comb_thread_work * work) {
-
-    if (unlikely(0 == initialized)) {
-
+int comb_dispatch_loop_to_thread(comb_thread_work *work)
+{
+    if (unlikely(0 == initialized))
         comb_lazy_init();
-    }
 
     /* Try acquiring the worker lock */
     if (pdFALSE == xSemaphoreTake(worker_mutex, 0)) {
@@ -59,16 +57,16 @@ int comb_dispatch_loop_to_thread(comb_thread_work * work) {
     return 1;
 }
 
-void comb_join_worker_thread(void) {
-
+void comb_join_worker_thread(void)
+{
     /* Block on the completion semaphore until the worker thread completes */
     (void) xSemaphoreTake(completion_semaphore, portMAX_DELAY);
     /* Release the worker mutex */
     (void) xSemaphoreGive(worker_mutex);
 }
 
-static void comb_lazy_init(void) {
-
+static void comb_lazy_init(void)
+{
     portENTER_CRITICAL(&init_spinlock);
     /* Check again if no one initialized the structures while
      * we were spinning */
@@ -95,14 +93,14 @@ static void comb_lazy_init(void) {
     portEXIT_CRITICAL(&init_spinlock);
 }
 
-static void comb_worker_body(void * arg) {
-
+static void comb_worker_body(void *arg)
+{
     (void) arg;
 
     FE3C_SANITY_CHECK(work_queue, NULL);
     FE3C_SANITY_CHECK(completion_semaphore, NULL);
 
-    comb_thread_work * work;
+    comb_thread_work *work;
 
     for (;;) {
 

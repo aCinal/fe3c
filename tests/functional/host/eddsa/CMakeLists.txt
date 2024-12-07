@@ -59,12 +59,14 @@ add_functional_test(
                               ${FE3C_UUT_SOURCE_DIR}/points/points_ed25519.c
                               ${FE3C_UUT_SOURCE_DIR}/points/comb/comb_ed25519.c
                               ${FE3C_UUT_SOURCE_DIR}/points/comb/precomputation/precomputation_ed25519_??.c
+                              ${FE3C_UUT_SOURCE_DIR}/points/lattice_basis_reduction/lattices_ed25519.c
                               ${FE3C_UUT_SOURCE_DIR}/scalars/scalars_ed25519_??.c
                               ${FE3C_UUT_SOURCE_DIR}/hash_functions/hash_function_sha512.c
                               ${FE3C_UUT_SOURCE_DIR}/field_elements/field_elements_ed25519_??.c
     PREPROCESSOR_DEFINITIONS  FE3C_SUPPORT_CURVE_ED25519
                               FE3C_FAST_SQUARING
                               FE3C_COMB_METHOD
+                              FE3C_ED25519_LATTICE_BASIS_REDUCTION
 )
 
 add_functional_test(
@@ -76,12 +78,14 @@ add_functional_test(
                               ${FE3C_UUT_SOURCE_DIR}/points/points_ed448.c
                               ${FE3C_UUT_SOURCE_DIR}/points/comb/comb_ed448.c
                               ${FE3C_UUT_SOURCE_DIR}/points/comb/precomputation/precomputation_ed448_??.c
+                              ${FE3C_UUT_SOURCE_DIR}/points/lattice_basis_reduction/lattices_ed448.c
                               ${FE3C_UUT_SOURCE_DIR}/scalars/scalars_ed448_??.c
                               ${FE3C_UUT_SOURCE_DIR}/hash_functions/hash_function_shake256.c
                               ${FE3C_UUT_SOURCE_DIR}/field_elements/field_elements_ed448_??.c
     PREPROCESSOR_DEFINITIONS  FE3C_SUPPORT_CURVE_ED448
                               FE3C_FAST_SQUARING
                               FE3C_COMB_METHOD
+                              FE3C_ED448_LATTICE_BASIS_REDUCTION
 )
 
 add_functional_test(
@@ -93,6 +97,7 @@ add_functional_test(
                               ${FE3C_UUT_SOURCE_DIR}/points/points_ed25519.c
                               ${FE3C_UUT_SOURCE_DIR}/points/comb/comb_ed25519_small.c
                               ${FE3C_UUT_SOURCE_DIR}/points/comb/precomputation/precomputation_ed25519_small_??.c
+                              ${FE3C_UUT_SOURCE_DIR}/points/lattice_basis_reduction/lattices_ed25519.c
                               ${FE3C_UUT_SOURCE_DIR}/scalars/scalars_ed25519_??.c
                               ${FE3C_UUT_SOURCE_DIR}/hash_functions/hash_function_sha512.c
                               ${FE3C_UUT_SOURCE_DIR}/field_elements/field_elements_ed25519_??.c
@@ -100,6 +105,7 @@ add_functional_test(
                               FE3C_FAST_SQUARING
                               FE3C_COMB_METHOD
                               FE3C_ED25519_SMALL_PRECOMPUTATION
+                              FE3C_ED25519_LATTICE_BASIS_REDUCTION
 )
 
 add_functional_test(
@@ -111,6 +117,7 @@ add_functional_test(
                               ${FE3C_UUT_SOURCE_DIR}/points/points_ed448.c
                               ${FE3C_UUT_SOURCE_DIR}/points/comb/comb_ed448_small.c
                               ${FE3C_UUT_SOURCE_DIR}/points/comb/precomputation/precomputation_ed448_small_??.c
+                              ${FE3C_UUT_SOURCE_DIR}/points/lattice_basis_reduction/lattices_ed448.c
                               ${FE3C_UUT_SOURCE_DIR}/scalars/scalars_ed448_??.c
                               ${FE3C_UUT_SOURCE_DIR}/hash_functions/hash_function_shake256.c
                               ${FE3C_UUT_SOURCE_DIR}/field_elements/field_elements_ed448_??.c
@@ -118,6 +125,7 @@ add_functional_test(
                               FE3C_FAST_SQUARING
                               FE3C_COMB_METHOD
                               FE3C_ED448_SMALL_PRECOMPUTATION
+                              FE3C_ED448_LATTICE_BASIS_REDUCTION
 )
 
 add_functional_test(
@@ -194,12 +202,14 @@ add_functional_test(
                               ${FE3C_UUT_SOURCE_DIR}/points/points_ed25519.c
                               ${FE3C_UUT_SOURCE_DIR}/points/comb/comb_ed25519.c
                               ${FE3C_UUT_SOURCE_DIR}/points/comb/precomputation/precomputation_ed25519_??.c
+                              ${FE3C_UUT_SOURCE_DIR}/points/lattice_basis_reduction/lattices_ed25519.c
                               ${FE3C_UUT_SOURCE_DIR}/scalars/scalars_ed25519_??.c
                               ${FE3C_UUT_SOURCE_DIR}/hash_functions/hash_function_sha512.c
                               ${FE3C_UUT_SOURCE_DIR}/field_elements/field_elements_ed25519_??.c
     PREPROCESSOR_DEFINITIONS  FE3C_SUPPORT_CURVE_ED25519
                               FE3C_FAST_SQUARING
                               FE3C_COMB_METHOD
+                              FE3C_ED25519_LATTICE_BASIS_REDUCTION
 )
 
 add_functional_test(
@@ -211,6 +221,7 @@ add_functional_test(
                               ${FE3C_UUT_SOURCE_DIR}/points/points_ed25519.c
                               ${FE3C_UUT_SOURCE_DIR}/points/comb/comb_ed25519_small.c
                               ${FE3C_UUT_SOURCE_DIR}/points/comb/precomputation/precomputation_ed25519_small_??.c
+                              ${FE3C_UUT_SOURCE_DIR}/points/lattice_basis_reduction/lattices_ed25519.c
                               ${FE3C_UUT_SOURCE_DIR}/scalars/scalars_ed25519_??.c
                               ${FE3C_UUT_SOURCE_DIR}/hash_functions/hash_function_sha512.c
                               ${FE3C_UUT_SOURCE_DIR}/field_elements/field_elements_ed25519_??.c
@@ -218,6 +229,7 @@ add_functional_test(
                               FE3C_FAST_SQUARING
                               FE3C_COMB_METHOD
                               FE3C_ED25519_SMALL_PRECOMPUTATION
+                              FE3C_ED25519_LATTICE_BASIS_REDUCTION
 )
 
 add_functional_test(
@@ -242,12 +254,14 @@ add_functional_test(
                               ${FE3C_UUT_SOURCE_DIR}/points/points_ed25519.c
                               ${FE3C_UUT_SOURCE_DIR}/points/comb/comb_ed25519.c
                               ${FE3C_UUT_SOURCE_DIR}/points/comb/precomputation/precomputation_ed25519_??.c
+                              ${FE3C_UUT_SOURCE_DIR}/points/lattice_basis_reduction/lattices_ed25519.c
                               ${FE3C_UUT_SOURCE_DIR}/scalars/scalars_ed25519_??.c
                               ${FE3C_UUT_SOURCE_DIR}/hash_functions/hash_function_sha512.c
                               ${FE3C_UUT_SOURCE_DIR}/field_elements/field_elements_ed25519_??.c
     PREPROCESSOR_DEFINITIONS  FE3C_SUPPORT_CURVE_ED25519
                               FE3C_FAST_SQUARING
                               FE3C_COMB_METHOD
+                              FE3C_ED25519_LATTICE_BASIS_REDUCTION
 )
 
 add_functional_test(
@@ -259,6 +273,7 @@ add_functional_test(
                               ${FE3C_UUT_SOURCE_DIR}/points/points_ed25519.c
                               ${FE3C_UUT_SOURCE_DIR}/points/comb/comb_ed25519_small.c
                               ${FE3C_UUT_SOURCE_DIR}/points/comb/precomputation/precomputation_ed25519_small_??.c
+                              ${FE3C_UUT_SOURCE_DIR}/points/lattice_basis_reduction/lattices_ed25519.c
                               ${FE3C_UUT_SOURCE_DIR}/scalars/scalars_ed25519_??.c
                               ${FE3C_UUT_SOURCE_DIR}/hash_functions/hash_function_sha512.c
                               ${FE3C_UUT_SOURCE_DIR}/field_elements/field_elements_ed25519_??.c
@@ -266,6 +281,7 @@ add_functional_test(
                               FE3C_FAST_SQUARING
                               FE3C_COMB_METHOD
                               FE3C_ED25519_SMALL_PRECOMPUTATION
+                              FE3C_ED25519_LATTICE_BASIS_REDUCTION
 )
 
 add_functional_test(
@@ -290,12 +306,14 @@ add_functional_test(
                               ${FE3C_UUT_SOURCE_DIR}/points/points_ed448.c
                               ${FE3C_UUT_SOURCE_DIR}/points/comb/comb_ed448.c
                               ${FE3C_UUT_SOURCE_DIR}/points/comb/precomputation/precomputation_ed448_??.c
+                              ${FE3C_UUT_SOURCE_DIR}/points/lattice_basis_reduction/lattices_ed448.c
                               ${FE3C_UUT_SOURCE_DIR}/scalars/scalars_ed448_??.c
                               ${FE3C_UUT_SOURCE_DIR}/hash_functions/hash_function_shake256.c
                               ${FE3C_UUT_SOURCE_DIR}/field_elements/field_elements_ed448_??.c
     PREPROCESSOR_DEFINITIONS  FE3C_SUPPORT_CURVE_ED448
                               FE3C_FAST_SQUARING
                               FE3C_COMB_METHOD
+                              FE3C_ED448_LATTICE_BASIS_REDUCTION
 )
 
 add_functional_test(
@@ -307,6 +325,7 @@ add_functional_test(
                               ${FE3C_UUT_SOURCE_DIR}/points/points_ed448.c
                               ${FE3C_UUT_SOURCE_DIR}/points/comb/comb_ed448_small.c
                               ${FE3C_UUT_SOURCE_DIR}/points/comb/precomputation/precomputation_ed448_small_??.c
+                              ${FE3C_UUT_SOURCE_DIR}/points/lattice_basis_reduction/lattices_ed448.c
                               ${FE3C_UUT_SOURCE_DIR}/scalars/scalars_ed448_??.c
                               ${FE3C_UUT_SOURCE_DIR}/hash_functions/hash_function_shake256.c
                               ${FE3C_UUT_SOURCE_DIR}/field_elements/field_elements_ed448_??.c
@@ -314,4 +333,5 @@ add_functional_test(
                               FE3C_FAST_SQUARING
                               FE3C_COMB_METHOD
                               FE3C_ED448_SMALL_PRECOMPUTATION
+                              FE3C_ED448_LATTICE_BASIS_REDUCTION
 )

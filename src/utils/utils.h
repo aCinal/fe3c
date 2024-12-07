@@ -13,9 +13,17 @@ extern "C" {
 #define array_bit(arr, b)      ( (arr[(b) >> 3] >> ((b) & 0x7)) & 1 )
 /** Get array length at compile time */
 #define static_array_len(arr)  ( sizeof(arr) / sizeof((arr)[0]) )
+/** Swap two pointers  */
+#define swap_pointers(x, y)  { void *__aux; __aux = x; x = y; y = __aux; }
 
-/** Test two bytes for equality in a predictable and constant-time manner */
-static inline int byte_equal(u8 x, u8 y) {
+/**
+ * @brief Test two bytes for equality in a constant-time manner
+ * @param x First input byte
+ * @param y Second input byte
+ * @return 1 if x == y, 0 otherwise
+ */
+static inline int byte_equal(u8 x, u8 y)
+{
     u8 ret = x ^ y;
     ret |= (ret >> 4);
     ret |= (ret >> 2);
@@ -23,7 +31,25 @@ static inline int byte_equal(u8 x, u8 y) {
     return (ret ^ 1) & 1;
 }
 
-/* Provide constant-time and otherwise secure implementations of common libc functions */
+/**
+ * @brief Count leading zeroes in a non-zero 32-bit word
+ * @param x A non-zero 32-bit word
+ * @return Number of leading zeroes in x
+ * @warning The function assumes x != 0x00000000
+ * @note From "Hacker's Delight" by Henry S. Warren
+ */
+static inline int u32_nlz(u32 x)
+{
+    /* Seems more portable than __builtin_clz which promotes the input to an integer */
+    int nlz = 1;
+    /* Binary-search through the byte */
+    if ((x >> 16) == 0) { nlz += 16; x <<= 16; }
+    if ((x >> 24) == 0) { nlz += 8;  x <<= 8;  }
+    if ((x >> 28) == 0) { nlz += 4;  x <<= 4;  }
+    if ((x >> 30) == 0) { nlz += 2;  x <<= 2;  }
+    nlz -= (x >> 31);
+    return nlz;
+}
 
 #if FE3C_SKIP_ZEROIZATION
     #define purge_secrets(...)
@@ -33,12 +59,12 @@ static inline int byte_equal(u8 x, u8 y) {
      * @param secrets Buffer to be cleared
      * @param size Size of the buffer
      */
-    static inline void purge_secrets(void * secrets, size_t size) {
+    static inline void purge_secrets(void *secrets, size_t size)
+    {
 
-        volatile u8 * p = (volatile u8 *) secrets;
-        while (size -- > 0) {
+        volatile u8 *p = (volatile u8 *) secrets;
+        while (size -- > 0)
             *p++ = 0;
-        }
     }
 #endif /* FE3C_SKIP_ZEROIZATION */
 
@@ -47,8 +73,8 @@ static inline int byte_equal(u8 x, u8 y) {
     #include <stdlib.h>
     #include <stdarg.h>
     __attribute__((format(printf, 4, 5)))
-    static inline void __sanity_check_failed(const char * check, const char * file, int line, const char * format, ...) {
-
+    static inline void __sanity_check_failed(const char *check, const char *file, int line, const char *format, ...)
+    {
         fprintf(stderr, "%s in %s at line %d: [ %s ]\n", \
             __FUNCTION__, file, line, check);
         if (format) {

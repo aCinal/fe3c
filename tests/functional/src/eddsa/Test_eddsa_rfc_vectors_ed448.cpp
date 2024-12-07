@@ -2,13 +2,13 @@
 #include <fe3c/eddsa.h>
 
 #if FE3C_FUNCTIONAL_TESTS_HOST
-TEST_GROUP(EDDSA_RFC_VECTORS_ED448) {
-
+TEST_GROUP(EDDSA_RFC_VECTORS_ED448)
+{
 };
 #endif /* FE3C_FUNCTIONAL_TESTS_HOST */
 
-FE3C_TEST(EDDSA_RFC_VECTORS_ED448, TestBlank_DerivePublicKey) {
-
+FE3C_TEST(EDDSA_RFC_VECTORS_ED448, TestBlank_DerivePublicKey)
+{
     const u8 secret_key[] = \
         "\x6c\x82\xa5\x62\xcb\x80\x8d\x10\xd6\x32\xbe\x89\xc8\x51\x3e\xbf" \
         "\x6c\x92\x9f\x34\xdd\xfa\x8c\x9f\x63\xc9\x96\x0e\xf6\xe3\x48\xa3" \
@@ -26,8 +26,8 @@ FE3C_TEST(EDDSA_RFC_VECTORS_ED448, TestBlank_DerivePublicKey) {
     FAIL_IF_MEMCMP(expected_public_key, public_key, eddsa_get_public_key_length(EDDSA_CURVE_ED448));
 }
 
-FE3C_TEST(EDDSA_RFC_VECTORS_ED448, TestBlank_Sign) {
-
+FE3C_TEST(EDDSA_RFC_VECTORS_ED448, TestBlank_Sign)
+{
     const u8 secret_key[] = \
         "\x6c\x82\xa5\x62\xcb\x80\x8d\x10\xd6\x32\xbe\x89\xc8\x51\x3e\xbf" \
         "\x6c\x92\x9f\x34\xdd\xfa\x8c\x9f\x63\xc9\x96\x0e\xf6\xe3\x48\xa3" \
@@ -61,8 +61,8 @@ FE3C_TEST(EDDSA_RFC_VECTORS_ED448, TestBlank_Sign) {
     FAIL_IF_MEMCMP(expected_signature, signature, eddsa_get_signature_length(EDDSA_CURVE_ED448));
 }
 
-FE3C_TEST(EDDSA_RFC_VECTORS_ED448, TestBlank_Verify) {
-
+FE3C_TEST(EDDSA_RFC_VECTORS_ED448, TestBlank_Verify)
+{
     const u8 message[] = "";
     const u8 context[] = "";
     const u8 signature[] = \
@@ -94,8 +94,8 @@ FE3C_TEST(EDDSA_RFC_VECTORS_ED448, TestBlank_Verify) {
     FAIL_UNLESS_EQUAL(1, verified);
 }
 
-FE3C_TEST(EDDSA_RFC_VECTORS_ED448, Test1Octet_DerivePublicKey) {
-
+FE3C_TEST(EDDSA_RFC_VECTORS_ED448, Test1Octet_DerivePublicKey)
+{
     const u8 secret_key[] = \
         "\xc4\xea\xb0\x5d\x35\x70\x07\xc6\x32\xf3\xdb\xb4\x84\x89\x92\x4d" \
         "\x55\x2b\x08\xfe\x0c\x35\x3a\x0d\x4a\x1f\x00\xac\xda\x2c\x46\x3a" \
@@ -113,8 +113,8 @@ FE3C_TEST(EDDSA_RFC_VECTORS_ED448, Test1Octet_DerivePublicKey) {
     FAIL_IF_MEMCMP(expected_public_key, public_key, eddsa_get_public_key_length(EDDSA_CURVE_ED448));
 }
 
-FE3C_TEST(EDDSA_RFC_VECTORS_ED448, Test1Octet_Sign) {
-
+FE3C_TEST(EDDSA_RFC_VECTORS_ED448, Test1Octet_Sign)
+{
     const u8 secret_key[] = \
         "\xc4\xea\xb0\x5d\x35\x70\x07\xc6\x32\xf3\xdb\xb4\x84\x89\x92\x4d" \
         "\x55\x2b\x08\xfe\x0c\x35\x3a\x0d\x4a\x1f\x00\xac\xda\x2c\x46\x3a" \
@@ -148,8 +148,8 @@ FE3C_TEST(EDDSA_RFC_VECTORS_ED448, Test1Octet_Sign) {
     FAIL_IF_MEMCMP(expected_signature, signature, eddsa_get_signature_length(EDDSA_CURVE_ED448));
 }
 
-FE3C_TEST(EDDSA_RFC_VECTORS_ED448, Test1Octet_Verify) {
-
+FE3C_TEST(EDDSA_RFC_VECTORS_ED448, Test1Octet_Verify)
+{
     const u8 message[] = "\x03";
     const u8 context[] = "";
     const u8 signature[] = \
@@ -181,8 +181,8 @@ FE3C_TEST(EDDSA_RFC_VECTORS_ED448, Test1Octet_Verify) {
     FAIL_UNLESS_EQUAL(1, verified);
 }
 
-FE3C_TEST(EDDSA_RFC_VECTORS_ED448, Test1OctetWithContext_Sign) {
-
+FE3C_TEST(EDDSA_RFC_VECTORS_ED448, Test1OctetWithContext_Sign)
+{
     const u8 secret_key[] = \
         "\xc4\xea\xb0\x5d\x35\x70\x07\xc6\x32\xf3\xdb\xb4\x84\x89\x92\x4d" \
         "\x55\x2b\x08\xfe\x0c\x35\x3a\x0d\x4a\x1f\x00\xac\xda\x2c\x46\x3a" \
@@ -216,8 +216,8 @@ FE3C_TEST(EDDSA_RFC_VECTORS_ED448, Test1OctetWithContext_Sign) {
     FAIL_IF_MEMCMP(expected_signature, signature, eddsa_get_signature_length(EDDSA_CURVE_ED448));
 }
 
-FE3C_TEST(EDDSA_RFC_VECTORS_ED448, Test1OctetWithContext_Verify) {
-
+FE3C_TEST(EDDSA_RFC_VECTORS_ED448, Test1OctetWithContext_Verify)
+{
     const u8 message[] = "\x03";
     const u8 context[] = "\x66\x6f\x6f";
     const u8 signature[] = \
@@ -249,8 +249,8 @@ FE3C_TEST(EDDSA_RFC_VECTORS_ED448, Test1OctetWithContext_Verify) {
     FAIL_UNLESS_EQUAL(1, verified);
 }
 
-FE3C_TEST(EDDSA_RFC_VECTORS_ED448, Test11Octets_DerivePublicKey) {
-
+FE3C_TEST(EDDSA_RFC_VECTORS_ED448, Test11Octets_DerivePublicKey)
+{
     const u8 secret_key[] = \
         "\xcd\x23\xd2\x4f\x71\x42\x74\xe7\x44\x34\x32\x37\xb9\x32\x90\xf5" \
         "\x11\xf6\x42\x5f\x98\xe6\x44\x59\xff\x20\x3e\x89\x85\x08\x3f\xfd" \
@@ -268,8 +268,8 @@ FE3C_TEST(EDDSA_RFC_VECTORS_ED448, Test11Octets_DerivePublicKey) {
     FAIL_IF_MEMCMP(expected_public_key, public_key, eddsa_get_public_key_length(EDDSA_CURVE_ED448));
 }
 
-FE3C_TEST(EDDSA_RFC_VECTORS_ED448, Test11Octets_Sign) {
-
+FE3C_TEST(EDDSA_RFC_VECTORS_ED448, Test11Octets_Sign)
+{
     const u8 secret_key[] = \
         "\xcd\x23\xd2\x4f\x71\x42\x74\xe7\x44\x34\x32\x37\xb9\x32\x90\xf5" \
         "\x11\xf6\x42\x5f\x98\xe6\x44\x59\xff\x20\x3e\x89\x85\x08\x3f\xfd" \
@@ -303,8 +303,8 @@ FE3C_TEST(EDDSA_RFC_VECTORS_ED448, Test11Octets_Sign) {
     FAIL_IF_MEMCMP(expected_signature, signature, eddsa_get_signature_length(EDDSA_CURVE_ED448));
 }
 
-FE3C_TEST(EDDSA_RFC_VECTORS_ED448, Test11Octets_Verify) {
-
+FE3C_TEST(EDDSA_RFC_VECTORS_ED448, Test11Octets_Verify)
+{
     const u8 message[] = "\x0c\x3e\x54\x40\x74\xec\x63\xb0\x26\x5e\x0c";
     const u8 context[] = "";
     const u8 signature[] = \
@@ -336,8 +336,8 @@ FE3C_TEST(EDDSA_RFC_VECTORS_ED448, Test11Octets_Verify) {
     FAIL_UNLESS_EQUAL(1, verified);
 }
 
-FE3C_TEST(EDDSA_RFC_VECTORS_ED448, Test12Octets_DerivePublicKey) {
-
+FE3C_TEST(EDDSA_RFC_VECTORS_ED448, Test12Octets_DerivePublicKey)
+{
     const u8 secret_key[] = \
         "\x25\x8c\xdd\x4a\xda\x32\xed\x9c\x9f\xf5\x4e\x63\x75\x6a\xe5\x82" \
         "\xfb\x8f\xab\x2a\xc7\x21\xf2\xc8\xe6\x76\xa7\x27\x68\x51\x3d\x93" \
@@ -355,8 +355,8 @@ FE3C_TEST(EDDSA_RFC_VECTORS_ED448, Test12Octets_DerivePublicKey) {
     FAIL_IF_MEMCMP(expected_public_key, public_key, eddsa_get_public_key_length(EDDSA_CURVE_ED448));
 }
 
-FE3C_TEST(EDDSA_RFC_VECTORS_ED448, Test12Octets_Sign) {
-
+FE3C_TEST(EDDSA_RFC_VECTORS_ED448, Test12Octets_Sign)
+{
     const u8 secret_key[] = \
         "\x25\x8c\xdd\x4a\xda\x32\xed\x9c\x9f\xf5\x4e\x63\x75\x6a\xe5\x82" \
         "\xfb\x8f\xab\x2a\xc7\x21\xf2\xc8\xe6\x76\xa7\x27\x68\x51\x3d\x93" \
@@ -390,8 +390,8 @@ FE3C_TEST(EDDSA_RFC_VECTORS_ED448, Test12Octets_Sign) {
     FAIL_IF_MEMCMP(expected_signature, signature, eddsa_get_signature_length(EDDSA_CURVE_ED448));
 }
 
-FE3C_TEST(EDDSA_RFC_VECTORS_ED448, Test12Octets_Verify) {
-
+FE3C_TEST(EDDSA_RFC_VECTORS_ED448, Test12Octets_Verify)
+{
     const u8 message[] = "\x64\xa6\x5f\x3c\xde\xdc\xdd\x66\x81\x1e\x29\x15";
     const u8 context[] = "";
     const u8 signature[] = \
@@ -423,8 +423,8 @@ FE3C_TEST(EDDSA_RFC_VECTORS_ED448, Test12Octets_Verify) {
     FAIL_UNLESS_EQUAL(1, verified);
 }
 
-FE3C_TEST(EDDSA_RFC_VECTORS_ED448, Test13Octets_DerivePublicKey) {
-
+FE3C_TEST(EDDSA_RFC_VECTORS_ED448, Test13Octets_DerivePublicKey)
+{
     const u8 secret_key[] = \
         "\x7e\xf4\xe8\x45\x44\x23\x67\x52\xfb\xb5\x6b\x8f\x31\xa2\x3a\x10" \
         "\xe4\x28\x14\xf5\xf5\x5c\xa0\x37\xcd\xcc\x11\xc6\x4c\x9a\x3b\x29" \
@@ -442,8 +442,8 @@ FE3C_TEST(EDDSA_RFC_VECTORS_ED448, Test13Octets_DerivePublicKey) {
     FAIL_IF_MEMCMP(expected_public_key, public_key, eddsa_get_public_key_length(EDDSA_CURVE_ED448));
 }
 
-FE3C_TEST(EDDSA_RFC_VECTORS_ED448, Test13Octets_Sign) {
-
+FE3C_TEST(EDDSA_RFC_VECTORS_ED448, Test13Octets_Sign)
+{
     const u8 secret_key[] = \
         "\x7e\xf4\xe8\x45\x44\x23\x67\x52\xfb\xb5\x6b\x8f\x31\xa2\x3a\x10" \
         "\xe4\x28\x14\xf5\xf5\x5c\xa0\x37\xcd\xcc\x11\xc6\x4c\x9a\x3b\x29" \
@@ -477,8 +477,8 @@ FE3C_TEST(EDDSA_RFC_VECTORS_ED448, Test13Octets_Sign) {
     FAIL_IF_MEMCMP(expected_signature, signature, eddsa_get_signature_length(EDDSA_CURVE_ED448));
 }
 
-FE3C_TEST(EDDSA_RFC_VECTORS_ED448, Test13Octets_Verify) {
-
+FE3C_TEST(EDDSA_RFC_VECTORS_ED448, Test13Octets_Verify)
+{
     const u8 message[] = "\x64\xa6\x5f\x3c\xde\xdc\xdd\x66\x81\x1e\x29\x15\xe7";
     const u8 context[] = "";
     const u8 signature[] = \
@@ -510,8 +510,8 @@ FE3C_TEST(EDDSA_RFC_VECTORS_ED448, Test13Octets_Verify) {
     FAIL_UNLESS_EQUAL(1, verified);
 }
 
-FE3C_TEST(EDDSA_RFC_VECTORS_ED448, Test64Octets_DerivePublicKey) {
-
+FE3C_TEST(EDDSA_RFC_VECTORS_ED448, Test64Octets_DerivePublicKey)
+{
     const u8 secret_key[] = \
         "\xd6\x5d\xf3\x41\xad\x13\xe0\x08\x56\x76\x88\xba\xed\xda\x8e\x9d" \
         "\xcd\xc1\x7d\xc0\x24\x97\x4e\xa5\xb4\x22\x7b\x65\x30\xe3\x39\xbf" \
@@ -529,8 +529,8 @@ FE3C_TEST(EDDSA_RFC_VECTORS_ED448, Test64Octets_DerivePublicKey) {
     FAIL_IF_MEMCMP(expected_public_key, public_key, eddsa_get_public_key_length(EDDSA_CURVE_ED448));
 }
 
-FE3C_TEST(EDDSA_RFC_VECTORS_ED448, Test64Octets_Sign) {
-
+FE3C_TEST(EDDSA_RFC_VECTORS_ED448, Test64Octets_Sign)
+{
     const u8 secret_key[] = \
         "\xd6\x5d\xf3\x41\xad\x13\xe0\x08\x56\x76\x88\xba\xed\xda\x8e\x9d" \
         "\xcd\xc1\x7d\xc0\x24\x97\x4e\xa5\xb4\x22\x7b\x65\x30\xe3\x39\xbf" \
@@ -568,8 +568,8 @@ FE3C_TEST(EDDSA_RFC_VECTORS_ED448, Test64Octets_Sign) {
     FAIL_IF_MEMCMP(expected_signature, signature, eddsa_get_signature_length(EDDSA_CURVE_ED448));
 }
 
-FE3C_TEST(EDDSA_RFC_VECTORS_ED448, Test64Octets_Verify) {
-
+FE3C_TEST(EDDSA_RFC_VECTORS_ED448, Test64Octets_Verify)
+{
     const u8 message[] = \
         "\xbd\x0f\x6a\x37\x47\xcd\x56\x1b\xdd\xdf\x46\x40\xa3\x32\x46\x1a" \
         "\x4a\x30\xa1\x2a\x43\x4c\xd0\xbf\x40\xd7\x66\xd9\xc6\xd4\x58\xe5" \
@@ -605,8 +605,8 @@ FE3C_TEST(EDDSA_RFC_VECTORS_ED448, Test64Octets_Verify) {
     FAIL_UNLESS_EQUAL(1, verified);
 }
 
-FE3C_TEST(EDDSA_RFC_VECTORS_ED448, Test256Octets_DerivePublicKey) {
-
+FE3C_TEST(EDDSA_RFC_VECTORS_ED448, Test256Octets_DerivePublicKey)
+{
     const u8 secret_key[] = \
         "\x2e\xc5\xfe\x3c\x17\x04\x5a\xbd\xb1\x36\xa5\xe6\xa9\x13\xe3\x2a" \
         "\xb7\x5a\xe6\x8b\x53\xd2\xfc\x14\x9b\x77\xe5\x04\x13\x2d\x37\x56" \
@@ -624,8 +624,8 @@ FE3C_TEST(EDDSA_RFC_VECTORS_ED448, Test256Octets_DerivePublicKey) {
     FAIL_IF_MEMCMP(expected_public_key, public_key, eddsa_get_public_key_length(EDDSA_CURVE_ED448));
 }
 
-FE3C_TEST(EDDSA_RFC_VECTORS_ED448, Test256Octets_Sign) {
-
+FE3C_TEST(EDDSA_RFC_VECTORS_ED448, Test256Octets_Sign)
+{
     const u8 secret_key[] = \
         "\x2e\xc5\xfe\x3c\x17\x04\x5a\xbd\xb1\x36\xa5\xe6\xa9\x13\xe3\x2a" \
         "\xb7\x5a\xe6\x8b\x53\xd2\xfc\x14\x9b\x77\xe5\x04\x13\x2d\x37\x56" \
@@ -675,8 +675,8 @@ FE3C_TEST(EDDSA_RFC_VECTORS_ED448, Test256Octets_Sign) {
     FAIL_IF_MEMCMP(expected_signature, signature, eddsa_get_signature_length(EDDSA_CURVE_ED448));
 }
 
-FE3C_TEST(EDDSA_RFC_VECTORS_ED448, Test256Octets_Verify) {
-
+FE3C_TEST(EDDSA_RFC_VECTORS_ED448, Test256Octets_Verify)
+{
     const u8 message[] = \
         "\x15\x77\x75\x32\xb0\xbd\xd0\xd1\x38\x9f\x63\x6c\x5f\x6b\x9b\xa7" \
         "\x34\xc9\x0a\xf5\x72\x87\x7e\x2d\x27\x2d\xd0\x78\xaa\x1e\x56\x7c" \
@@ -724,8 +724,8 @@ FE3C_TEST(EDDSA_RFC_VECTORS_ED448, Test256Octets_Verify) {
     FAIL_UNLESS_EQUAL(1, verified);
 }
 
-FE3C_TEST(EDDSA_RFC_VECTORS_ED448, Test1023Octet_DerivePublicKey) {
-
+FE3C_TEST(EDDSA_RFC_VECTORS_ED448, Test1023Octet_DerivePublicKey)
+{
     const u8 secret_key[] = \
         "\x87\x2d\x09\x37\x80\xf5\xd3\x73\x0d\xf7\xc2\x12\x66\x4b\x37\xb8" \
         "\xa0\xf2\x4f\x56\x81\x0d\xaa\x83\x82\xcd\x4f\xa3\xf7\x76\x34\xec" \
@@ -743,8 +743,8 @@ FE3C_TEST(EDDSA_RFC_VECTORS_ED448, Test1023Octet_DerivePublicKey) {
     FAIL_IF_MEMCMP(expected_public_key, public_key, eddsa_get_public_key_length(EDDSA_CURVE_ED448));
 }
 
-FE3C_TEST(EDDSA_RFC_VECTORS_ED448, Test1023Octet_Sign) {
-
+FE3C_TEST(EDDSA_RFC_VECTORS_ED448, Test1023Octet_Sign)
+{
     const u8 secret_key[] = \
         "\x87\x2d\x09\x37\x80\xf5\xd3\x73\x0d\xf7\xc2\x12\x66\x4b\x37\xb8" \
         "\xa0\xf2\x4f\x56\x81\x0d\xaa\x83\x82\xcd\x4f\xa3\xf7\x76\x34\xec" \
@@ -842,8 +842,8 @@ FE3C_TEST(EDDSA_RFC_VECTORS_ED448, Test1023Octet_Sign) {
     FAIL_IF_MEMCMP(expected_signature, signature, eddsa_get_signature_length(EDDSA_CURVE_ED448));
 }
 
-FE3C_TEST(EDDSA_RFC_VECTORS_ED448, Test1023Octet_Verify) {
-
+FE3C_TEST(EDDSA_RFC_VECTORS_ED448, Test1023Octet_Verify)
+{
     const u8 message[] = \
         "\x6d\xdf\x80\x2e\x1a\xae\x49\x86\x93\x5f\x7f\x98\x1b\xa3\xf0\x35" \
         "\x1d\x62\x73\xc0\xa0\xc2\x2c\x9c\x0e\x83\x39\x16\x8e\x67\x54\x12" \
@@ -939,8 +939,8 @@ FE3C_TEST(EDDSA_RFC_VECTORS_ED448, Test1023Octet_Verify) {
     FAIL_UNLESS_EQUAL(1, verified);
 }
 
-FE3C_TEST(EDDSA_RFC_VECTORS_ED448, TestPhAbc_DerivePublicKey) {
-
+FE3C_TEST(EDDSA_RFC_VECTORS_ED448, TestPhAbc_DerivePublicKey)
+{
     const u8 secret_key[] = \
         "\x83\x3f\xe6\x24\x09\x23\x7b\x9d\x62\xec\x77\x58\x75\x20\x91\x1e" \
         "\x9a\x75\x9c\xec\x1d\x19\x75\x5b\x7d\xa9\x01\xb9\x6d\xca\x3d\x42" \
@@ -957,8 +957,8 @@ FE3C_TEST(EDDSA_RFC_VECTORS_ED448, TestPhAbc_DerivePublicKey) {
     FAIL_IF_MEMCMP(expected_public_key, public_key, eddsa_get_public_key_length(EDDSA_CURVE_ED448));
 }
 
-FE3C_TEST(EDDSA_RFC_VECTORS_ED448, TestPhAbc_Sign) {
-
+FE3C_TEST(EDDSA_RFC_VECTORS_ED448, TestPhAbc_Sign)
+{
     const u8 secret_key[] = \
         "\x83\x3f\xe6\x24\x09\x23\x7b\x9d\x62\xec\x77\x58\x75\x20\x91\x1e" \
         "\x9a\x75\x9c\xec\x1d\x19\x75\x5b\x7d\xa9\x01\xb9\x6d\xca\x3d\x42" \
@@ -995,8 +995,8 @@ FE3C_TEST(EDDSA_RFC_VECTORS_ED448, TestPhAbc_Sign) {
     FAIL_IF_MEMCMP(expected_signature, signature, eddsa_get_signature_length(EDDSA_CURVE_ED448));
 }
 
-FE3C_TEST(EDDSA_RFC_VECTORS_ED448, TestPhAbc_Verify) {
-
+FE3C_TEST(EDDSA_RFC_VECTORS_ED448, TestPhAbc_Verify)
+{
     const u8 message[] = "\x61\x62\x63";
     const u8 context[] = "";
     const u8 signature[] = \
@@ -1032,8 +1032,8 @@ FE3C_TEST(EDDSA_RFC_VECTORS_ED448, TestPhAbc_Verify) {
     FAIL_UNLESS_EQUAL(1, verified);
 }
 
-FE3C_TEST(EDDSA_RFC_VECTORS_ED448, TestPhAbcWithContext_Sign) {
-
+FE3C_TEST(EDDSA_RFC_VECTORS_ED448, TestPhAbcWithContext_Sign)
+{
     const u8 secret_key[] = \
         "\x83\x3f\xe6\x24\x09\x23\x7b\x9d\x62\xec\x77\x58\x75\x20\x91\x1e" \
         "\x9a\x75\x9c\xec\x1d\x19\x75\x5b\x7d\xa9\x01\xb9\x6d\xca\x3d\x42" \
@@ -1070,8 +1070,8 @@ FE3C_TEST(EDDSA_RFC_VECTORS_ED448, TestPhAbcWithContext_Sign) {
     FAIL_IF_MEMCMP(expected_signature, signature, eddsa_get_signature_length(EDDSA_CURVE_ED448));
 }
 
-FE3C_TEST(EDDSA_RFC_VECTORS_ED448, TestPhAbcWithContext_Verify) {
-
+FE3C_TEST(EDDSA_RFC_VECTORS_ED448, TestPhAbcWithContext_Verify)
+{
     const u8 message[] = "\x61\x62\x63";
     const u8 context[] = "\x66\x6f\x6f";
     const u8 signature[] = \

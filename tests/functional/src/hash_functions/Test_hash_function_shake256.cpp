@@ -7,13 +7,13 @@
 #define APPROPRIATE_IOV_LEN(iov)   (iov).iov_len = strlen(static_cast<const char *>((iov).iov_base));
 
 #if FE3C_FUNCTIONAL_TESTS_HOST
-TEST_GROUP(HASH_FUNCTION_SHAKE256) {
-
+TEST_GROUP(HASH_FUNCTION_SHAKE256)
+{
 };
 #endif /* FE3C_FUNCTIONAL_TESTS_HOST */
 
-FE3C_TEST(HASH_FUNCTION_SHAKE256, EmptyIovec) {
-
+FE3C_TEST(HASH_FUNCTION_SHAKE256, EmptyIovec)
+{
     u8 output[HASH_OUTPUT_SIZE_IN_BYTES];
     const u8 expected_output[] = \
         "\x46\xb9\xdd\x2b\x0b\xa8\x8d\x13\x23\x3b\x3f\xeb\x74\x3e\xeb\x24" \
@@ -30,8 +30,8 @@ FE3C_TEST(HASH_FUNCTION_SHAKE256, EmptyIovec) {
     FAIL_IF_MEMCMP(expected_output, output, HASH_OUTPUT_SIZE_IN_BYTES);
 }
 
-FE3C_TEST(HASH_FUNCTION_SHAKE256, EmptyString) {
-
+FE3C_TEST(HASH_FUNCTION_SHAKE256, EmptyString)
+{
     u8 output[HASH_OUTPUT_SIZE_IN_BYTES];
     const u8 expected_output[] = \
         "\x46\xb9\xdd\x2b\x0b\xa8\x8d\x13\x23\x3b\x3f\xeb\x74\x3e\xeb\x24" \
@@ -52,8 +52,8 @@ FE3C_TEST(HASH_FUNCTION_SHAKE256, EmptyString) {
     FAIL_IF_MEMCMP(expected_output, output, HASH_OUTPUT_SIZE_IN_BYTES);
 }
 
-FE3C_TEST(HASH_FUNCTION_SHAKE256, SingleMessageOfLength128) {
-
+FE3C_TEST(HASH_FUNCTION_SHAKE256, SingleMessageOfLength128)
+{
     u8 output[HASH_OUTPUT_SIZE_IN_BYTES];
     const u8 expected_output[] = \
         "\xd2\xa1\x15\xf5\x11\x36\x78\x85\x67\x97\x1f\x7a\x5a\xfc\x6a\xef" \
@@ -77,8 +77,8 @@ FE3C_TEST(HASH_FUNCTION_SHAKE256, SingleMessageOfLength128) {
     FAIL_IF_MEMCMP(expected_output, output, HASH_OUTPUT_SIZE_IN_BYTES);
 }
 
-FE3C_TEST(HASH_FUNCTION_SHAKE256, HelloWorld) {
-
+FE3C_TEST(HASH_FUNCTION_SHAKE256, HelloWorld)
+{
     u8 output[HASH_OUTPUT_SIZE_IN_BYTES];
     const u8 expected_output[] = \
         "\x20\x74\x0b\x4c\x7a\x79\x97\x76\x5e\x9c\xc2\x54\xb4\x4a\x15\x89" \
@@ -98,8 +98,8 @@ FE3C_TEST(HASH_FUNCTION_SHAKE256, HelloWorld) {
     FAIL_IF_MEMCMP(expected_output, output, HASH_OUTPUT_SIZE_IN_BYTES);
 }
 
-FE3C_TEST(HASH_FUNCTION_SHAKE256, GatherIoTest) {
-
+FE3C_TEST(HASH_FUNCTION_SHAKE256, GatherIoTest)
+{
     u8 output[HASH_OUTPUT_SIZE_IN_BYTES];
     const u8 expected_output[] = \
         "\x2f\xa2\x63\xfa\xef\x62\xcc\xa3\xf7\x84\xf2\x0e\xe0\xb1\xed\x6e" \
@@ -123,8 +123,8 @@ FE3C_TEST(HASH_FUNCTION_SHAKE256, GatherIoTest) {
     FAIL_IF_MEMCMP(expected_output, output, HASH_OUTPUT_SIZE_IN_BYTES);
 }
 
-FE3C_TEST(HASH_FUNCTION_SHAKE256, BufferSkippingTest) {
-
+FE3C_TEST(HASH_FUNCTION_SHAKE256, BufferSkippingTest)
+{
     u8 output[HASH_OUTPUT_SIZE_IN_BYTES];
     const u8 expected_output[] = \
         "\x9a\xdb\xef\x37\x16\x14\x54\xa0\x26\xd9\xb4\x9e\x23\x18\xd7\xd2" \

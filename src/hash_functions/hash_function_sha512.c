@@ -1,13 +1,13 @@
 #include <hash_functions/hash_functions.h>
 #include <hash_functions/hash_function_sha512.h>
 
-static inline void sha512_compress(u64 * state, const u8 * input_block, u64 * schedule, sha512_working_variables * work);
-static inline void sha512_prepare_message_schedule(u64 * schedule, const u8 * input);
-static inline void store_64(u8 * dst, const u64 * src, size_t wordcount);
-static inline void load_64(u64 * dst, const u8 * src, size_t wordcount);
+static inline void sha512_compress(u64 *state, const u8 *input_block, u64 *schedule, sha512_working_variables *work);
+static inline void sha512_prepare_message_schedule(u64 *schedule, const u8 *input);
+static inline void store_64(u8 *dst, const u64 *src, size_t wordcount);
+static inline void load_64(u64 *dst, const u8 *src, size_t wordcount);
 
-void hash_sha512(u8 * output, const struct iovec * iov, int iovcnt) {
-
+void hash_sha512(u8 *output, const struct iovec *iov, int iovcnt)
+{
     FE3C_SANITY_CHECK(output, NULL);
     FE3C_SANITY_CHECK(iov || iovcnt == 0, NULL);
 
@@ -41,7 +41,7 @@ void hash_sha512(u8 * output, const struct iovec * iov, int iovcnt) {
 
         /* Update the state for each field */
         size_t input_length = iov[i].iov_len;
-        const u8 * input = iov[i].iov_base;
+        const u8 *input = iov[i].iov_base;
 
         /* Update the length */
 
@@ -51,10 +51,8 @@ void hash_sha512(u8 * output, const struct iovec * iov, int iovcnt) {
          * and save in the high part of the bitlength */
         u64 temp_length_high = ( (u64) input_length ) >> 61;
         /* Check for overflow of the low word */
-        if ((message_length_low += temp_length_low) < temp_length_low) {
-            /* Overflow into the high word occurred */
+        if ((message_length_low += temp_length_low) < temp_length_low)
             message_length_high++;
-        }
         /* Add the high part of input_length into the aggregate message length */
         message_length_high += temp_length_high;
 
@@ -130,8 +128,8 @@ void hash_sha512(u8 * output, const struct iovec * iov, int iovcnt) {
     purge_secrets(block_buffer, sizeof(block_buffer));
 }
 
-static inline void sha512_compress(u64 * state, const u8 * input_block, u64 * schedule, sha512_working_variables * work) {
-
+static inline void sha512_compress(u64 *state, const u8 *input_block, u64 *schedule, sha512_working_variables *work)
+{
     sha512_prepare_message_schedule(schedule, input_block);
     /* Initialize the working variables */
     work->a = state[0];
@@ -175,24 +173,22 @@ static inline void sha512_compress(u64 * state, const u8 * input_block, u64 * sc
     state[7] += work->h;
 }
 
-static inline void sha512_prepare_message_schedule(u64 * schedule, const u8 * input) {
-
+static inline void sha512_prepare_message_schedule(u64 *schedule, const u8 *input)
+{
     /* Write the current input block into the first 16 words of the message schedule */
     load_64(schedule, input, SHA512_BLOCK_SIZE_BYTES / 8);
 
     /* Fill in the rest of the message schedule */
-    for (int t = SHA512_BLOCK_SIZE_BYTES / 8; t < SHA512_MESSAGE_SCHEDULE_WORD_COUNT; t++) {
-
+    for (int t = SHA512_BLOCK_SIZE_BYTES / 8; t < SHA512_MESSAGE_SCHEDULE_WORD_COUNT; t++)
         schedule[t] = \
             SSIG1(schedule[t - 2]) + \
             schedule[t - 7] + \
             SSIG0(schedule[t - 15]) + \
             schedule[t - 16];
-    }
 }
 
-static inline void store_64(u8 * dst, const u64 * src, size_t wordcount) {
-
+static inline void store_64(u8 *dst, const u64 *src, size_t wordcount)
+{
 #if FE3C_BIGENDIAN_TARGET
     (void) memcpy(dst, src, wordcount * 8);
 #else
@@ -212,10 +208,10 @@ static inline void store_64(u8 * dst, const u64 * src, size_t wordcount) {
 #endif /* FE3C_BIGENDIAN_TARGET */
 }
 
-static inline void load_64(u64 * dst, const u8 * src, size_t wordcount) {
-
+static inline void load_64(u64 *dst, const u8 *src, size_t wordcount)
+{
 #if FE3C_BIGENDIAN_TARGET
-    (void) memcpy(dst, src, wordcount * 8);
+    (void) memcpy(dst, src, wordcount *8);
 #else
     /* Little-endian target or endianness unknown (take the safe route) - load the bytes
      * into words manually */

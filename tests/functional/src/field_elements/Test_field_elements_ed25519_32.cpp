@@ -2,13 +2,13 @@
 #include <field_elements/field_elements_ed25519.h>
 
 #if FE3C_FUNCTIONAL_TESTS_HOST
-TEST_GROUP(FIELD_ELEMENTS_ED25519_32) {
-
+TEST_GROUP(FIELD_ELEMENTS_ED25519_32)
+{
 };
 #endif /* FE3C_FUNCTIONAL_TESTS_HOST */
 
-FE3C_TEST(FIELD_ELEMENTS_ED25519_32, CmovFlagCleared_NoOp) {
-
+FE3C_TEST(FIELD_ELEMENTS_ED25519_32, CmovFlagCleared_NoOp)
+{
     fe25519 input = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
     fe25519 output = { 10, 9, 8, 7, 6, 5, 4, 3, 2, 1 };
     /* Expect output to remain untouched */
@@ -17,8 +17,8 @@ FE3C_TEST(FIELD_ELEMENTS_ED25519_32, CmovFlagCleared_NoOp) {
     FAIL_IF_MEMCMP(expected, output, sizeof(fe25519));
 }
 
-FE3C_TEST(FIELD_ELEMENTS_ED25519_32, CmovFlagSet_DoMove) {
-
+FE3C_TEST(FIELD_ELEMENTS_ED25519_32, CmovFlagSet_DoMove)
+{
     fe25519 input = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
     fe25519 output = { 10, 9, 8, 7, 6, 5, 4, 3, 2, 1 };
     /* Expect a move to take place */
@@ -27,8 +27,8 @@ FE3C_TEST(FIELD_ELEMENTS_ED25519_32, CmovFlagSet_DoMove) {
     FAIL_IF_MEMCMP(expected, output, sizeof(fe25519));
 }
 
-FE3C_TEST(FIELD_ELEMENTS_ED25519_32, StrongReduce_ElementInOkRange_NoOp) {
-
+FE3C_TEST(FIELD_ELEMENTS_ED25519_32, StrongReduce_ElementInOkRange_NoOp)
+{
     fe25519 input = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
     fe25519 expected = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
     fe25519 output;
@@ -36,8 +36,8 @@ FE3C_TEST(FIELD_ELEMENTS_ED25519_32, StrongReduce_ElementInOkRange_NoOp) {
     FAIL_IF_MEMCMP(expected, output, sizeof(fe25519));
 }
 
-FE3C_TEST(FIELD_ELEMENTS_ED25519_32, WeakReduce_ElementInOkRange_NoOp) {
-
+FE3C_TEST(FIELD_ELEMENTS_ED25519_32, WeakReduce_ElementInOkRange_NoOp)
+{
     fe25519 input = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
     fe25519 expected = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
     fe25519 output;
@@ -45,8 +45,8 @@ FE3C_TEST(FIELD_ELEMENTS_ED25519_32, WeakReduce_ElementInOkRange_NoOp) {
     FAIL_IF_MEMCMP(expected, output, sizeof(fe25519));
 }
 
-FE3C_TEST(FIELD_ELEMENTS_ED25519_32, StrongReduce_ElementInOkRangeWithOverflowInLimb_Normalize) {
-
+FE3C_TEST(FIELD_ELEMENTS_ED25519_32, StrongReduce_ElementInOkRangeWithOverflowInLimb_Normalize)
+{
     fe25519 input = { 1, 2, 3, 4, 5, 6, 7, 8, 0x4000000, 10 };
     fe25519 expected = { 1, 2, 3, 4, 5, 6, 7, 8, 0, 11 };
     fe25519 output;
@@ -54,8 +54,8 @@ FE3C_TEST(FIELD_ELEMENTS_ED25519_32, StrongReduce_ElementInOkRangeWithOverflowIn
     FAIL_IF_MEMCMP(expected, output, sizeof(fe25519));
 }
 
-FE3C_TEST(FIELD_ELEMENTS_ED25519_32, WeakReduce_ElementInOkRangeWithOverflowInLimb_Normalize) {
-
+FE3C_TEST(FIELD_ELEMENTS_ED25519_32, WeakReduce_ElementInOkRangeWithOverflowInLimb_Normalize)
+{
     fe25519 input = { 1, 2, 3, 4, 5, 6, 7, 8, 0x4000000, 10 };
     fe25519 expected = { 1, 2, 3, 4, 5, 6, 7, 8, 0, 11 };
     fe25519 output;
@@ -63,8 +63,8 @@ FE3C_TEST(FIELD_ELEMENTS_ED25519_32, WeakReduce_ElementInOkRangeWithOverflowInLi
     FAIL_IF_MEMCMP(expected, output, sizeof(fe25519));
 }
 
-FE3C_TEST(FIELD_ELEMENTS_ED25519_32, StrongReduce_ElementEqualToModulus_NormalizeToZero) {
-
+FE3C_TEST(FIELD_ELEMENTS_ED25519_32, StrongReduce_ElementEqualToModulus_NormalizeToZero)
+{
     fe25519 input = { 0x3ffffed, 0x1ffffff, 0x3ffffff, 0x1ffffff, 0x3ffffff, 0x1ffffff, 0x3ffffff, 0x1ffffff, 0x3ffffff, 0x1ffffff };
     fe25519 expected = {};
     fe25519 output;
@@ -72,8 +72,8 @@ FE3C_TEST(FIELD_ELEMENTS_ED25519_32, StrongReduce_ElementEqualToModulus_Normaliz
     FAIL_IF_MEMCMP(expected, output, sizeof(fe25519));
 }
 
-FE3C_TEST(FIELD_ELEMENTS_ED25519_32, WeakReduce_ElementEqualToModulus_NoOp) {
-
+FE3C_TEST(FIELD_ELEMENTS_ED25519_32, WeakReduce_ElementEqualToModulus_NoOp)
+{
     fe25519 input = { 0x3ffffed, 0x1ffffff, 0x3ffffff, 0x1ffffff, 0x3ffffff, 0x1ffffff, 0x3ffffff, 0x1ffffff, 0x3ffffff, 0x1ffffff };
     fe25519 expected = { 0x3ffffed, 0x1ffffff, 0x3ffffff, 0x1ffffff, 0x3ffffff, 0x1ffffff, 0x3ffffff, 0x1ffffff, 0x3ffffff, 0x1ffffff };
     fe25519 output;
@@ -81,8 +81,8 @@ FE3C_TEST(FIELD_ELEMENTS_ED25519_32, WeakReduce_ElementEqualToModulus_NoOp) {
     FAIL_IF_MEMCMP(expected, output, sizeof(fe25519));
 }
 
-FE3C_TEST(FIELD_ELEMENTS_ED25519_32, StrongReduce_ElementEqualToTwiceTheModulus_NormalizeToZero) {
-
+FE3C_TEST(FIELD_ELEMENTS_ED25519_32, StrongReduce_ElementEqualToTwiceTheModulus_NormalizeToZero)
+{
     fe25519 input = { 0x7ffffda, 0x3fffffe, 0x7fffffe, 0x3fffffe, 0x7fffffe, 0x3fffffe, 0x7fffffe, 0x3fffffe, 0x7fffffe, 0x3fffffe };
     fe25519 expected = {};
     fe25519 output;
@@ -90,8 +90,8 @@ FE3C_TEST(FIELD_ELEMENTS_ED25519_32, StrongReduce_ElementEqualToTwiceTheModulus_
     FAIL_IF_MEMCMP(expected, output, sizeof(fe25519));
 }
 
-FE3C_TEST(FIELD_ELEMENTS_ED25519_32, WeakReduce_ElementEqualToTwiceTheModulus_ReduceToModulus) {
-
+FE3C_TEST(FIELD_ELEMENTS_ED25519_32, WeakReduce_ElementEqualToTwiceTheModulus_ReduceToModulus)
+{
     fe25519 input = { 0x7ffffda, 0x3fffffe, 0x7fffffe, 0x3fffffe, 0x7fffffe, 0x3fffffe, 0x7fffffe, 0x3fffffe, 0x7fffffe, 0x3fffffe };
     fe25519 expected = { 0x3ffffed, 0x1ffffff, 0x3ffffff, 0x1ffffff, 0x3ffffff, 0x1ffffff, 0x3ffffff, 0x1ffffff, 0x3ffffff, 0x1ffffff };
     fe25519 output;
@@ -99,8 +99,8 @@ FE3C_TEST(FIELD_ELEMENTS_ED25519_32, WeakReduce_ElementEqualToTwiceTheModulus_Re
     FAIL_IF_MEMCMP(expected, output, sizeof(fe25519));
 }
 
-FE3C_TEST(FIELD_ELEMENTS_ED25519_32, StrongReduce_ElementEqualToFourTimesTheModulus_NormalizeToZero) {
-
+FE3C_TEST(FIELD_ELEMENTS_ED25519_32, StrongReduce_ElementEqualToFourTimesTheModulus_NormalizeToZero)
+{
     fe25519 input = { 0xfffffb4, 0x7fffffc, 0xffffffc, 0x7fffffc, 0xffffffc, 0x7fffffc, 0xffffffc, 0x7fffffc, 0xffffffc, 0x7fffffc };
     fe25519 expected = {};
     fe25519 output;
@@ -108,8 +108,8 @@ FE3C_TEST(FIELD_ELEMENTS_ED25519_32, StrongReduce_ElementEqualToFourTimesTheModu
     FAIL_IF_MEMCMP(expected, output, sizeof(fe25519));
 }
 
-FE3C_TEST(FIELD_ELEMENTS_ED25519_32, WeakReduce_ElementEqualToFourTimesTheModulus_ReduceToModulus) {
-
+FE3C_TEST(FIELD_ELEMENTS_ED25519_32, WeakReduce_ElementEqualToFourTimesTheModulus_ReduceToModulus)
+{
     fe25519 input = { 0xfffffb4, 0x7fffffc, 0xffffffc, 0x7fffffc, 0xffffffc, 0x7fffffc, 0xffffffc, 0x7fffffc, 0xffffffc, 0x7fffffc };
     fe25519 expected = { 0x3ffffed, 0x1ffffff, 0x3ffffff, 0x1ffffff, 0x3ffffff, 0x1ffffff, 0x3ffffff, 0x1ffffff, 0x3ffffff, 0x1ffffff };
     fe25519 output;
@@ -117,8 +117,8 @@ FE3C_TEST(FIELD_ELEMENTS_ED25519_32, WeakReduce_ElementEqualToFourTimesTheModulu
     FAIL_IF_MEMCMP(expected, output, sizeof(fe25519));
 }
 
-FE3C_TEST(FIELD_ELEMENTS_ED25519_32, StrongReduce_ElementEqualToOneMoreThanTheModulus_ReduceToOne) {
-
+FE3C_TEST(FIELD_ELEMENTS_ED25519_32, StrongReduce_ElementEqualToOneMoreThanTheModulus_ReduceToOne)
+{
     fe25519 input = { 0x3ffffed + 1, 0x1ffffff, 0x3ffffff, 0x1ffffff, 0x3ffffff, 0x1ffffff, 0x3ffffff, 0x1ffffff, 0x3ffffff, 0x1ffffff };
     fe25519 expected = { 1 };
     fe25519 output;
@@ -126,8 +126,8 @@ FE3C_TEST(FIELD_ELEMENTS_ED25519_32, StrongReduce_ElementEqualToOneMoreThanTheMo
     FAIL_IF_MEMCMP(expected, output, sizeof(fe25519));
 }
 
-FE3C_TEST(FIELD_ELEMENTS_ED25519_32, WeakReduce_ElementEqualToOneMoreThanTheModulus_NoOp) {
-
+FE3C_TEST(FIELD_ELEMENTS_ED25519_32, WeakReduce_ElementEqualToOneMoreThanTheModulus_NoOp)
+{
     fe25519 input = { 0x3ffffed, 0x1ffffff, 0x3ffffff, 0x1ffffff, 0x3ffffff, 0x1ffffff, 0x3ffffff, 0x1ffffff, 0x3ffffff, 0x1ffffff };
     fe25519 expected = { 0x3ffffed, 0x1ffffff, 0x3ffffff, 0x1ffffff, 0x3ffffff, 0x1ffffff, 0x3ffffff, 0x1ffffff, 0x3ffffff, 0x1ffffff };
     fe25519 output;
@@ -135,8 +135,8 @@ FE3C_TEST(FIELD_ELEMENTS_ED25519_32, WeakReduce_ElementEqualToOneMoreThanTheModu
     FAIL_IF_MEMCMP(expected, output, sizeof(fe25519));
 }
 
-FE3C_TEST(FIELD_ELEMENTS_ED25519_32, StrongReduce_ElementEqualToOneLessThanTheModulus_NoOp) {
-
+FE3C_TEST(FIELD_ELEMENTS_ED25519_32, StrongReduce_ElementEqualToOneLessThanTheModulus_NoOp)
+{
     fe25519 input = { 0x3ffffed - 1, 0x1ffffff, 0x3ffffff, 0x1ffffff, 0x3ffffff, 0x1ffffff, 0x3ffffff, 0x1ffffff, 0x3ffffff, 0x1ffffff };
     fe25519 expected = { 0x3ffffed - 1, 0x1ffffff, 0x3ffffff, 0x1ffffff, 0x3ffffff, 0x1ffffff, 0x3ffffff, 0x1ffffff, 0x3ffffff, 0x1ffffff };
     fe25519 output;
@@ -144,8 +144,8 @@ FE3C_TEST(FIELD_ELEMENTS_ED25519_32, StrongReduce_ElementEqualToOneLessThanTheMo
     FAIL_IF_MEMCMP(expected, output, sizeof(fe25519));
 }
 
-FE3C_TEST(FIELD_ELEMENTS_ED25519_32, WeakReduce_ElementEqualToOneLessThanTheModulus_NoOp) {
-
+FE3C_TEST(FIELD_ELEMENTS_ED25519_32, WeakReduce_ElementEqualToOneLessThanTheModulus_NoOp)
+{
     fe25519 input = { 0x3ffffed - 1, 0x1ffffff, 0x3ffffff, 0x1ffffff, 0x3ffffff, 0x1ffffff, 0x3ffffff, 0x1ffffff, 0x3ffffff, 0x1ffffff };
     fe25519 expected = { 0x3ffffed - 1, 0x1ffffff, 0x3ffffff, 0x1ffffff, 0x3ffffff, 0x1ffffff, 0x3ffffff, 0x1ffffff, 0x3ffffff, 0x1ffffff };
     fe25519 output;
@@ -153,8 +153,8 @@ FE3C_TEST(FIELD_ELEMENTS_ED25519_32, WeakReduce_ElementEqualToOneLessThanTheModu
     FAIL_IF_MEMCMP(expected, output, sizeof(fe25519));
 }
 
-FE3C_TEST(FIELD_ELEMENTS_ED25519_32, StrongReduce_ElementWithLargeOverflowInHighLimb_NormalizeSuccessfully) {
-
+FE3C_TEST(FIELD_ELEMENTS_ED25519_32, StrongReduce_ElementWithLargeOverflowInHighLimb_NormalizeSuccessfully)
+{
     fe25519 input = { 0x3ffffed, 0x1ffffff, 0x3ffffff, 0x1ffffff, 0x3ffffff, 0x1ffffff, 0x3ffffff, 0x1ffffff, 0x3ffffff, 0x1ffffff + 0xffffff };
     fe25519 expected = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0xffffff };
     fe25519 output;
@@ -162,8 +162,8 @@ FE3C_TEST(FIELD_ELEMENTS_ED25519_32, StrongReduce_ElementWithLargeOverflowInHigh
     FAIL_IF_MEMCMP(expected, output, sizeof(fe25519));
 }
 
-FE3C_TEST(FIELD_ELEMENTS_ED25519_32, StrongReduce_ElementWithOverflowInEachLimb_NormalizeSuccessfully) {
-
+FE3C_TEST(FIELD_ELEMENTS_ED25519_32, StrongReduce_ElementWithOverflowInEachLimb_NormalizeSuccessfully)
+{
     fe25519 input = {
         0x3ffffed + 0xffff,
         0x1ffffff + 0xffff,
@@ -184,8 +184,8 @@ FE3C_TEST(FIELD_ELEMENTS_ED25519_32, StrongReduce_ElementWithOverflowInEachLimb_
     FAIL_IF_MEMCMP(expected, output, sizeof(fe25519));
 }
 
-FE3C_TEST(FIELD_ELEMENTS_ED25519_32, StrongReduce_ElementWithMaxOverflowInEachLimb_NormalizeSuccessfully) {
-
+FE3C_TEST(FIELD_ELEMENTS_ED25519_32, StrongReduce_ElementWithMaxOverflowInEachLimb_NormalizeSuccessfully)
+{
     fe25519 input = {
         0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff
     };
@@ -195,24 +195,24 @@ FE3C_TEST(FIELD_ELEMENTS_ED25519_32, StrongReduce_ElementWithMaxOverflowInEachLi
     FAIL_IF_MEMCMP(expected, output, sizeof(fe25519));
 }
 
-FE3C_TEST(FIELD_ELEMENTS_ED25519_32, Equal_ElementsEqual_ReturnTrue) {
-
+FE3C_TEST(FIELD_ELEMENTS_ED25519_32, Equal_ElementsEqual_ReturnTrue)
+{
     fe25519 input1 = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
     fe25519 input2 = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
     int equal = fe25519_equal(input1, input2);
     FAIL_UNLESS_EQUAL(1, equal);
 }
 
-FE3C_TEST(FIELD_ELEMENTS_ED25519_32, Equal_ElementsDifferent_ReturnFalse) {
-
+FE3C_TEST(FIELD_ELEMENTS_ED25519_32, Equal_ElementsDifferent_ReturnFalse)
+{
     fe25519 input1 = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
     fe25519 input2 = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 11 };
     int equal = fe25519_equal(input1, input2);
     FAIL_UNLESS_EQUAL(0, equal);
 }
 
-FE3C_TEST(FIELD_ELEMENTS_ED25519_32, Equal_ElementsCongruentButNotEqual_ReturnFalse) {
-
+FE3C_TEST(FIELD_ELEMENTS_ED25519_32, Equal_ElementsCongruentButNotEqual_ReturnFalse)
+{
     fe25519 input1 = {
         0x3ffffed + 1,
         0x1ffffff + 2,
@@ -235,8 +235,8 @@ FE3C_TEST(FIELD_ELEMENTS_ED25519_32, Equal_ElementsCongruentButNotEqual_ReturnFa
     FAIL_UNLESS_EQUAL(1, equal);
 }
 
-FE3C_TEST(FIELD_ELEMENTS_ED25519_32, Add_OnePlusOne_EqualsTwo) {
-
+FE3C_TEST(FIELD_ELEMENTS_ED25519_32, Add_OnePlusOne_EqualsTwo)
+{
     fe25519 input1 = { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
     fe25519 input2 = { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
     fe25519 expected = { 2, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
@@ -245,8 +245,8 @@ FE3C_TEST(FIELD_ELEMENTS_ED25519_32, Add_OnePlusOne_EqualsTwo) {
     FAIL_IF_MEMCMP(expected, output, sizeof(fe25519));
 }
 
-FE3C_TEST(FIELD_ELEMENTS_ED25519_32, Add_ModulusPlusModulus_EqualsTwoModuli) {
-
+FE3C_TEST(FIELD_ELEMENTS_ED25519_32, Add_ModulusPlusModulus_EqualsTwoModuli)
+{
     fe25519 input1 = { 0x3ffffed, 0x1ffffff, 0x3ffffff, 0x1ffffff, 0x3ffffff, 0x1ffffff, 0x3ffffff, 0x1ffffff, 0x3ffffff, 0x1ffffff };
     fe25519 input2 = { 0x3ffffed, 0x1ffffff, 0x3ffffff, 0x1ffffff, 0x3ffffff, 0x1ffffff, 0x3ffffff, 0x1ffffff, 0x3ffffff, 0x1ffffff };
     fe25519 expected = { 0x7ffffda, 0x3fffffe, 0x7fffffe, 0x3fffffe, 0x7fffffe, 0x3fffffe, 0x7fffffe, 0x3fffffe, 0x7fffffe, 0x3fffffe };
@@ -256,8 +256,8 @@ FE3C_TEST(FIELD_ELEMENTS_ED25519_32, Add_ModulusPlusModulus_EqualsTwoModuli) {
     FAIL_IF_MEMCMP(expected, output, sizeof(fe25519));
 }
 
-FE3C_TEST(FIELD_ELEMENTS_ED25519_32, Sub_ModulusMinusModulus_CongruentToZero) {
-
+FE3C_TEST(FIELD_ELEMENTS_ED25519_32, Sub_ModulusMinusModulus_CongruentToZero)
+{
     fe25519 input1 = { 0x3ffffed, 0x1ffffff, 0x3ffffff, 0x1ffffff, 0x3ffffff, 0x1ffffff, 0x3ffffff, 0x1ffffff, 0x3ffffff, 0x1ffffff };
     fe25519 input2 = { 0x3ffffed, 0x1ffffff, 0x3ffffff, 0x1ffffff, 0x3ffffff, 0x1ffffff, 0x3ffffff, 0x1ffffff, 0x3ffffff, 0x1ffffff };
     fe25519 canonical = {};
@@ -269,8 +269,8 @@ FE3C_TEST(FIELD_ELEMENTS_ED25519_32, Sub_ModulusMinusModulus_CongruentToZero) {
     FAIL_IF_MEMCMP(canonical, output, sizeof(fe25519));
 }
 
-FE3C_TEST(FIELD_ELEMENTS_ED25519_32, Sub_OneMinusTwo_CongruentToModulusMinusOne) {
-
+FE3C_TEST(FIELD_ELEMENTS_ED25519_32, Sub_OneMinusTwo_CongruentToModulusMinusOne)
+{
     fe25519 input1 = { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
     fe25519 input2 = { 2, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
     fe25519 canonical = { 0x3ffffed - 1, 0x1ffffff, 0x3ffffff, 0x1ffffff, 0x3ffffff, 0x1ffffff, 0x3ffffff, 0x1ffffff, 0x3ffffff, 0x1ffffff };
@@ -282,8 +282,8 @@ FE3C_TEST(FIELD_ELEMENTS_ED25519_32, Sub_OneMinusTwo_CongruentToModulusMinusOne)
     FAIL_IF_MEMCMP(canonical, output, sizeof(fe25519));
 }
 
-FE3C_TEST(FIELD_ELEMENTS_ED25519_32, Mul_ModulusPlusOneTimesTwo_CongruentToTwo) {
-
+FE3C_TEST(FIELD_ELEMENTS_ED25519_32, Mul_ModulusPlusOneTimesTwo_CongruentToTwo)
+{
     fe25519 input1 = { 0x3ffffed + 1, 0x1ffffff, 0x3ffffff, 0x1ffffff, 0x3ffffff, 0x1ffffff, 0x3ffffff, 0x1ffffff, 0x3ffffff, 0x1ffffff };
     fe25519 input2 = { 2, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
     fe25519 canonical = { 2, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
@@ -295,8 +295,8 @@ FE3C_TEST(FIELD_ELEMENTS_ED25519_32, Mul_ModulusPlusOneTimesTwo_CongruentToTwo) 
     FAIL_IF_MEMCMP(canonical, output, sizeof(fe25519));
 }
 
-FE3C_TEST(FIELD_ELEMENTS_ED25519_32, Mul_ModulusTimesModulus_CongruentToZero) {
-
+FE3C_TEST(FIELD_ELEMENTS_ED25519_32, Mul_ModulusTimesModulus_CongruentToZero)
+{
     fe25519 input1 = { 0x3ffffed, 0x1ffffff, 0x3ffffff, 0x1ffffff, 0x3ffffff, 0x1ffffff, 0x3ffffff, 0x1ffffff, 0x3ffffff, 0x1ffffff };
     fe25519 input2 = { 0x3ffffed, 0x1ffffff, 0x3ffffff, 0x1ffffff, 0x3ffffff, 0x1ffffff, 0x3ffffff, 0x1ffffff, 0x3ffffff, 0x1ffffff };
     fe25519 canonical = {};
@@ -308,8 +308,8 @@ FE3C_TEST(FIELD_ELEMENTS_ED25519_32, Mul_ModulusTimesModulus_CongruentToZero) {
     FAIL_IF_MEMCMP(canonical, output, sizeof(fe25519));
 }
 
-FE3C_TEST(FIELD_ELEMENTS_ED25519_32, Mul_TwiceTheModulusTimesFourTimesTheModulusPlusFive_CongruentToZero) {
-
+FE3C_TEST(FIELD_ELEMENTS_ED25519_32, Mul_TwiceTheModulusTimesFourTimesTheModulusPlusFive_CongruentToZero)
+{
     fe25519 input1 = { 0x7ffffda, 0x3fffffe, 0x7fffffe, 0x3fffffe, 0x7fffffe, 0x3fffffe, 0x7fffffe, 0x3fffffe, 0x7fffffe, 0x3fffffe };
     fe25519 input2 = { 0xfffffb4 + 5, 0x7fffffc, 0xffffffc, 0x7fffffc, 0xffffffc, 0x7fffffc, 0xffffffc, 0x7fffffc, 0xffffffc, 0x7fffffc };
     fe25519 canonical = {};
@@ -321,8 +321,8 @@ FE3C_TEST(FIELD_ELEMENTS_ED25519_32, Mul_TwiceTheModulusTimesFourTimesTheModulus
     FAIL_IF_MEMCMP(canonical, output, sizeof(fe25519));
 }
 
-FE3C_TEST(FIELD_ELEMENTS_ED25519_32, Mul_FourModuliSquared_CongruentToZero) {
-
+FE3C_TEST(FIELD_ELEMENTS_ED25519_32, Mul_FourModuliSquared_CongruentToZero)
+{
     fe25519 input = { 0xfffffb4, 0x7fffffc, 0xffffffc, 0x7fffffc, 0xffffffc, 0x7fffffc, 0xffffffc, 0x7fffffc, 0xffffffc, 0x7fffffc };
     fe25519 canonical = {};
     fe25519 output;
@@ -331,8 +331,8 @@ FE3C_TEST(FIELD_ELEMENTS_ED25519_32, Mul_FourModuliSquared_CongruentToZero) {
     FAIL_IF_MEMCMP(canonical, output, sizeof(fe25519));
 }
 
-FE3C_TEST(FIELD_ELEMENTS_ED25519_32, Mul_ZeroTimesAnything_EqualToZero) {
-
+FE3C_TEST(FIELD_ELEMENTS_ED25519_32, Mul_ZeroTimesAnything_EqualToZero)
+{
     fe25519 input1 = {};
     fe25519 input2 = { 14, 0, 0, 0, 123, 0, 0, 1, 2, 3 };
     fe25519 expected = {};
@@ -341,8 +341,8 @@ FE3C_TEST(FIELD_ELEMENTS_ED25519_32, Mul_ZeroTimesAnything_EqualToZero) {
     FAIL_IF_MEMCMP(expected, output, sizeof(fe25519));
 }
 
-FE3C_TEST(FIELD_ELEMENTS_ED25519_32, Mul_StabilityTest_RemainBoundedAndProduceCorrectResult) {
-
+FE3C_TEST(FIELD_ELEMENTS_ED25519_32, Mul_StabilityTest_RemainBoundedAndProduceCorrectResult)
+{
     /* Check the stability of multiplication, i.e. that the overflow does not grow without bounds */
     fe25519 input = { 0xfffffb40 + 0x100, 0x7fffffc0, 0xffffffc0, 0x7fffffc0, 0xffffffc0, 0x7fffffc0, 0xffffffc0, 0x7fffffc0, 0xffffffc0, 0x7fffffc0 };
     fe25519 accumulator = { 1 };
@@ -368,8 +368,8 @@ FE3C_TEST(FIELD_ELEMENTS_ED25519_32, Mul_StabilityTest_RemainBoundedAndProduceCo
     FAIL_IF_MEMCMP(expected, &accumulator, sizeof(fe25519));
 }
 
-FE3C_TEST(FIELD_ELEMENTS_ED25519_32, Mul_StabilityTest2_RemainBoundedAndProduceCorrectResult) {
-
+FE3C_TEST(FIELD_ELEMENTS_ED25519_32, Mul_StabilityTest2_RemainBoundedAndProduceCorrectResult)
+{
     /* Check the stability of multiplication, i.e. that the overflow does not grow without bounds */
     fe25519 input = { 0x7ffffda + 0x100, 0x3fffffe, 0x7fffffe, 0x3fffffe, 0x7fffffe, 0x3fffffe, 0x7fffffe, 0x3fffffe, 0x7fffffe, 0x3fffffe };
     fe25519 expected = { 0x31cd790, 0x1f8f090, 0x1638e07, 0x19b2c96, 0x1ea9baf, 0xe89a80, 0xb4c78f, 0x12f8e2b, 0x2ca5638, 0xbcc46d };
@@ -394,8 +394,8 @@ FE3C_TEST(FIELD_ELEMENTS_ED25519_32, Mul_StabilityTest2_RemainBoundedAndProduceC
     FAIL_IF_MEMCMP(expected, input, sizeof(fe25519));
 }
 
-FE3C_TEST(FIELD_ELEMENTS_ED25519_32, Invert_Canonical_CorrectlyInvert) {
-
+FE3C_TEST(FIELD_ELEMENTS_ED25519_32, Invert_Canonical_CorrectlyInvert)
+{
     fe25519 input = { 0xdead, 0xbeef, 0xcafe, 0xdeed, 0xface, 0xdead, 0xbeef, 0xcafe, 0xdeed, 0xface };
     fe25519 output;
     fe25519 product;
@@ -408,8 +408,8 @@ FE3C_TEST(FIELD_ELEMENTS_ED25519_32, Invert_Canonical_CorrectlyInvert) {
     FAIL_IF_MEMCMP(expected_product, product, sizeof(fe25519));
 }
 
-FE3C_TEST(FIELD_ELEMENTS_ED25519_32, Invert_NonCanonical_CorrectlyInvert) {
-
+FE3C_TEST(FIELD_ELEMENTS_ED25519_32, Invert_NonCanonical_CorrectlyInvert)
+{
     fe25519 input = {
         0x3ffffed - 1,
         0x1ffffff + 2,
@@ -433,8 +433,8 @@ FE3C_TEST(FIELD_ELEMENTS_ED25519_32, Invert_NonCanonical_CorrectlyInvert) {
     FAIL_IF_MEMCMP(expected_product, product, sizeof(fe25519));
 }
 
-FE3C_TEST(FIELD_ELEMENTS_ED25519_32, I_SquareI_GetMinusOne) {
-
+FE3C_TEST(FIELD_ELEMENTS_ED25519_32, I_SquareI_GetMinusOne)
+{
     fe25519 output;
     fe25519 canonical = { 0x3ffffed - 1, 0x1ffffff, 0x3ffffff, 0x1ffffff, 0x3ffffff, 0x1ffffff, 0x3ffffff, 0x1ffffff, 0x3ffffff, 0x1ffffff };
 

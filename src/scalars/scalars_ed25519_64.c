@@ -17,8 +17,8 @@
 #define GROUP_ORDER_LIMB_1  0x1e735960498
 #define GROUP_ORDER_LIMB_2  0x14def9dea2f
 
-static inline u64 load_64(const u8 src[8]) {
-
+static inline u64 load_64(const u8 src[8])
+{
     /* Integer encoding is always little endian according to RFC 8032 */
     u64 dst;
 #if FE3C_LILENDIAN_TARGET
@@ -38,8 +38,8 @@ static inline u64 load_64(const u8 src[8]) {
     return dst;
 }
 
-static inline u64 load_48(const u8 src[6]) {
-
+static inline u64 load_48(const u8 src[6])
+{
     /* Integer encoding is always little endian according to RFC 8032 */
     u64 dst;
 #if FE3C_LILENDIAN_TARGET
@@ -58,8 +58,8 @@ static inline u64 load_48(const u8 src[6]) {
     return dst;
 }
 
-static inline u64 load_56(const u8 src[7]) {
-
+static inline u64 load_56(const u8 src[7])
+{
     /* Integer encoding is always little endian according to RFC 8032 */
     u64 dst;
 #if FE3C_LILENDIAN_TARGET
@@ -79,8 +79,8 @@ static inline u64 load_56(const u8 src[7]) {
     return dst;
 }
 
-static int ed25519_scalar_is_canonical(const u8 * s) {
-
+static int ed25519_scalar_is_canonical(const u8 *s)
+{
     /* Load the scalar into four 64-bit words (extended to 128 bits) */
     u128 s0 = load_64(&s[0 * 8]);
     u128 s1 = load_64(&s[1 * 8]);
@@ -102,8 +102,8 @@ static int ed25519_scalar_is_canonical(const u8 * s) {
     return (s3 >> 127);
 }
 
-static void ed25519_scalar_reduce(u8 * s) {
-
+static void ed25519_scalar_reduce(u8 *s)
+{
     /* Ed25519 reduction inputs can be 64 bytes long (outputs from SHA-512). Use intermediate
      * 42-bit reduced-radix representation during reduction - we shall use 12 limbs with the
      * highest limb holding 50 bits instead of 42. Note that we use SIGNED words as we rely
@@ -241,8 +241,8 @@ static void ed25519_scalar_reduce(u8 * s) {
     purge_secrets(t, sizeof(t));
 }
 
-static void ed25519_scalars_muladd(u8 * r, const u8 * aa, const u8 * bb, const u8 * cc) {
-
+static void ed25519_scalars_muladd(u8 *r, const u8 *aa, const u8 *bb, const u8 *cc)
+{
     /* Ed25519 multiplication+addition inputs must be 32 bytes long (outputs from SHA-512
      * subjected to reduction or the response scalar which is part of the signature). Use
      * intermediate 42-bit reduced-radix representation. */

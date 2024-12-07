@@ -36,12 +36,10 @@ const fe25519 fe25519_i = {
  * @param r Destination field element
  * @param a Source field element
  */
-void fe25519_copy(fe25519 r, const fe25519 a) {
-
-    if (a != r) {
-
+void fe25519_copy(fe25519 r, const fe25519 a)
+{
+    if (a != r)
         (void) memcpy(r, a, sizeof(fe25519));
-    }
 }
 
 /**
@@ -50,8 +48,8 @@ void fe25519_copy(fe25519 r, const fe25519 a) {
  * @param[in] b The second element to check
  * @return 1 if a = b, 0 otherwise
  */
-int fe25519_equal(const fe25519 a, const fe25519 b) {
-
+int fe25519_equal(const fe25519 a, const fe25519 b)
+{
     /* Assume equality at first */
     int equal = 1;
     u32 ax;
@@ -98,11 +96,11 @@ int fe25519_equal(const fe25519 a, const fe25519 b) {
  * @param a Field element to check
  * @return 1 if a is in canonical form, 0 otherwise
  */
-static inline int fe25519_is_canonical(const fe25519 a) {
-
+static inline int fe25519_is_canonical(const fe25519 a)
+{
     /* Iterators over the limbs */
-    const fe_limb_type * ai = a;
-    const fe_limb_type * pi = fe25519_p;
+    const fe_limb_type *ai = a;
+    const fe_limb_type *pi = fe25519_p;
     /* Registers to store the values of limbs, any borrow and an
      * indicator whether or not the input is equal to the modulus
      * (in which case it is also not canonical despite the borrow
@@ -177,10 +175,10 @@ static inline int fe25519_is_canonical(const fe25519 a) {
  * @param[in] move Flag deciding on the branch, if set to 0, r ::= r, and if set to 1, r ::= a
  * @note If move is set to anything other than 0 or 1, the results are undefined
  */
-void fe25519_conditional_move(fe25519 r, const fe25519 a, int move) {
-
-    const fe_limb_type * ai = a;
-    fe_limb_type * ri = r;
+void fe25519_conditional_move(fe25519 r, const fe25519 a, int move)
+{
+    const fe_limb_type *ai = a;
+    fe_limb_type *ri = r;
     u32 rx;
     u32 ax;
     asm volatile(
@@ -216,10 +214,10 @@ void fe25519_conditional_move(fe25519 r, const fe25519 a, int move) {
  * @param[in] a Field element to be reduced
  * @note Note that the result need to be in canonical form, i.e. between 0 and p-1, it need only be less than 2p
  */
-void fe25519_weak_reduce(fe25519 r, const fe25519 a) {
-
+void fe25519_weak_reduce(fe25519 r, const fe25519 a)
+{
     fe25519_copy(r, a);
-    fe_limb_type * ri = r;
+    fe_limb_type *ri = r;
     u32 rx;
     u32 carry;
 
@@ -278,8 +276,8 @@ void fe25519_weak_reduce(fe25519 r, const fe25519 a) {
  * @param[in] b Subtrahend
  * @param mock Flag controlling whether subtraction is actually performed or result is set to a
  */
-static inline void fe25519_sub_internal(fe25519 r, const fe25519 a, const fe25519 b, int mock) {
-
+static inline void fe25519_sub_internal(fe25519 r, const fe25519 a, const fe25519 b, int mock)
+{
     /* This is an internal function that assumes a >= b and the subtraction
      * can be done directly. */
 
@@ -350,8 +348,8 @@ static inline void fe25519_sub_internal(fe25519 r, const fe25519 a, const fe2551
  * @param[in] a Field element to be reduced
  * @note The result is guaranteed to be in canonical form, i.e. between 0 and p-1
  */
-void fe25519_strong_reduce(fe25519 r, const fe25519 a) {
-
+void fe25519_strong_reduce(fe25519 r, const fe25519 a)
+{
     /* Start by doing a weak reduction */
     fe25519_weak_reduce(r, a);
     /* Check canonicity of a */
@@ -365,8 +363,8 @@ void fe25519_strong_reduce(fe25519 r, const fe25519 a) {
  * @param[out] r The result of negation
  * @param[in] a Element to be negated
  */
-void fe25519_neg(fe25519 r, const fe25519 a) {
-
+void fe25519_neg(fe25519 r, const fe25519 a)
+{
     fe25519_sub_internal(r, fe25519_2p, a, 0);
 }
 
@@ -376,12 +374,12 @@ void fe25519_neg(fe25519 r, const fe25519 a) {
  * @param[in] a Operand
  * @param[in] b Operand
  */
-void fe25519_add(fe25519 r, const fe25519 a, const fe25519 b) {
-
+void fe25519_add(fe25519 r, const fe25519 a, const fe25519 b)
+{
     /* Iterators over the limbs */
-    const fe_limb_type * ai = a;
-    const fe_limb_type * bi = b;
-    fe_limb_type * ri = r;
+    const fe_limb_type *ai = a;
+    const fe_limb_type *bi = b;
+    fe_limb_type *ri = r;
     /* Registers to store the values of limbs */
     u32 ax;
     u32 bx;
@@ -443,8 +441,8 @@ void fe25519_add(fe25519 r, const fe25519 a, const fe25519 b) {
  * @param[in] a Minuend
  * @param[in] b Subtrahend
  */
-void fe25519_sub(fe25519 r, const fe25519 a, const fe25519 b) {
-
+void fe25519_sub(fe25519 r, const fe25519 a, const fe25519 b)
+{
     /* Negate b and then add that to a */
     fe25519 _b;
     fe25519_sub_internal(_b, fe25519_2p, b, 0);
@@ -457,14 +455,14 @@ void fe25519_sub(fe25519 r, const fe25519 a, const fe25519 b) {
  * @param[in] a Operand
  * @param[in] b Operand
  */
-void fe25519_mul(fe25519 r, const fe25519 a, const fe25519 b) {
-
+void fe25519_mul(fe25519 r, const fe25519 a, const fe25519 b)
+{
     fe25519 _r;
     /* Constants */
     u32 nineteen;
     /* Iterators over the inputs */
-    const fe_limb_type * ai;
-    const fe_limb_type * bi;
+    const fe_limb_type *ai;
+    const fe_limb_type *bi;
     /* Temporary storage */
     u32 carrylo;
     u32 carryhi;
@@ -1357,8 +1355,8 @@ void fe25519_mul(fe25519 r, const fe25519 a, const fe25519 b) {
  * @param[out] r Result of the squaring, i.e. the product r = a a
  * @param[in] a Field element to square
  */
-void fe25519_square(fe25519 r, const fe25519 a) {
-
+void fe25519_square(fe25519 r, const fe25519 a)
+{
     fe25519_mul(r, a, a);
 }
 
@@ -1367,16 +1365,16 @@ void fe25519_square(fe25519 r, const fe25519 a) {
  * @param[out] buffer Output buffer for the encoded field element
  * @param[in] a Field element to encode
  */
-void fe25519_encode(u8 * buffer, fe25519 a) {
-
+void fe25519_encode(u8 *buffer, fe25519 a)
+{
     /* Canonicalize the element first */
     fe25519_strong_reduce(a, a);
 
     /* Use word-based memory accesses since encoding is little-endian
      * and so is the CPU */
-    u32 * words = (u32 *) buffer;
+    u32 *words = (u32 *) buffer;
     /* Iterate over the 15-bit limbs instead of the 32-bit words */
-    u16 * limb15 = (u16 *) a;
+    u16 *limb15 = (u16 *) a;
 
     /* In the first word of the output buffer we shall fit the first
      * two 15-bit limbs as well as two bits of the third limb */
@@ -1404,13 +1402,13 @@ void fe25519_encode(u8 * buffer, fe25519 a) {
  * @return 1 if decoding succeeded, 0 otherwise
  */
 __attribute__((warn_unused_result))
-int fe25519_decode(fe25519 r, const u8 * buffer) {
-
+int fe25519_decode(fe25519 r, const u8 *buffer)
+{
     /* Use word-based memory accesses since encoding is little-endian
      * and so is the CPU */
-    const u32 * words = (const u32 *) buffer;
+    const u32 *words = (const u32 *) buffer;
     /* Iterate over the 15-bit limbs instead of the 32-bit words */
-    u16 * limb15 = (u16 *) r;
+    u16 *limb15 = (u16 *) r;
 
     /* First do the 16-bit reads and then clear the top bits in one go
      * for code clarity (at the cost of worse cache usage, though) */
@@ -1446,10 +1444,8 @@ int fe25519_decode(fe25519 r, const u8 * buffer) {
 
     u16 mask = 0x7FFF;
     /* Clear the top bit in all limbs */
-    for (int i = 0; i < 2 * ED25519_FE_LIMB_COUNT - 1; i++) {
-
+    for (int i = 0; i < 2 * ED25519_FE_LIMB_COUNT - 1; i++)
         limb15[i] &= mask;
-    }
 
     /* Check canonicity */
     return fe25519_is_canonical(r);

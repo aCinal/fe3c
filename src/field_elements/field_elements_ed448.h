@@ -8,7 +8,6 @@ extern "C" {
 
 #include <global_defs.h>
 #include <field_elements/field_elements.h>
-#include <inttypes.h>
 
 #if FE3C_32BIT && FE3C_64BIT
     #error "Both FE3C_32BIT and FE3C_64BIT set!"
@@ -40,6 +39,33 @@ extern "C" {
     #if !defined(ED448_BASEPOINT_T)
         #define ED448_BASEPOINT_T  { 0xc198105, 0xe3c816d, 0x3f4e093, 0x6207183, 0x3421403, 0x4dde98e, 0x519c985, 0xa319b57, 0x6382384, 0x794be95, 0x86da60f, 0xe1ddc2b, 0x682a9ff, 0x50e23d5, 0x173c6a4, 0x6d3669e }
     #endif /* !defined(ED448_BASEPOINT_T) */
+
+    #if !defined(ED448_BASEPOINT_TIMES_2_225_X)
+        #define ED448_BASEPOINT_TIMES_2_225_X  { 0xfb672fb, 0xcbff257, 0x4b76d0f, 0x7a7fa27, 0xdc438c3, 0xa8e4afe, 0x96b29fa, 0x2a17d02, 0x2288bca, 0x6eb28cf, 0x88c4255, 0x61a9f62, 0x2a94bcf, 0x2a5459d, 0x89abe2d, 0xa7779d }
+    #endif /* !defined(ED448_BASEPOINT_TIMES_2_225_X) */
+    #if !defined(ED448_BASEPOINT_TIMES_2_225_Y)
+        #define ED448_BASEPOINT_TIMES_2_225_Y  { 0x9c557f9, 0x9c8d696, 0x495f462, 0xc84ccc, 0x8c22423, 0x316eb91, 0x5ebe2d9, 0x3e7cd2e, 0x4aafa9f, 0xca4e43f, 0xf825196, 0x7fd244c, 0xd813995, 0x8c6f5c9, 0x783b008, 0xc4dd09e }
+    #endif /* !defined(ED448_BASEPOINT_TIMES_2_225_Y) */
+    #if !defined(ED448_BASEPOINT_TIMES_2_225_Z)
+        #define ED448_BASEPOINT_TIMES_2_225_Z  { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }
+    #endif /* !defined(ED448_BASEPOINT_TIMES_2_225_Z) */
+    #if !defined(ED448_BASEPOINT_TIMES_2_225_T)
+        #define ED448_BASEPOINT_TIMES_2_225_T  { 0xb18a80e, 0x8d74c90, 0x14fc6a9, 0x23fa368, 0x151ae30, 0x3792843, 0x2cb6a9, 0x6a96147, 0x2122f3a, 0x5d04db, 0xb1bcc5d, 0x30749a1, 0x78e6b56, 0x2b37d5c, 0xed1f11f, 0xfd6b2bd }
+    #endif /* !defined(ED448_BASEPOINT_TIMES_2_225_T) */
+
+    #if !defined(ED448_BASEPOINT_TIMES_2_225_PLUS_1_X)
+        #define ED448_BASEPOINT_TIMES_2_225_PLUS_1_X  { 0x8c2abe3, 0x7a801f5, 0x4455c86, 0x91c6a6f, 0x50b5e31, 0xd3ff2c2, 0x377b768, 0x709f1c, 0x664c158, 0x6c3602a, 0xa675ef8, 0xb7c8592, 0x8779893, 0x85aa129, 0x5936077, 0xdbaca71 }
+    #endif /* !defined(ED448_BASEPOINT_TIMES_2_225_PLUS_1_X) */
+    #if !defined(ED448_BASEPOINT_TIMES_2_225_PLUS_1_Y)
+        #define ED448_BASEPOINT_TIMES_2_225_PLUS_1_Y  { 0xcd14278, 0xfb8a33e, 0x7bd597e, 0x4321353, 0xf90a5f9, 0x9b4b28d, 0x65dd355, 0xb878171, 0xc3c75f, 0x2cdd60b, 0xfc84b1a, 0xf548750, 0xfc82e0d, 0x5b0b5a6, 0x4887031, 0xe9f8be3 }
+    #endif /* !defined(ED448_BASEPOINT_TIMES_2_225_PLUS_1_Y) */
+    #if !defined(ED448_BASEPOINT_TIMES_2_225_PLUS_1_Z)
+        #define ED448_BASEPOINT_TIMES_2_225_PLUS_1_Z  { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }
+    #endif /* !defined(ED448_BASEPOINT_TIMES_2_225_PLUS_1_Z) */
+    #if !defined(ED448_BASEPOINT_TIMES_2_225_PLUS_1_T)
+        #define ED448_BASEPOINT_TIMES_2_225_PLUS_1_T  { 0x9f738df, 0x3afeb47, 0x5673590, 0xec8c77c, 0x4dc60e3, 0x6e114bc, 0x9a7b037, 0x64d084f, 0x939537f, 0x6e145db, 0xdafc480, 0x3be4c02, 0x13bacc2, 0x8e46e01, 0x1c22bc, 0x377d0c1 }
+    #endif /* !defined(ED448_BASEPOINT_TIMES_2_225_PLUS_1_T) */
+
 #elif FE3C_64BIT
     #if !defined(FE448_STR)
         #define FE448_STR \
@@ -64,6 +90,32 @@ extern "C" {
     #if !defined(ED448_BASEPOINT_T)
         #define ED448_BASEPOINT_T  { 0xe3c816dc198105, 0x62071833f4e093, 0x4dde98e3421403, 0xa319b57519c985, 0x794be956382384, 0xe1ddc2b86da60f, 0x50e23d5682a9ff, 0x6d3669e173c6a4 }
     #endif /* !defined(ED448_BASEPOINT_T) */
+
+    #if !defined(ED448_BASEPOINT_TIMES_2_225_X)
+        #define ED448_BASEPOINT_TIMES_2_225_X  { 0xcbff257fb672fb, 0x7a7fa274b76d0f, 0xa8e4afedc438c3, 0x2a17d0296b29fa, 0x6eb28cf2288bca, 0x61a9f6288c4255, 0x2a5459d2a94bcf, 0xa7779d89abe2d }
+    #endif /* !defined(ED448_BASEPOINT_TIMES_2_225_X) */
+    #if !defined(ED448_BASEPOINT_TIMES_2_225_Y)
+        #define ED448_BASEPOINT_TIMES_2_225_Y  { 0x9c8d6969c557f9, 0xc84ccc495f462, 0x316eb918c22423, 0x3e7cd2e5ebe2d9, 0xca4e43f4aafa9f, 0x7fd244cf825196, 0x8c6f5c9d813995, 0xc4dd09e783b008 }
+    #endif /* !defined(ED448_BASEPOINT_TIMES_2_225_Y) */
+    #if !defined(ED448_BASEPOINT_TIMES_2_225_Z)
+        #define ED448_BASEPOINT_TIMES_2_225_Z  { 1, 0, 0, 0, 0, 0, 0, 0 }
+    #endif /* !defined(ED448_BASEPOINT_TIMES_2_225_Z) */
+    #if !defined(ED448_BASEPOINT_TIMES_2_225_T)
+        #define ED448_BASEPOINT_TIMES_2_225_T  { 0x8d74c90b18a80e, 0x23fa36814fc6a9, 0x3792843151ae30, 0x6a9614702cb6a9, 0x5d04db2122f3a, 0x30749a1b1bcc5d, 0x2b37d5c78e6b56, 0xfd6b2bded1f11f }
+    #endif /* !defined(ED448_BASEPOINT_TIMES_2_225_T) */
+
+    #if !defined(ED448_BASEPOINT_TIMES_2_225_PLUS_1_X)
+        #define ED448_BASEPOINT_TIMES_2_225_PLUS_1_X  { 0x7a801f58c2abe3, 0x91c6a6f4455c86, 0xd3ff2c250b5e31, 0x709f1c377b768, 0x6c3602a664c158, 0xb7c8592a675ef8, 0x85aa1298779893, 0xdbaca715936077 }
+    #endif /* !defined(ED448_BASEPOINT_TIMES_2_225_PLUS_1_X) */
+    #if !defined(ED448_BASEPOINT_TIMES_2_225_PLUS_1_Y)
+        #define ED448_BASEPOINT_TIMES_2_225_PLUS_1_Y  { 0xfb8a33ecd14278, 0x43213537bd597e, 0x9b4b28df90a5f9, 0xb87817165dd355, 0x2cdd60b0c3c75f, 0xf548750fc84b1a, 0x5b0b5a6fc82e0d, 0xe9f8be34887031 }
+    #endif /* !defined(ED448_BASEPOINT_TIMES_2_225_PLUS_1_Y) */
+    #if !defined(ED448_BASEPOINT_TIMES_2_225_PLUS_1_Z)
+        #define ED448_BASEPOINT_TIMES_2_225_PLUS_1_Z  { 1, 0, 0, 0, 0, 0, 0, 0 }
+    #endif /* !defined(ED448_BASEPOINT_TIMES_2_225_PLUS_1_Z) */
+    #if !defined(ED448_BASEPOINT_TIMES_2_225_PLUS_1_T)
+        #define ED448_BASEPOINT_TIMES_2_225_PLUS_1_T  { 0x3afeb479f738df, 0xec8c77c5673590, 0x6e114bc4dc60e3, 0x64d084f9a7b037, 0x6e145db939537f, 0x3be4c02dafc480, 0x8e46e0113bacc2, 0x377d0c101c22bc }
+    #endif /* !defined(ED448_BASEPOINT_TIMES_2_225_PLUS_1_T) */
 #else
     #error "Architecture not defined. Set exactly one of FE3C_32BIT or FE3C_64BIT"
 #endif /* FE3C_32BIT && FE3C_64BIT */
@@ -161,7 +213,7 @@ void fe448_square(fe448 r, const fe448 a);
  * @param[out] buffer Output buffer for the encoded field element
  * @param[in] a Field element to encode
  */
-void fe448_encode(u8 * buffer, fe448 a);
+void fe448_encode(u8 *buffer, fe448 a);
 
 /**
  * @brief Decode a field element according to RFC 8032
@@ -170,15 +222,15 @@ void fe448_encode(u8 * buffer, fe448 a);
  * @return 1 if decoding succeeded, 0 otherwise
  */
 __attribute__((warn_unused_result))
-int fe448_decode(fe448 r, const u8 * buffer);
+int fe448_decode(fe448 r, const u8 *buffer);
 
 /**
  * @brief Find a multiplicative inverse of a field element
  * @param[out] r Result of inversion, i.e. such element r that r a = 1
  * @param[in] a Field element to invert
  */
-static inline void fe448_invert(fe448 r, const fe448 a) {
-
+static inline void fe448_invert(fe448 r, const fe448 a)
+{
     /* Make a local copy to support aliasing */
     fe448 x;
     fe448_copy(x, a);
@@ -233,8 +285,8 @@ static inline void fe448_invert(fe448 r, const fe448 a) {
  * @param[out] r Result of the exponentation
  * @param[in] a The element to exponentiate
  */
-static inline void fe448_exp_p_minus_3_over_4(fe448 r, const fe448 a) {
-
+static inline void fe448_exp_p_minus_3_over_4(fe448 r, const fe448 a)
+{
     /* Make a local copy to support aliasing */
     fe448 x;
     fe448_copy(x, a);
@@ -280,8 +332,8 @@ static inline void fe448_exp_p_minus_3_over_4(fe448 r, const fe448 a) {
  * @param a Field element
  * @return Least-significant bit of a
  */
-static inline int fe448_lsb(fe448 a) {
-
+static inline int fe448_lsb(fe448 a)
+{
     fe448_strong_reduce(a, a);
     return a[0] & 1;
 }

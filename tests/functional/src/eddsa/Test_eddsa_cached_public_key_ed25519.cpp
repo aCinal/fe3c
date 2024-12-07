@@ -2,13 +2,13 @@
 #include <fe3c/eddsa.h>
 
 #if FE3C_FUNCTIONAL_TESTS_HOST
-TEST_GROUP(EDDSA_CACHED_PUBLIC_KEY_ED25519) {
-
+TEST_GROUP(EDDSA_CACHED_PUBLIC_KEY_ED25519)
+{
 };
 #endif /* FE3C_FUNCTIONAL_TESTS_HOST */
 
-FE3C_TEST(EDDSA_CACHED_PUBLIC_KEY_ED25519, Test1) {
-
+FE3C_TEST(EDDSA_CACHED_PUBLIC_KEY_ED25519, Test1)
+{
     const u8 secret_key[] = \
         "\x9d\x61\xb1\x9d\xef\xfd\x5a\x60\xba\x84\x4a\xf4\x92\xec\x2c\xc4" \
         "\x44\x49\xc5\x69\x7b\x32\x69\x19\x70\x3b\xac\x03\x1c\xae\x7f\x60";
@@ -36,8 +36,8 @@ FE3C_TEST(EDDSA_CACHED_PUBLIC_KEY_ED25519, Test1) {
     FAIL_IF_MEMCMP(expected_signature, signature, eddsa_get_signature_length(EDDSA_CURVE_ED25519));
 }
 
-FE3C_TEST(EDDSA_CACHED_PUBLIC_KEY_ED25519, Test2) {
-
+FE3C_TEST(EDDSA_CACHED_PUBLIC_KEY_ED25519, Test2)
+{
     const u8 secret_key[] = \
         "\x4c\xcd\x08\x9b\x28\xff\x96\xda\x9d\xb6\xc3\x46\xec\x11\x4e\x0f" \
         "\x5b\x8a\x31\x9f\x35\xab\xa6\x24\xda\x8c\xf6\xed\x4f\xb8\xa6\xfb";
@@ -65,8 +65,8 @@ FE3C_TEST(EDDSA_CACHED_PUBLIC_KEY_ED25519, Test2) {
     FAIL_IF_MEMCMP(expected_signature, signature, eddsa_get_signature_length(EDDSA_CURVE_ED25519));
 }
 
-FE3C_TEST(EDDSA_CACHED_PUBLIC_KEY_ED25519, Test3) {
-
+FE3C_TEST(EDDSA_CACHED_PUBLIC_KEY_ED25519, Test3)
+{
     const u8 secret_key[] = \
         "\xc5\xaa\x8d\xf4\x3f\x9f\x83\x7b\xed\xb7\x44\x2f\x31\xdc\xb7\xb1" \
         "\x66\xd3\x85\x35\x07\x6f\x09\x4b\x85\xce\x3a\x2e\x0b\x44\x58\xf7";
@@ -94,8 +94,8 @@ FE3C_TEST(EDDSA_CACHED_PUBLIC_KEY_ED25519, Test3) {
     FAIL_IF_MEMCMP(expected_signature, signature, eddsa_get_signature_length(EDDSA_CURVE_ED25519));
 }
 
-FE3C_TEST(EDDSA_CACHED_PUBLIC_KEY_ED25519, Test4) {
-
+FE3C_TEST(EDDSA_CACHED_PUBLIC_KEY_ED25519, Test4)
+{
     const u8 secret_key[] = \
         "\xf5\xe5\x76\x7c\xf1\x53\x31\x95\x17\x63\x0f\x22\x68\x76\xb8\x6c" \
         "\x81\x60\xcc\x58\x3b\xc0\x13\x74\x4c\x6b\xf2\x55\xf5\xcc\x0e\xe5";
@@ -187,8 +187,8 @@ FE3C_TEST(EDDSA_CACHED_PUBLIC_KEY_ED25519, Test4) {
     FAIL_IF_MEMCMP(expected_signature, signature, eddsa_get_signature_length(EDDSA_CURVE_ED25519));
 }
 
-FE3C_TEST(EDDSA_CACHED_PUBLIC_KEY_ED25519, Test5) {
-
+FE3C_TEST(EDDSA_CACHED_PUBLIC_KEY_ED25519, Test5)
+{
     const u8 secret_key[] = \
         "\x83\x3f\xe6\x24\x09\x23\x7b\x9d\x62\xec\x77\x58\x75\x20\x91\x1e" \
         "\x9a\x75\x9c\xec\x1d\x19\x75\x5b\x7d\xa9\x01\xb9\x6d\xca\x3d\x42";

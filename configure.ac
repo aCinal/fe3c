@@ -169,6 +169,38 @@ AS_IF([test "x$comb_method" = "xyes"], AC_DEFINE([FE3C_COMB_METHOD]), [])
 
 # -------------------------------------------------------------------------------------------
 
+ed25519_lattice_basis_reduction="no"
+AC_ARG_ENABLE([ed25519-lattice-basis-reduction],
+              [AS_HELP_STRING([--enable-ed25519-lattice-basis-reduction],
+                              [Enable lattice basis reduction (eprint:2020/454) during Ed25519 verification, which will increase
+                               code footprint, but may increase verification performance.])],
+              [AS_IF([test "x$enableval" = "xyes"],
+                     [ed25519_lattice_basis_reduction="yes"],
+
+                     [test "x$enableval" != "xno"],
+                     [AC_MSG_ERROR([bad value ${enableval} for --enable-ed25519-lattice-basis-reduction])])],
+              [])
+AM_CONDITIONAL([FE3C_ED25519_LATTICE_BASIS_REDUCTION], [test "x$ed25519_lattice_basis_reduction" = "xyes"])
+AS_IF([test "x$ed25519_lattice_basis_reduction" = "xyes"], AC_DEFINE([FE3C_ED25519_LATTICE_BASIS_REDUCTION]), [])
+
+# -------------------------------------------------------------------------------------------
+
+ed448_lattice_basis_reduction="no"
+AC_ARG_ENABLE([ed448-lattice-basis-reduction],
+              [AS_HELP_STRING([--enable-ed448-lattice-basis-reduction],
+                              [Enable lattice basis reduction (eprint:2020/454) during Ed448 verification, which will increase
+                               code footprint, but may increase verification performance.])],
+              [AS_IF([test "x$enableval" = "xyes"],
+                     [ed448_lattice_basis_reduction="yes"],
+
+                     [test "x$enableval" != "xno"],
+                     [AC_MSG_ERROR([bad value ${enableval} for --enable-ed448-lattice-basis-reduction])])],
+              [])
+AM_CONDITIONAL([FE3C_ED448_LATTICE_BASIS_REDUCTION], [test "x$ed448_lattice_basis_reduction" = "xyes"])
+AS_IF([test "x$ed448_lattice_basis_reduction" = "xyes"], AC_DEFINE([FE3C_ED448_LATTICE_BASIS_REDUCTION]), [])
+
+# -------------------------------------------------------------------------------------------
+
 skip_zeroization="no"
 AC_ARG_ENABLE([zeroization],
               [AS_HELP_STRING([--disable-zeroization],
@@ -243,16 +275,19 @@ AC_OUTPUT
 AC_MSG_RESULT([
     $PACKAGE $VERSION
 
-    Curve Ed25519 supported:                ${ed25519}
-    Curve Ed448 supported:                  ${ed448}
+    Curve Ed25519 supported:                                  ${ed25519}
+    Curve Ed448 supported:                                    ${ed448}
 
-    Architecture:                           ${archbits}-bit
-    Sanity checks enabled:                  ${sanity_checks}
+    Architecture:                                             ${archbits}-bit
+    Sanity checks enabled:                                    ${sanity_checks}
 
-    Optimized field element squaring:       ${fast_squaring}
-    Comb method for scalar multiplication:  ${comb_method}
+    Optimized field element squaring:                         ${fast_squaring}
+    Comb method for scalar multiplication:                    ${comb_method}
+    Lattice basis reduction in double scalar multiplication:
+        Ed25519:                                              ${ed25519_lattice_basis_reduction}
+        Ed448:                                                ${ed448_lattice_basis_reduction}
     Small precomputation tables:
-        Ed25519:                            ${ed25519_small_precomputation}
-        Ed448:                              ${ed448_small_precomputation}
-    Skip secret zeroization on stack:       ${skip_zeroization}
+        Ed25519:                                              ${ed25519_small_precomputation}
+        Ed448:                                                ${ed448_small_precomputation}
+    Skip secret zeroization on stack:                         ${skip_zeroization}
 ])

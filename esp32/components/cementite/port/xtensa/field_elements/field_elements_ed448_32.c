@@ -46,12 +46,10 @@ const fe448 fe448_one = { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
  * @param r Destination field element
  * @param a Source field element
  */
-void fe448_copy(fe448 r, const fe448 a) {
-
-    if (a != r) {
-
+void fe448_copy(fe448 r, const fe448 a)
+{
+    if (a != r)
         (void) memcpy(r, a, sizeof(fe448));
-    }
 }
 
 /**
@@ -61,8 +59,8 @@ void fe448_copy(fe448 r, const fe448 a) {
  * @return 1 if a = b, 0 otherwise
  * @note The elements should be reduced by the caller first
  */
-int fe448_equal(const fe448 a, const fe448 b) {
-
+int fe448_equal(const fe448 a, const fe448 b)
+{
     /* Assume equality at first */
     int equal = 1;
     u32 ax;
@@ -109,8 +107,8 @@ int fe448_equal(const fe448 a, const fe448 b) {
  * @param a Field element to check
  * @return 1 if a is in canonical form, 0 otherwise
  */
-static inline int fe448_is_canonical(const fe448 a) {
-
+static inline int fe448_is_canonical(const fe448 a)
+{
     /* Note that this function is only used internally and we can safely assume that
      * the input is smaller than 2p. For field elements generated internally, we
      * have a guarantee that they are weakly reduced, i.e. smaller than 2p, and as for
@@ -119,8 +117,8 @@ static inline int fe448_is_canonical(const fe448 a) {
      * fe448_decode. */
 
     /* Iterators over the limbs */
-    const fe_limb_type * ai = a;
-    const fe_limb_type * pi = fe448_p;
+    const fe_limb_type *ai = a;
+    const fe_limb_type *pi = fe448_p;
     /* Registers to store the values of limbs, any borrow and an
      * indicator whether or not the input is equal to the modulus
      * (in which case it is also not canonical despite the borrow
@@ -195,10 +193,10 @@ static inline int fe448_is_canonical(const fe448 a) {
  * @param[in] move Flag deciding on the branch, if set to 0, r ::= r, and if set to 1, r ::= a
  * @note If move is set to anything other than 0 or 1, the results are undefined
  */
-void fe448_conditional_move(fe448 r, const fe448 a, int move) {
-
-    const fe_limb_type * ai = a;
-    fe_limb_type * ri = r;
+void fe448_conditional_move(fe448 r, const fe448 a, int move)
+{
+    const fe_limb_type *ai = a;
+    fe_limb_type *ri = r;
     u32 rx;
     u32 ax;
     asm volatile(
@@ -234,8 +232,8 @@ void fe448_conditional_move(fe448 r, const fe448 a, int move) {
  * @param[in] a Field element to be reduced
  * @note Note that the result need to be in canonical form, i.e. between 0 and p-1, it need only be less than 2p
  */
-void fe448_weak_reduce(fe448 r, const fe448 a) {
-
+void fe448_weak_reduce(fe448 r, const fe448 a)
+{
     /* On Ed448 we always keep the field elements weakly reduced */
     fe448_copy(r, a);
 }
@@ -248,8 +246,8 @@ void fe448_weak_reduce(fe448 r, const fe448 a) {
  * @param mock Flag controlling whether subtraction is actually performed or result is set to a
  * @return Borrow if b > a and mock is zero
  */
-static inline u32 fe448_sub_internal(fe448 r, const fe448 a, const fe448 b, int mock) {
-
+static inline u32 fe448_sub_internal(fe448 r, const fe448 a, const fe448 b, int mock)
+{
     /* This is an internal function that performs the subtraction a - b directly and
      * returns any borrow that may occur. */
 
@@ -322,8 +320,8 @@ static inline u32 fe448_sub_internal(fe448 r, const fe448 a, const fe448 b, int 
  * @param[in] a Field element to be reduced
  * @note The result is guaranteed to be in canonical form, i.e. between 0 and p-1
  */
-void fe448_strong_reduce(fe448 r, const fe448 a) {
-
+void fe448_strong_reduce(fe448 r, const fe448 a)
+{
     /* Note that the field elements on Ed448 are always weakly reduced */
 
     /* Check canonicity of a */
@@ -337,8 +335,8 @@ void fe448_strong_reduce(fe448 r, const fe448 a) {
  * @param[out] r The result of negation
  * @param[in] a Element to be negated
  */
-void fe448_neg(fe448 r, const fe448 a) {
-
+void fe448_neg(fe448 r, const fe448 a)
+{
     fe448_sub(r, fe448_p, a);
 }
 
@@ -349,12 +347,12 @@ void fe448_neg(fe448 r, const fe448 a) {
  * @param[in] b Operand
  * @param mock Flag controlling whether addition is actually performed or result is set to a
  */
-static inline void fe448_add_internal(fe448 r, const fe448 a, const fe448 b, int mock) {
-
+static inline void fe448_add_internal(fe448 r, const fe448 a, const fe448 b, int mock)
+{
     /* Iterators over the limbs */
-    const fe_limb_type * ai = a;
-    const fe_limb_type * bi = b;
-    fe_limb_type * ri = r;
+    const fe_limb_type *ai = a;
+    const fe_limb_type *bi = b;
+    fe_limb_type *ri = r;
     /* Registers to store the values of limbs */
     u32 ax;
     u32 bx;
@@ -492,8 +490,8 @@ static inline void fe448_add_internal(fe448 r, const fe448 a, const fe448 b, int
  * @param[in] a Operand
  * @param[in] b Operand
  */
-void fe448_add(fe448 r, const fe448 a, const fe448 b) {
-
+void fe448_add(fe448 r, const fe448 a, const fe448 b)
+{
     fe448_add_internal(r, a, b, 0);
 }
 
@@ -503,8 +501,8 @@ void fe448_add(fe448 r, const fe448 a, const fe448 b) {
  * @param[in] a Minuend
  * @param[in] b Subtrahend
  */
-void fe448_sub(fe448 r, const fe448 a, const fe448 b) {
-
+void fe448_sub(fe448 r, const fe448 a, const fe448 b)
+{
     u32 borrow = fe448_sub_internal(r, a, b, 0);
     fe448_add_internal(r, r, fe448_mSm1, 1 - borrow);
 }
@@ -517,10 +515,10 @@ void fe448_sub(fe448 r, const fe448 a, const fe448 b) {
  * @return Carry
  * @note No result aliasing is supported
  */
-static u32 multiply_distinct_16_limbs(fe_limb_type * restrict r, const fe_limb_type * a, const fe_limb_type * b) {
-
-    const fe_limb_type * ai;
-    const fe_limb_type * bi;
+static u32 multiply_distinct_16_limbs(fe_limb_type *restrict r, const fe_limb_type *a, const fe_limb_type *b)
+{
+    const fe_limb_type *ai;
+    const fe_limb_type *bi;
     u32 temp;
     u32 carrylo;
     u32 carryhi;
@@ -1005,8 +1003,8 @@ static u32 multiply_distinct_16_limbs(fe_limb_type * restrict r, const fe_limb_t
  * @param[in] a Operand
  * @param[in] b Operand
  */
-void fe448_mul(fe448 r, const fe448 a, const fe448 b) {
-
+void fe448_mul(fe448 r, const fe448 a, const fe448 b)
+{
     /* Let a = u + vS and b = x + yS, where S = 2^224. Since we
      * are working modulo a "golden-ratio prime" we can leverage
      * fast Karatsuba multiplication by employing the identity:
@@ -1074,11 +1072,11 @@ void fe448_mul(fe448 r, const fe448 a, const fe448 b) {
     fe448 _r;
     fe_limb_type _A[ED448_FE_LIMB_COUNT];
     fe_limb_type _C[ED448_FE_LIMB_COUNT];
-    fe_limb_type * A = _A;
-    fe_limb_type * C = _C;
+    fe_limb_type *A = _A;
+    fe_limb_type *C = _C;
     /* Reuse the C buffer for (u+v) and (x+y) as these are only needed temporarily */
-    fe_limb_type * uplusv = C;
-    fe_limb_type * xplusy = C + 8;
+    fe_limb_type *uplusv = C;
+    fe_limb_type *xplusy = C + 8;
 
     u32 AE;
     u32 aux1;
@@ -1332,8 +1330,8 @@ void fe448_mul(fe448 r, const fe448 a, const fe448 b) {
  * @param[out] r Result of the squaring, i.e. the product r = a a
  * @param[in] a Field element to square
  */
-void fe448_square(fe448 r, const fe448 a) {
-
+void fe448_square(fe448 r, const fe448 a)
+{
     fe448_mul(r, a, a);
 }
 
@@ -1342,13 +1340,16 @@ void fe448_square(fe448 r, const fe448 a) {
  * @param[out] buffer Output buffer for the encoded field element
  * @param[in] a Field element to encode
  */
-void fe448_encode(u8 * buffer, fe448 a) {
+void fe448_encode(u8 *buffer, fe448 a)
+{
+    /* Canonicalize the element first */
+    fe448_strong_reduce(a, a);
 
     /* Use word-based memory accesses since encoding is little-endian
      * and so is the CPU */
-    u32 * words = (u32 *) buffer;
+    u32 *words = (u32 *) buffer;
     /* Iterate over the 14-bit limbs instead of the 32-bit words */
-    u16 * limb14 = (u16 *) a;
+    u16 *limb14 = (u16 *) a;
 
     /* In the first word of the output buffer we shall fit the first
      * two 14-bit limbs as well as four bits of the third limb */
@@ -1386,13 +1387,13 @@ void fe448_encode(u8 * buffer, fe448 a) {
  * @return 1 if decoding succeeded, 0 otherwise
  */
 __attribute__((warn_unused_result))
-int fe448_decode(fe448 r, const u8 * buffer) {
-
+int fe448_decode(fe448 r, const u8 *buffer)
+{
     /* Use word-based memory accesses since encoding is little-endian
      * and so is the CPU */
-    const u32 * words = (const u32 *) buffer;
+    const u32 *words = (const u32 *) buffer;
     /* Iterate over the 14-bit limbs instead of the 32-bit words */
-    u16 * limb14 = (u16 *) r;
+    u16 *limb14 = (u16 *) r;
 
     /* First do the 16-bit reads and then clear the top bits in one go
      * for code clarity (at the cost of worse cache usage, though) */
@@ -1437,10 +1438,8 @@ int fe448_decode(fe448 r, const u8 * buffer) {
 
     u16 mask = 0x3FFF;
     /* Clear the two top bits in all limbs */
-    for (int i = 0; i < 2 * ED448_FE_LIMB_COUNT - 1; i++) {
-
+    for (int i = 0; i < 2 * ED448_FE_LIMB_COUNT - 1; i++)
         limb14[i] &= mask;
-    }
 
     /* Check that the last byte is cleared (except for possibly the highest bit)
      * and that the rest of the bytes (which we have just parsed into limbs)

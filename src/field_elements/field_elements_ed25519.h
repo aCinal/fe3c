@@ -8,7 +8,6 @@ extern "C" {
 
 #include <global_defs.h>
 #include <field_elements/field_elements.h>
-#include <inttypes.h>
 
 #if FE3C_32BIT && FE3C_64BIT
     #error "Both FE3C_32BIT and FE3C_64BIT set!"
@@ -36,6 +35,33 @@ extern "C" {
     #if !defined(ED25519_BASEPOINT_T)
         #define ED25519_BASEPOINT_T  { 0x1b7dda3, 0x1a2ace9, 0x25eadbb, 0x3ba8a, 0x83c27e, 0xabe37d, 0x1274732, 0xccacdd, 0xfd78b7, 0x19e1d7c }
     #endif /* !defined(ED25519_BASEPOINT_T) */
+
+    #if !defined(ED25519_BASEPOINT_TIMES_2_128_X)
+        #define ED25519_BASEPOINT_TIMES_2_128_X  { 0xb7e824, 0x11eb98, 0x7cbf90, 0x4e1739, 0x2639a17, 0x14e29a0, 0x29cc270, 0x6592a5, 0x3f3c45f, 0x1309ebf }
+    #endif /* !defined(ED25519_BASEPOINT_TIMES_2_128_X) */
+    #if !defined(ED25519_BASEPOINT_TIMES_2_128_Y)
+        #define ED25519_BASEPOINT_TIMES_2_128_Y  { 0x3f5a66b, 0xaf4452, 0x93cb77, 0xf28d26, 0x24342f8, 0xc29c3a, 0x8f5b13, 0x10fb2be, 0x26526dc, 0x17cb267 }
+    #endif /* !defined(ED25519_BASEPOINT_TIMES_2_128_Y) */
+    #if !defined(ED25519_BASEPOINT_TIMES_2_128_Z)
+        #define ED25519_BASEPOINT_TIMES_2_128_Z  { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0 }
+    #endif /* !defined(ED25519_BASEPOINT_TIMES_2_128_Z) */
+    #if !defined(ED25519_BASEPOINT_TIMES_2_128_T)
+        #define ED25519_BASEPOINT_TIMES_2_128_T  { 0x2f1338a, 0x1cc7251, 0x1b53d3c, 0x13331d, 0x51e192, 0x1924b6a, 0xab0003, 0x5fa9c, 0x3d0bf46, 0x168593 }
+    #endif /* !defined(ED25519_BASEPOINT_TIMES_2_128_T) */
+
+    #if !defined(ED25519_BASEPOINT_TIMES_2_128_PLUS_1_X)
+        #define ED25519_BASEPOINT_TIMES_2_128_PLUS_1_X  { 0xc969a, 0xbf4a5a, 0x39cdf7c, 0x418f65, 0x2c39bb0, 0xc36053, 0x1e0df46, 0x91f156, 0x152b88e, 0x1b99395 }
+    #endif /* !defined(ED25519_BASEPOINT_TIMES_2_128_PLUS_1_X) */
+    #if !defined(ED25519_BASEPOINT_TIMES_2_128_PLUS_1_Y)
+        #define ED25519_BASEPOINT_TIMES_2_128_PLUS_1_Y  { 0x3afd09b, 0x14a991e, 0x24204a6, 0xc4f62a, 0xd8e445, 0x1b85145, 0x2fe499c, 0x117cd53, 0xfa4cb5, 0xe0f144 }
+    #endif /* !defined(ED25519_BASEPOINT_TIMES_2_128_PLUS_1_Y) */
+    #if !defined(ED25519_BASEPOINT_TIMES_2_128_PLUS_1_Z)
+        #define ED25519_BASEPOINT_TIMES_2_128_PLUS_1_Z  { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0 }
+    #endif /* !defined(ED25519_BASEPOINT_TIMES_2_128_PLUS_1_Z) */
+    #if !defined(ED25519_BASEPOINT_TIMES_2_128_PLUS_1_T)
+        #define ED25519_BASEPOINT_TIMES_2_128_PLUS_1_T  { 0x14683a9, 0x2c2f20, 0x1ac1427, 0x1c3c1dc, 0x10ff949, 0x1b93591, 0x3975c54, 0x11f2af7, 0x385104d, 0x11d7187 }
+    #endif /* !defined(ED25519_BASEPOINT_TIMES_2_128_PLUS_1_T) */
+
 #elif FE3C_64BIT
     #if !defined(FE25519_STR)
         #define FE25519_STR \
@@ -58,6 +84,32 @@ extern "C" {
     #if !defined(ED25519_BASEPOINT_T)
         #define ED25519_BASEPOINT_T  { 0x68ab3a5b7dda3, 0xeea2a5eadbb, 0x2af8df483c27e, 0x332b375274732, 0x67875f0fd78b7 }
     #endif /* !defined(ED25519_BASEPOINT_T) */
+
+    #if !defined(ED25519_BASEPOINT_TIMES_2_128_X)
+        #define ED25519_BASEPOINT_TIMES_2_128_X  { 0x47ae60b7e824, 0x1385ce47cbf90, 0x538a682639a17, 0x1964a969cc270, 0x4c27afff3c45f }
+    #endif /* !defined(ED25519_BASEPOINT_TIMES_2_128_X) */
+    #if !defined(ED25519_BASEPOINT_TIMES_2_128_Y)
+        #define ED25519_BASEPOINT_TIMES_2_128_Y  { 0x2bd114bf5a66b, 0x3ca349893cb77, 0x30a70ea4342f8, 0x43ecaf88f5b13, 0x5f2c99e6526dc }
+    #endif /* !defined(ED25519_BASEPOINT_TIMES_2_128_Y) */
+    #if !defined(ED25519_BASEPOINT_TIMES_2_128_Z)
+        #define ED25519_BASEPOINT_TIMES_2_128_Z  { 1, 0, 0, 0, 0 }
+    #endif /* !defined(ED25519_BASEPOINT_TIMES_2_128_Z) */
+    #if !defined(ED25519_BASEPOINT_TIMES_2_128_T)
+        #define ED25519_BASEPOINT_TIMES_2_128_T  { 0x731c946f1338a, 0x4ccc75b53d3c, 0x6492da851e192, 0x17ea70ab0003, 0x5a164fd0bf46 }
+    #endif /* !defined(ED25519_BASEPOINT_TIMES_2_128_T) */
+
+    #if !defined(ED25519_BASEPOINT_TIMES_2_128_PLUS_1_X)
+        #define ED25519_BASEPOINT_TIMES_2_128_PLUS_1_X  { 0x2fd29680c969a, 0x1063d979cdf7c, 0x30d814ec39bb0, 0x247c559e0df46, 0x6e64e5552b88e }
+    #endif /* !defined(ED25519_BASEPOINT_TIMES_2_128_PLUS_1_X) */
+    #if !defined(ED25519_BASEPOINT_TIMES_2_128_PLUS_1_Y)
+        #define ED25519_BASEPOINT_TIMES_2_128_PLUS_1_Y  { 0x52a647bafd09b, 0x313d8aa4204a6, 0x6e14514d8e445, 0x45f354efe499c, 0x383c510fa4cb5 }
+    #endif /* !defined(ED25519_BASEPOINT_TIMES_2_128_PLUS_1_Y) */
+    #if !defined(ED25519_BASEPOINT_TIMES_2_128_PLUS_1_Z)
+        #define ED25519_BASEPOINT_TIMES_2_128_PLUS_1_Z  { 1, 0, 0, 0, 0 }
+    #endif /* !defined(ED25519_BASEPOINT_TIMES_2_128_PLUS_1_Z) */
+    #if !defined(ED25519_BASEPOINT_TIMES_2_128_PLUS_1_T)
+        #define ED25519_BASEPOINT_TIMES_2_128_PLUS_1_T  { 0xb0bc814683a9, 0x70f0771ac1427, 0x6e4d6450ff949, 0x47cabdf975c54, 0x475c61f85104d }
+    #endif /* !defined(ED25519_BASEPOINT_TIMES_2_128_PLUS_1_T) */
 #else
     #error "Architecture not defined. Set exactly one of FE3C_32BIT or FE3C_64BIT"
 #endif /* FE3C_32BIT && FE3C_64BIT */
@@ -155,7 +207,7 @@ void fe25519_square(fe25519 r, const fe25519 a);
  * @param[out] buffer Output buffer for the encoded field element
  * @param[in] a Field element to encode
  */
-void fe25519_encode(u8 * buffer, fe25519 a);
+void fe25519_encode(u8 *buffer, fe25519 a);
 
 /**
  * @brief Decode a field element according to RFC 8032
@@ -164,15 +216,15 @@ void fe25519_encode(u8 * buffer, fe25519 a);
  * @return 1 if decoding succeeded, 0 otherwise
  */
 __attribute__((warn_unused_result))
-int fe25519_decode(fe25519 r, const u8 * buffer);
+int fe25519_decode(fe25519 r, const u8 *buffer);
 
 /**
  * @brief Find a multiplicative inverse of a field element
  * @param[out] r Result of inversion, i.e. such element r that r a = 1
  * @param[in] a Field element to invert
  */
-static inline void fe25519_invert(fe25519 r, const fe25519 a) {
-
+static inline void fe25519_invert(fe25519 r, const fe25519 a)
+{
     /* Make a local copy to support aliasing */
     fe25519 x;
     fe25519_copy(x, a);
@@ -225,8 +277,8 @@ static inline void fe25519_invert(fe25519 r, const fe25519 a) {
  * @param[out] r Result of the exponentation
  * @param[in] a The element to exponentiate
  */
-static inline void fe25519_exp_p_minus_5_over_8(fe25519 r, const fe25519 a) {
-
+static inline void fe25519_exp_p_minus_5_over_8(fe25519 r, const fe25519 a)
+{
     /* Make a local copy to support aliasing */
     fe25519 x;
     fe25519_copy(x, a);
@@ -267,8 +319,8 @@ static inline void fe25519_exp_p_minus_5_over_8(fe25519 r, const fe25519 a) {
  * @param a Field element
  * @return Least-significant bit of a
  */
-static inline int fe25519_lsb(fe25519 a) {
-
+static inline int fe25519_lsb(fe25519 a)
+{
     fe25519_strong_reduce(a, a);
     return a[0] & 1;
 }

@@ -12,16 +12,16 @@ extern "C" {
 #include <points/points.h>
 
 typedef struct curve {
-    hash hash_function;
-    const group_ops * gops;
-    const scalar_ops * sops;
-    void (* prune_buffer)(u8 * buffer);
-    const char * dom_string;
+    void (*hash_function)(u8 *output, const struct iovec *iov, int iovcnt);
+    const group_ops *gops;
+    const scalar_ops *sops;
+    void (*prune_buffer)(u8 *buffer);
+    const char *dom_string;
     size_t dom_string_length;
     int b_in_bytes;
 } curve;
 
-extern const curve * curves[EDDSA_NUMBER_OF_SUPPORTED_CURVES];
+extern const curve *curves[EDDSA_NUMBER_OF_SUPPORTED_CURVES];
 
 #ifdef __cplusplus
 }

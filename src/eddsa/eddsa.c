@@ -2,8 +2,8 @@
 #include <curves/curves.h>
 #include <utils/utils.h>
 
-void eddsa_sign(const eddsa_sign_request * req) {
-
+void eddsa_sign(const eddsa_sign_request *req)
+{
     FE3C_SANITY_CHECK(req, NULL);
     FE3C_SANITY_CHECK(req->signature, NULL);
     FE3C_SANITY_CHECK(req->secret_key, NULL);
@@ -27,7 +27,7 @@ void eddsa_sign(const eddsa_sign_request * req) {
     };
 
     /* Edwards curve to be used */
-    const curve * curve = curves[req->curve_id];
+    const curve *curve = curves[req->curve_id];
     /* iovec buffer for hash function requests */
     struct iovec iov[6];
     /* Buffers for hash function outputs/scalars */
@@ -40,21 +40,18 @@ void eddsa_sign(const eddsa_sign_request * req) {
     /* To avoid additional memcpy write the encoded commitment directly
      * into the signature buffer. To have a more descriptive name, however,
      * use an aliasing pointer. */
-    u8 * encoded_commitment = req->signature;
-    const u8 * encoded_public_key;
+    u8 *encoded_commitment = req->signature;
+    const u8 *encoded_public_key;
 
     /* Recover pointers to the virtual method tables for the group and the
      * scalars of that group (allow polymorphism) */
-    const scalar_ops * sops = curve->sops;
-    const group_ops * gops = curve->gops;
-    /* Recover the hash function associated with the curve, e.g.
-     * SHA-512 for Ed25519 */
-    hash h = curve->hash_function;
+    const scalar_ops *sops = curve->sops;
+    const group_ops *gops = curve->gops;
 
     /* Expand the secret key by hashing it */
     iov[0].iov_base = req->secret_key;
     iov[0].iov_len = curve->b_in_bytes;
-    h(hash_secret_key, iov, 1);
+    curve->hash_function(hash_secret_key, iov, 1);
 
     /* Prune the buffer before generating the public key as specified by RFC 8032
      * sections 5.1.5 (Ed25519) and 5.2.5 (Ed448) */
@@ -89,7 +86,7 @@ void eddsa_sign(const eddsa_sign_request * req) {
     iov[3].iov_len = curve->b_in_bytes;
     iov[4].iov_base = req->message;
     iov[4].iov_len = req->message_length;
-    h(ephemeral_scalar, iov, 5);
+    curve->hash_function(ephemeral_scalar, iov, 5);
     sops->reduce(ephemeral_scalar);
 
     /* Compute the public commitment */
@@ -104,7 +101,7 @@ void eddsa_sign(const eddsa_sign_request * req) {
     iov[4].iov_len = curve->b_in_bytes;
     iov[5].iov_base = req->message;
     iov[5].iov_len = req->message_length;
-    h(challenge_scalar, iov, 6);
+    curve->hash_function(challenge_scalar, iov, 6);
     sops->reduce(challenge_scalar);
 
     /* Compute H(R|A|M) s + r (notation as in RFC 8032) */
@@ -115,8 +112,8 @@ void eddsa_sign(const eddsa_sign_request * req) {
     purge_secrets(ephemeral_scalar, sizeof(ephemeral_scalar));
 }
 
-int eddsa_verify(const eddsa_verify_request * req) {
-
+int eddsa_verify(const eddsa_verify_request *req)
+{
     /* Do sanity-checks about parameters which are under the control of
      * the caller (not a remote adversarial party) */
     FE3C_SANITY_CHECK(req, NULL);
@@ -128,8 +125,6 @@ int eddsa_verify(const eddsa_verify_request * req) {
     FE3C_SANITY_CHECK(curves[req->curve_id], NULL);
     FE3C_SANITY_CHECK(req->phflag <= 1, NULL);
 
-    /* Verification status */
-    int verified = 1;
     /* Iverson brackets testing if the context is used
      * and/or the message has been prehashed */
     int use_context = (req->context_length > 0);
@@ -144,7 +139,7 @@ int eddsa_verify(const eddsa_verify_request * req) {
     };
 
     /* Edwards curve to be used */
-    const curve * curve = curves[req->curve_id];
+    const curve *curve = curves[req->curve_id];
     /* iovec buffer for hash function requests */
     struct iovec iov[6];
     /* Buffer for hash function output/scalar */
@@ -152,21 +147,22 @@ int eddsa_verify(const eddsa_verify_request * req) {
 
     /* Recover pointers to the virtual method tables for the group and the
      * scalars of that group (allow polymorphism) */
-    const scalar_ops * sops = curve->sops;
-    const group_ops * gops = curve->gops;
-    /* Recover the hash function associated with the curve, e.g.
-     * SHA-512 for Ed25519 */
-    hash h = curve->hash_function;
+    const scalar_ops *sops = curve->sops;
+    const group_ops *gops = curve->gops;
 
     /* Note that point decoding may fail - we will still however continue with the verification to the end */
     point public_key;
-    verified &= gops->decode(&public_key, req->public_key);
+    if (!gops->decode(&public_key, req->public_key))
+        return 0;
     point commitment;
-    verified &= gops->decode(&commitment, req->signature);
+    if (!gops->decode(&commitment, req->signature))
+        return 0;
 
+    const u8 *response_scalar = &req->signature[curve->b_in_bytes];
     /* Check that the response scalar is valid, i.e. less than the prime order of the subgroup (do not do the
      * reduction ourselves) */
-    verified &= sops->is_canonical(&req->signature[curve->b_in_bytes]);
+    if (!sops->is_canonical(response_scalar))
+        return 0;
 
     /* Compute the hash over the commitment, public key, the message and
      * the dom string (if the context variant of EdDSA is used) */
@@ -182,47 +178,41 @@ int eddsa_verify(const eddsa_verify_request * req) {
     iov[4].iov_len = curve->b_in_bytes;
     iov[5].iov_base = req->message;
     iov[5].iov_len = req->message_length;
-    h(challenge_scalar, iov, 6);
+    curve->hash_function(challenge_scalar, iov, 6);
     /* Reduce the digest output as a scalar */
     sops->reduce(challenge_scalar);
 
-    point pretender_point;
-    /* Compute S*B - h*A */
-    gops->point_negate(&public_key);
-    gops->double_scalar_multiply(&pretender_point, &req->signature[curve->b_in_bytes], challenge_scalar, &public_key);
-    /* Check if 2^c*(S*B - h*A) == 2^c*R */
-    verified &= gops->points_equal_modulo_cofactor(&pretender_point, &commitment);
-
-    return verified;
+    return gops->check_group_equation(
+        &public_key,
+        &commitment,
+        challenge_scalar,
+        response_scalar
+    );
 }
 
-void eddsa_derive_public_key(u8 * public_key, const u8 * secret_key, eddsa_curve curve_id) {
-
+void eddsa_derive_public_key(u8 *public_key, const u8 *secret_key, eddsa_curve curve_id)
+{
     FE3C_SANITY_CHECK(curve_id < EDDSA_NUMBER_OF_SUPPORTED_CURVES, NULL);
     FE3C_SANITY_CHECK(curves[curve_id], NULL);
     FE3C_SANITY_CHECK(public_key, NULL);
     FE3C_SANITY_CHECK(secret_key, NULL);
 
     /* Edwards curve to be used */
-    const curve * curve = curves[curve_id];
+    const curve *curve = curves[curve_id];
     /* Intermediate buffer for hash function output */
     u8 digest[2 * curve->b_in_bytes];
     struct iovec iov[1];
 
-    /* Recover the hash function associated with the curve, e.g.
-     * SHA-512 for Ed25519 */
-    hash h = curve->hash_function;
-
     /* Hash the secret key */
     iov[0].iov_base = secret_key;
     iov[0].iov_len = curve->b_in_bytes;
-    h(digest, iov, 1);
+    curve->hash_function(digest, iov, 1);
 
     /* "Clamp" the result */
     curve->prune_buffer(digest);
 
     /* Recover the pointer to the virtual method table for the group */
-    const group_ops * gops = curve->gops;
+    const group_ops *gops = curve->gops;
 
     /* Multiply the base point by the scalar */
     point public_key_point;
@@ -235,52 +225,51 @@ void eddsa_derive_public_key(u8 * public_key, const u8 * secret_key, eddsa_curve
     purge_secrets(&public_key_point, sizeof(public_key_point));
 }
 
-int eddsa_get_signature_length(eddsa_curve curve_id) {
-
+int eddsa_get_signature_length(eddsa_curve curve_id)
+{
     FE3C_SANITY_CHECK(curve_id < EDDSA_NUMBER_OF_SUPPORTED_CURVES, NULL);
     FE3C_SANITY_CHECK(curves[curve_id], NULL);
 
     return 2 * curves[curve_id]->b_in_bytes;
 }
 
-int eddsa_get_public_key_length(eddsa_curve curve_id) {
-
+int eddsa_get_public_key_length(eddsa_curve curve_id)
+{
     FE3C_SANITY_CHECK(curve_id < EDDSA_NUMBER_OF_SUPPORTED_CURVES, NULL);
     FE3C_SANITY_CHECK(curves[curve_id], NULL);
 
     return curves[curve_id]->b_in_bytes;
 }
 
-int eddsa_get_secret_key_length(eddsa_curve curve_id) {
-
+int eddsa_get_secret_key_length(eddsa_curve curve_id)
+{
     FE3C_SANITY_CHECK(curve_id < EDDSA_NUMBER_OF_SUPPORTED_CURVES, NULL);
     FE3C_SANITY_CHECK(curves[curve_id], NULL);
 
     return curves[curve_id]->b_in_bytes;
 }
 
-void eddsa_prehash(u8 * output, const u8 * input, size_t length, eddsa_curve curve_id) {
-
+void eddsa_prehash(u8 *output, const u8 *input, size_t length, eddsa_curve curve_id)
+{
     FE3C_SANITY_CHECK(curve_id < EDDSA_NUMBER_OF_SUPPORTED_CURVES, NULL);
     FE3C_SANITY_CHECK(curves[curve_id], NULL);
 
-    const curve * curve = curves[curve_id];
-    /* Reuse the SHAKE-256 code at the cost of an additional memcpy */
+    const curve *curve = curves[curve_id];
     u8 raw_hash[2 * curve->b_in_bytes];
-    hash h = curve->hash_function;
+    /* Reuse the SHAKE-256 code at the cost of an additional memcpy */
     struct iovec iov = {
         .iov_base = input,
         .iov_len = length
     };
-    h(raw_hash, &iov, 1);
+    curve->hash_function(raw_hash, &iov, 1);
     /* Only copy the first 64 octets. For Ed25519 and SHA-512 this is a redundant memcpy,
      * but for Ed448 and SHAKE-256 we got the hash output of 114 octets, so we must
      * truncate it. */
     (void) memcpy(output, raw_hash, eddsa_get_prehash_length(curve_id));
 }
 
-int eddsa_get_prehash_length(eddsa_curve curve_id) {
-
+int eddsa_get_prehash_length(eddsa_curve curve_id)
+{
     (void) curve_id;
 
     FE3C_SANITY_CHECK(curve_id < EDDSA_NUMBER_OF_SUPPORTED_CURVES, NULL);
@@ -290,7 +279,7 @@ int eddsa_get_prehash_length(eddsa_curve curve_id) {
     return 64;
 }
 
-int eddsa_is_curve_supported(eddsa_curve curve_id) {
-
+int eddsa_is_curve_supported(eddsa_curve curve_id)
+{
     return (curve_id < EDDSA_NUMBER_OF_SUPPORTED_CURVES) && (curves[curve_id] != NULL);
 }

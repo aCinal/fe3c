@@ -3,16 +3,16 @@
 #include <field_elements/field_elements_ed25519.h>
 #include <utils/utils.h>
 
-static inline void ed25519_identity(point_ed25519 * p) {
-
+static inline void ed25519_identity(point_ed25519 *p)
+{
     fe25519_copy(p->X, fe25519_zero);
     fe25519_copy(p->Y, fe25519_one);
     fe25519_copy(p->Z, fe25519_one);
     fe25519_copy(p->T, fe25519_zero);
 }
 
-void ed25519_comb_loop(point_ed25519 * result, const i8 * scalar_recoding, int odd) {
-
+void ed25519_comb_loop(point_ed25519 *result, const i8 *scalar_recoding, int odd)
+{
     FE3C_SANITY_CHECK(0 == odd || 1 == odd, NULL);
 
     ed25519_identity(result);

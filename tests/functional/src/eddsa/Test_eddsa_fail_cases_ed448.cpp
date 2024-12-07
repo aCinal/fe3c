@@ -2,13 +2,13 @@
 #include <fe3c/eddsa.h>
 
 #if FE3C_FUNCTIONAL_TESTS_HOST
-TEST_GROUP(EDDSA_FAIL_CASES_ED448) {
-
+TEST_GROUP(EDDSA_FAIL_CASES_ED448)
+{
 };
 #endif /* FE3C_FUNCTIONAL_TESTS_HOST */
 
-FE3C_TEST(EDDSA_FAIL_CASES_ED448, Verify_GroupEquationNotSatisifed_ExpectVerificationFailure) {
-
+FE3C_TEST(EDDSA_FAIL_CASES_ED448, Verify_GroupEquationNotSatisifed_ExpectVerificationFailure)
+{
     const u8 signature[] = \
         "\x53\x3a\x37\xf6\xbb\xe4\x57\x25" \
         "\x1f\x02\x3c\x0d\x88\xf9\x76\xae" \
@@ -47,8 +47,8 @@ FE3C_TEST(EDDSA_FAIL_CASES_ED448, Verify_GroupEquationNotSatisifed_ExpectVerific
     FAIL_UNLESS_EQUAL(0, verified);
 }
 
-FE3C_TEST(EDDSA_FAIL_CASES_ED448, Verify_PublicKeyDecodingFails_ExpectVerificationFailure) {
-
+FE3C_TEST(EDDSA_FAIL_CASES_ED448, Verify_PublicKeyDecodingFails_ExpectVerificationFailure)
+{
     const u8 signature[] = \
         "\x53\x3a\x37\xf6\xbb\xe4\x57\x25" \
         "\x1f\x02\x3c\x0d\x88\xf9\x76\xae" \
@@ -88,8 +88,8 @@ FE3C_TEST(EDDSA_FAIL_CASES_ED448, Verify_PublicKeyDecodingFails_ExpectVerificati
     FAIL_UNLESS_EQUAL(0, verified);
 }
 
-FE3C_TEST(EDDSA_FAIL_CASES_ED448, Verify_CommitmentDecodingFails_ExpectVerificationFailure) {
-
+FE3C_TEST(EDDSA_FAIL_CASES_ED448, Verify_CommitmentDecodingFails_ExpectVerificationFailure)
+{
     /* Let the y-coordinate of the commitment lead to (1 - y^2)/(1-dy^2)
      * being a quadratic non-residue in the field */
     const u8 signature[] = \
@@ -129,8 +129,8 @@ FE3C_TEST(EDDSA_FAIL_CASES_ED448, Verify_CommitmentDecodingFails_ExpectVerificat
     FAIL_UNLESS_EQUAL(0, verified);
 }
 
-FE3C_TEST(EDDSA_FAIL_CASES_ED448, Verify_NonCanonicalPublicKey_ExpectVerificationFailure) {
-
+FE3C_TEST(EDDSA_FAIL_CASES_ED448, Verify_NonCanonicalPublicKey_ExpectVerificationFailure)
+{
     const u8 signature[] = \
         "\x53\x3a\x37\xf6\xbb\xe4\x57\x25" \
         "\x1f\x02\x3c\x0d\x88\xf9\x76\xae" \
@@ -170,8 +170,8 @@ FE3C_TEST(EDDSA_FAIL_CASES_ED448, Verify_NonCanonicalPublicKey_ExpectVerificatio
     FAIL_UNLESS_EQUAL(0, verified);
 }
 
-FE3C_TEST(EDDSA_FAIL_CASES_ED448, Verify_NonCanonicalCommitment_ExpectVerificationFailure) {
-
+FE3C_TEST(EDDSA_FAIL_CASES_ED448, Verify_NonCanonicalCommitment_ExpectVerificationFailure)
+{
     /* Use an ok test vector from RFC 8032, but add the field cardinality to the
      * y-coordinate of the commitment */
     const u8 signature[] = \

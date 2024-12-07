@@ -24,8 +24,8 @@
 #define GROUP_ORDER_LIMB_4  0x1dea2f
 #define GROUP_ORDER_LIMB_5  0xa6f7c
 
-static inline u32 load_32(const u8 src[4]) {
-
+static inline u32 load_32(const u8 src[4])
+{
     /* Integer encoding is always little endian according to RFC 8032 */
     u32 dst;
 #if FE3C_LILENDIAN_TARGET
@@ -41,8 +41,8 @@ static inline u32 load_32(const u8 src[4]) {
     return dst;
 }
 
-static inline u32 load_24(const u8 src[3]) {
-
+static inline u32 load_24(const u8 src[3])
+{
     /* Integer encoding is always little endian according to RFC 8032 */
     u32 dst;
 #if FE3C_LILENDIAN_TARGET
@@ -58,8 +58,8 @@ static inline u32 load_24(const u8 src[3]) {
     return dst;
 }
 
-static int ed25519_scalar_is_canonical(const u8 * s) {
-
+static int ed25519_scalar_is_canonical(const u8 *s)
+{
     /* Load the scalar into eight 32-bit words (extended to 64 bits) */
     u64 s0 = load_32(&s[0 * 4]);
     u64 s1 = load_32(&s[1 * 4]);
@@ -89,8 +89,8 @@ static int ed25519_scalar_is_canonical(const u8 * s) {
     return (s7 >> 63);
 }
 
-static void ed25519_scalar_reduce(u8 * s) {
-
+static void ed25519_scalar_reduce(u8 *s)
+{
     /* Ed25519 reduction inputs can be 64 bytes long (outputs from SHA-512). Use intermediate
      * 21-bit reduced-radix representation during reduction - we shall use 24 limbs with the
      * highest limb holding 29 bits instead of 21. Note that we use SIGNED words as we rely
@@ -323,8 +323,8 @@ static void ed25519_scalar_reduce(u8 * s) {
     purge_secrets(t, sizeof(t));
 }
 
-static void ed25519_scalars_muladd(u8 * r, const u8 * aa, const u8 * bb, const u8 * cc) {
-
+static void ed25519_scalars_muladd(u8 *r, const u8 *aa, const u8 *bb, const u8 *cc)
+{
     /* Ed25519 multiplication+addition inputs must be 32 bytes long (outputs from SHA-512
      * subjected to reduction or the response scalar which is part of the signature). Use
      * intermediate 21-bit reduced-radix representation. */

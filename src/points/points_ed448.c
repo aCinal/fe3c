@@ -4,6 +4,9 @@
 #if FE3C_COMB_METHOD
     #include <points/comb/comb_ed448.h>
 #endif /* FE3C_COMB_METHOD */
+#if FE3C_ED448_LATTICE_BASIS_REDUCTION
+    #include <points/lattice_basis_reduction/lattices_ed448.h>
+#endif /* FE3C_ED448_LATTICE_BASIS_REDUCTION */
 
 #define ED448_STR \
     "    X = " FE448_STR "\n" \
@@ -21,9 +24,24 @@ static const point_ed448 ed448_basepoint = {
     .T = ED448_BASEPOINT_T
 };
 
-#if FE3C_ENABLE_SANITY_CHECKS
-static inline int ed448_is_on_curve(const point_ed448 * p) {
+#if FE3C_ED448_LATTICE_BASIS_REDUCTION
+static const point_ed448 ed448_basepoint_times_2_225 = {
+    .X = ED448_BASEPOINT_TIMES_2_225_X,
+    .Y = ED448_BASEPOINT_TIMES_2_225_Y,
+    .Z = ED448_BASEPOINT_TIMES_2_225_Z,
+    .T = ED448_BASEPOINT_TIMES_2_225_T
+};
+static const point_ed448 ed448_basepoint_times_2_225_plus_1 = {
+    .X = ED448_BASEPOINT_TIMES_2_225_PLUS_1_X,
+    .Y = ED448_BASEPOINT_TIMES_2_225_PLUS_1_Y,
+    .Z = ED448_BASEPOINT_TIMES_2_225_PLUS_1_Z,
+    .T = ED448_BASEPOINT_TIMES_2_225_PLUS_1_T
+};
+#endif /* FE3C_ED448_LATTICE_BASIS_REDUCTION */
 
+#if FE3C_ENABLE_SANITY_CHECKS
+static inline int ed448_is_on_curve(const point_ed448 *p)
+{
     fe448 x, y, z;
     fe448 lhs;
     fe448 rhs;
@@ -58,8 +76,8 @@ static inline int ed448_is_on_curve(const point_ed448 * p) {
     return fe448_equal(fe448_zero, y);
 }
 
-static inline int ed448_valid_extended_projective(const point_ed448 * p) {
-
+static inline int ed448_valid_extended_projective(const point_ed448 *p)
+{
     /* Check the consistency of the extended projective coordinate */
     fe448 xy, tz;
     fe448_mul(xy, p->X, p->Y);
@@ -70,23 +88,22 @@ static inline int ed448_valid_extended_projective(const point_ed448 * p) {
 }
 #endif /* FE3C_ENABLE_SANITY_CHECKS */
 
-static inline void ed448_identity(point_ed448 * p) {
-
+static inline void ed448_identity(point_ed448 *p)
+{
     fe448_copy(p->X, fe448_zero);
     fe448_copy(p->Y, fe448_one);
     fe448_copy(p->Z, fe448_one);
     fe448_copy(p->T, fe448_zero);
 }
 
-static void ed448_point_negate(point * pgen) {
-
-    point_ed448 * p = (point_ed448 *) pgen;
+static void ed448_point_negate(point_ed448 *p)
+{
     fe448_neg(p->X, p->X);
     fe448_neg(p->T, p->T);
 }
 
-static void ed448_points_add(point_ed448 * r, const point_ed448 * p, const point_ed448 * q) {
-
+static void ed448_points_add(point_ed448 *r, const point_ed448 *p, const point_ed448 *q)
+{
     FE3C_SANITY_CHECK(ed448_is_on_curve(p), ED448_STR, ED448_TO_STR(p));
     FE3C_SANITY_CHECK(ed448_is_on_curve(q), ED448_STR, ED448_TO_STR(q));
     FE3C_SANITY_CHECK(ed448_valid_extended_projective(p), ED448_STR, ED448_TO_STR(p));
@@ -138,8 +155,8 @@ static void ed448_points_add(point_ed448 * r, const point_ed448 * p, const point
 }
 
 
-static void ed448_point_double(point_ed448 * r, const point_ed448 * p, int set_extended_coordinate) {
-
+static void ed448_point_double(point_ed448 *r, const point_ed448 *p, int set_extended_coordinate)
+{
     FE3C_SANITY_CHECK(ed448_is_on_curve(p), ED448_STR, ED448_TO_STR(p));
 
     /* For optimal stack and cache usage we reduce the number of variables
@@ -185,19 +202,13 @@ static void ed448_point_double(point_ed448 * r, const point_ed448 * p, int set_e
 
     /* When scheduled to be followed by another doubling we can skip setting the extended coordinate T
      * which is not needed for doubling */
-    if (set_extended_coordinate) {
-
-        /* T3 := E*H */
-        fe448_mul(r->T, r->T, H);
-    }
+    if (set_extended_coordinate)
+        fe448_mul(r->T, r->T, H);  /* T3 := E*H */
 }
 
-static int ed448_points_equal_modulo_cofactor(const point * pgen, const point * qgen) {
-
-    /* We have already cleared the cofactor via the isogeny, compare for equality immediately */
-    const point_ed448 * p = (const point_ed448 *) pgen;
-    const point_ed448 * q = (const point_ed448 *) qgen;
-
+static int ed448_points_equal_modulo_cofactor(const point_ed448 *p, const point_ed448 *q)
+{
+    /* We have already (during decoding) cleared the cofactor via the isogeny, compare for equality immediately */
     fe448 lhs;
     fe448 rhs;
 
@@ -218,9 +229,9 @@ static int ed448_points_equal_modulo_cofactor(const point * pgen, const point * 
     return equal;
 }
 
-static void ed448_encode(u8 * buf, const point * pgen) {
-
-    const point_ed448 * p = (const point_ed448 *) pgen;
+static void ed448_encode(u8 *buf, const point *pgen)
+{
+    const point_ed448 *p = (const point_ed448 *) pgen;
 
     fe448 x;
     fe448 y;
@@ -287,8 +298,8 @@ static void ed448_encode(u8 * buf, const point * pgen) {
     purge_secrets(z, sizeof(z));
 }
 
-static inline int ed448_is_ok_order(const point_ed448 * p) {
-
+static inline int ed448_is_ok_order(const point_ed448 *p)
+{
     /* Note that all low-order points on the original untwisted curve are in the
      * kernel of the 4-isogeny we have used to move to a twisted curve. Therefore
      * to check for low-order input points we must only check the resulting point
@@ -307,9 +318,9 @@ static inline int ed448_is_ok_order(const point_ed448 * p) {
     return 1 - equal;
 }
 
-static int ed448_decode(point * pgen, const u8 * buf) {
-
-    point_ed448 * p = (point_ed448 *) pgen;
+static int ed448_decode(point *pgen, const u8 *buf)
+{
+    point_ed448 *p = (point_ed448 *) pgen;
 
     int success = 1;
     /* Recover the "sign" or "parity" of the x-coordinate */
@@ -427,8 +438,8 @@ static int ed448_decode(point * pgen, const u8 * buf) {
     return success;
 }
 
-static inline void ed448_conditional_move(point_ed448 * r, const point_ed448 * p, int move) {
-
+static inline void ed448_conditional_move(point_ed448 *r, const point_ed448 *p, int move)
+{
     fe448_conditional_move(r->X, p->X, move);
     fe448_conditional_move(r->Y, p->Y, move);
     fe448_conditional_move(r->Z, p->Z, move);
@@ -436,8 +447,8 @@ static inline void ed448_conditional_move(point_ed448 * r, const point_ed448 * p
 }
 
 #if !FE3C_COMB_METHOD
-static inline void ed448_conditional_swap(point_ed448 * r, point_ed448 * q, point_ed448 * temp, int swap) {
-
+static inline void ed448_conditional_swap(point_ed448 *r, point_ed448 *q, point_ed448 *temp, int swap)
+{
     /* We could implement this more efficiently, but if someone is using
      * naive scalar multiplication then they probably value space more
      * than speed */
@@ -446,8 +457,8 @@ static inline void ed448_conditional_swap(point_ed448 * r, point_ed448 * q, poin
     ed448_conditional_move(q, temp, swap);
 }
 
-static inline void ed448_scalar_multiply(point_ed448 * r, const point_ed448 * p, const u8 * s) {
-
+static inline void ed448_scalar_multiply(point_ed448 *r, const point_ed448 *p, const u8 *s)
+{
     FE3C_SANITY_CHECK(ed448_is_on_curve(p), ED448_STR, ED448_TO_STR(p));
 
     point_ed448 R[3];
@@ -475,8 +486,8 @@ static inline void ed448_scalar_multiply(point_ed448 * r, const point_ed448 * p,
 }
 #endif /* !FE3C_COMB_METHOD */
 
-static inline void ed448_map_scalar_to_isogenous_curve(u8 r[57], const u8 s[57]) {
-
+static inline void ed448_map_scalar_to_isogenous_curve(u8 r[57], const u8 s[57])
+{
     /* Divide the scalar by four, i.e. the order of the isogeny, since applying the
      * isogeny and its dual is equivalent to multiplying by four (the order) */
 
@@ -505,16 +516,15 @@ static inline void ed448_map_scalar_to_isogenous_curve(u8 r[57], const u8 s[57])
         chain >>= 8;
     }
 
-    for (int i = 0; i < 56; i++) {
-
+    for (int i = 0; i < 56; i++)
         r[i] = (r[i + 1] << 6) | (r[i] >> 2);
-    }
+
     r[56] = (u8)(chain << 6) | (r[56] >> 2);
 }
 
-static void ed448_multiply_basepoint(point * rgen, const u8 * sraw) {
-
-    point_ed448 * r = (point_ed448 *) rgen;
+static void ed448_multiply_basepoint(point *rgen, const u8 *sraw)
+{
+    point_ed448 *r = (point_ed448 *) rgen;
     u8 s[57];
     ed448_map_scalar_to_isogenous_curve(s, sraw);
 #if !FE3C_COMB_METHOD
@@ -622,23 +632,21 @@ static void ed448_multiply_basepoint(point * rgen, const u8 * sraw) {
 #endif /* !FE3C_COMB_METHOD */
 }
 
-static void ed448_double_scalar_multiply(point * rgen, const u8 * s, const u8 * h, const point * pgen) {
-
+#if !FE3C_ED448_LATTICE_BASIS_REDUCTION
+static inline void ed448_double_scalar_multiply_vartime(point_ed448 *r, const u8 *s, const u8 *h, const point_ed448 *p)
+{
     /* Note that since the points here are on the isogenous twisted Edwards curve, the result is not
      * really multiplication [s]B + [h]A, but (if we were to apply the dual isogeny and go back to
      * the original Ed448 curve) [4][s]B + [4][h]A */
-
-    point_ed448 * r = (point_ed448 *) rgen;
-    const point_ed448 * p = (const point_ed448 *) pgen;
 
     /* To reduce stack usage, only store pointers to the public key A
      * and the basepoint B, and allocate only one point (A+B) */
     point_ed448 sum;
     ed448_points_add(&sum, p, &ed448_basepoint);
-    const point_ed448 * G[3];
-    G[0] = &ed448_basepoint;  /* [0]A + [1]B */
-    G[1] = p;                 /* [1]A + [0]B */
-    G[2] = &sum;              /* [1]A + [1]B */
+    const point_ed448 *lookup[3];
+    lookup[0] = &ed448_basepoint;  /* [0]A + [1]B */
+    lookup[1] = p;                 /* [1]A + [0]B */
+    lookup[2] = &sum;              /* [1]A + [1]B */
 
     ed448_identity(r);
 
@@ -647,28 +655,109 @@ static void ed448_double_scalar_multiply(point * rgen, const u8 * s, const u8 * 
     for (int i = 445; i >= 0; i--) {
 
         ed448_point_double(r, r, 1);
-
-        u8 index = (array_bit(h, i) << 1) | array_bit(s, i);
-
-        /* Access all elements of the array to prevent cache-based timing
-         * attacks. Note that for most applications constant-time signature
-         * verification is not needed. It is for the few that care that we
-         * do this. */
-        point_ed448 t;
-        ed448_identity(&t);
-        ed448_conditional_move(&t, G[0], byte_equal(index, 1));
-        ed448_conditional_move(&t, G[1], byte_equal(index, 2));
-        ed448_conditional_move(&t, G[2], byte_equal(index, 3));
-
-        ed448_points_add(r, r, &t);
+        int index = (array_bit(h, i) << 1) | array_bit(s, i);
+        if (index)
+            ed448_points_add(r, r, lookup[index - 1]);
     }
+}
+#endif /* !FE3C_ED448_LATTICE_BASIS_REDUCTION */
+
+static int ed448_check_group_equation(point *pubkey_gen, point *commit_gen, const u8 *challenge, const u8 *response)
+{
+    point_ed448 *public_key = (point_ed448 *) pubkey_gen;
+    point_ed448 *commitment = (point_ed448 *) commit_gen;
+
+#if !FE3C_ED448_LATTICE_BASIS_REDUCTION
+    ed448_point_negate(public_key);
+    point_ed448 commitment_pretender;
+    /* Compute S*B - h*A */
+    ed448_double_scalar_multiply_vartime(&commitment_pretender, response, challenge, public_key);
+    /* Check if 2^c*(S*B - h*A) == 2^c*R */
+    return ed448_points_equal_modulo_cofactor(&commitment_pretender, commitment);
+#else
+    /* Follow eprint:2020/454 and find a value k such that both
+     * k and k*h (where h is the challenge) are short modulo the
+     * group order L. Instead of verifying [c][S]B = [c]R + [c][h]A, we
+     * shall check that:
+     *
+     *               [c]([kS]B - [k]R - [kh]A) = (0, 1)
+     *
+     * Both k (mod L) and kh (mod L) will be below 224 bits in
+     * length, and kS we will split in half and use the precomputed
+     * value of [2^{224}]B to cut the number of point doublings in half.
+     */
+
+    /* TODO: By making delta and delta_challenge 32 bytes we are leaking the internal
+     * workings of ed448_lattice_basis_reduction. Clean this up, basis-reduced
+     * values are 225 bits at most so 29 bytes. */
+    u8 delta[32];
+    int delta_negative;
+    u8 delta_challenge[32];
+    int delta_challenge_negative;
+    u8 delta_response[57];
+    /* Construct a lattice spanned by { (L, 0), (h, 1) } and find its
+     * size-reduced basis. Specifically, we are interested in a short
+     * vector (v0, v1) with v0 = v1*h (mod L). Both v0 and v1 may be
+     * negative and we must not normalize them to range [0, L), since
+     * L-vi will not be short anymore. Instead, return absolute values
+     * delta_challenge = |v0| and delta = |v1|, but keep track of the
+     * signs. Based on the signs, we shall negate the group elements
+     * before doing the multi-scalar multiplication below. Compute
+     * also v1*S (mod L), which we will split in half as described above. */
+    ed448_lattice_basis_reduction(
+        delta_challenge,
+        &delta_challenge_negative,
+        delta,
+        &delta_negative,
+        delta_response,
+        challenge,
+        response
+    );
+
+    /* Negate the input points only if their associated scalars remained positive */
+    if (!delta_negative)
+        ed448_point_negate(commitment);
+    if (!delta_challenge_negative)
+        ed448_point_negate(public_key);
+
+    /* Use two small lookup tables instead of one large one. It is possible to precompute more combinations of the points
+     * here and use a 15-entry lookup table saving a point addition in each loop iteration. */
+    const point_ed448 *right_lookup[3];
+    const point_ed448 *left_lookup[3];
+
+    point_ed448 sum;
+    ed448_points_add(&sum, commitment, public_key);
+    right_lookup[0] = commitment;
+    right_lookup[1] = public_key;
+    right_lookup[2] = &sum;
+
+    left_lookup[0] = &ed448_basepoint;
+    left_lookup[1] = &ed448_basepoint_times_2_225;
+    left_lookup[2] = &ed448_basepoint_times_2_225_plus_1;
+
+    point_ed448 accumulator;
+    ed448_identity(&accumulator);
+    for (int i = 224; i >= 0; i--) {
+
+        ed448_point_double(&accumulator, &accumulator, 1);
+        int right_lookup_index = (array_bit(delta_challenge, i) << 1) | array_bit(delta, i);
+        if (right_lookup_index)
+            ed448_points_add(&accumulator, &accumulator, right_lookup[right_lookup_index - 1]);
+        int left_lookup_index = (array_bit(delta_response, 225 + i) << 1) | array_bit(delta_response, i);
+        if (left_lookup_index)
+            ed448_points_add(&accumulator, &accumulator, left_lookup[left_lookup_index - 1]);
+    }
+
+    point_ed448 identity;
+    ed448_identity(&identity);
+    /* Clear the cofactor and check if the result is the identity */
+    return ed448_points_equal_modulo_cofactor(&accumulator, &identity);
+#endif /* !FE3C_ED448_LATTICE_BASIS_REDUCTION */
 }
 
 const group_ops ed448_group_ops = {
-    .points_equal_modulo_cofactor = ed448_points_equal_modulo_cofactor,
     .encode = ed448_encode,
     .decode = ed448_decode,
     .multiply_basepoint = ed448_multiply_basepoint,
-    .point_negate = ed448_point_negate,
-    .double_scalar_multiply = ed448_double_scalar_multiply
+    .check_group_equation = ed448_check_group_equation
 };

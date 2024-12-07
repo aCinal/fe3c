@@ -16,8 +16,8 @@ const fe448 fe448_zero = { 0, 0, 0, 0, 0, 0, 0, 0 };
 /* Multiplicative identity in the field */
 const fe448 fe448_one = { 1, 0, 0, 0, 0, 0, 0, 0 };
 
-static inline u64 _load_56(const u8 src[7]) {
-
+static inline u64 _load_56(const u8 src[7])
+{
     /* Integer encoding is always little endian according to RFC 8032 */
     u64 dst;
 #if FE3C_LILENDIAN_TARGET
@@ -37,8 +37,8 @@ static inline u64 _load_56(const u8 src[7]) {
     return dst;
 }
 
-static inline void _store_64(u8 dst[8], u64 src) {
-
+static inline void store_64(u8 dst[8], u64 src)
+{
     /* Integer encoding is always little endian according to RFC 8032 */
 #if FE3C_LILENDIAN_TARGET
     (void) memcpy(dst, &src, 8);
@@ -60,8 +60,8 @@ static inline void _store_64(u8 dst[8], u64 src) {
  * @param r Destination field element
  * @param a Source field element
  */
-void fe448_copy(fe448 r, const fe448 a) {
-
+void fe448_copy(fe448 r, const fe448 a)
+{
     r[0] = a[0];
     r[1] = a[1];
     r[2] = a[2];
@@ -77,8 +77,8 @@ void fe448_copy(fe448 r, const fe448 a) {
  * @param a Field element to check
  * @return 1 if a is in canonical form, 0 otherwise
  */
-static inline int fe448_is_canonical(const fe448 a) {
-
+static inline int fe448_is_canonical(const fe448 a)
+{
     int canonical = 1;
     canonical &= (a[0] <  0xffffffffffffffULL);
     canonical &= (a[1] <= 0xffffffffffffffULL);
@@ -98,8 +98,8 @@ static inline int fe448_is_canonical(const fe448 a) {
  * @return 1 if a = b, 0 otherwise
  * @note The elements should be reduced by the caller first
  */
-int fe448_equal(const fe448 a, const fe448 b) {
-
+int fe448_equal(const fe448 a, const fe448 b)
+{
     fe_limb_type sum = 0;
 
     /* Do an XOR between the two elements, if they are equal this should amount
@@ -133,8 +133,8 @@ int fe448_equal(const fe448 a, const fe448 b) {
  * @param[in] move Flag deciding on the branch, if set to 0, r ::= r, and if set to 1, r ::= a
  * @note If move is set to anything other than 0 or 1, the results are undefined
  */
-void fe448_conditional_move(fe448 r, const fe448 a, int move) {
-
+void fe448_conditional_move(fe448 r, const fe448 a, int move)
+{
     /* Set the mask to 0x0000000000000000 if move is 0 or to 0xFFFFFFFFFFFFFFFF if it is 1 */
     const fe_limb_type mask = (fe_limb_type)( -(i64) move );
 
@@ -189,8 +189,8 @@ void fe448_conditional_move(fe448 r, const fe448 a, int move) {
  * @param[in] a Field element to be reduced
  * @note Note that the result need to be in canonical form, i.e. between 0 and p-1, it need only be less than 2p
  */
-void fe448_weak_reduce(fe448 r, const fe448 a) {
-
+void fe448_weak_reduce(fe448 r, const fe448 a)
+{
     /* Do a "relaxed" reduction (to borrow terminology form Michael Scott's "Slothful reduction" paper)
      * - this ensures the result is less than 2p (where p = 2^448 - 2^224 - 1) */
 
@@ -271,8 +271,8 @@ void fe448_weak_reduce(fe448 r, const fe448 a) {
  * @param[in] a Field element to be reduced
  * @note The result is guaranteed to be in canonical form, i.e. between 0 and p-1
  */
-void fe448_strong_reduce(fe448 r, const fe448 a) {
-
+void fe448_strong_reduce(fe448 r, const fe448 a)
+{
     fe448_weak_reduce(r, a);
     /* After the weak reduction r is congruent to a and less than 2p */
 
@@ -313,8 +313,8 @@ void fe448_strong_reduce(fe448 r, const fe448 a) {
  * @param[out] r The result of negation
  * @param[in] a Element to be negated
  */
-void fe448_neg(fe448 r, const fe448 a) {
-
+void fe448_neg(fe448 r, const fe448 a)
+{
     /* Check against underflow */
     FE3C_SANITY_CHECK(a[0] <= 0x3fffffffffffffcULL, FE448_STR, FE448_TO_STR(a));
     FE3C_SANITY_CHECK(a[1] <= 0x3fffffffffffffcULL, FE448_STR, FE448_TO_STR(a));
@@ -342,8 +342,8 @@ void fe448_neg(fe448 r, const fe448 a) {
  * @param[in] a Operand
  * @param[in] b Operand
  */
-void fe448_add(fe448 r, const fe448 a, const fe448 b) {
-
+void fe448_add(fe448 r, const fe448 a, const fe448 b)
+{
     r[0] = a[0] + b[0];
     r[1] = a[1] + b[1];
     r[2] = a[2] + b[2];
@@ -360,8 +360,8 @@ void fe448_add(fe448 r, const fe448 a, const fe448 b) {
  * @param[in] a Minuend
  * @param[in] b Subtrahend
  */
-void fe448_sub(fe448 r, const fe448 a, const fe448 b) {
-
+void fe448_sub(fe448 r, const fe448 a, const fe448 b)
+{
     /* Check against underflow */
     FE3C_SANITY_CHECK(b[0] <= 0x3fffffffffffffcULL, FE448_STR, FE448_TO_STR(b));
     FE3C_SANITY_CHECK(b[1] <= 0x3fffffffffffffcULL, FE448_STR, FE448_TO_STR(b));
@@ -391,8 +391,8 @@ void fe448_sub(fe448 r, const fe448 a, const fe448 b) {
  * @param[in] a Operand
  * @param[in] b Operand
  */
-void fe448_mul(fe448 r, const fe448 a, const fe448 b) {
-
+void fe448_mul(fe448 r, const fe448 a, const fe448 b)
+{
     /* Note that we are using the so-called "golden-ratio prime" which facilitates fast
      * Karatsuba multiplication. Let S = 2^224. Then:
      *
@@ -549,8 +549,8 @@ void fe448_mul(fe448 r, const fe448 a, const fe448 b) {
  * @param[out] r Result of the squaring, i.e. the product r = a a
  * @param[in] a Field element to square
  */
-void fe448_square(fe448 r, const fe448 a) {
-
+void fe448_square(fe448 r, const fe448 a)
+{
 #if !FE3C_FAST_SQUARING
     fe448_mul(r, a, a);
 #else
@@ -672,8 +672,8 @@ void fe448_square(fe448 r, const fe448 a) {
  * @param[out] buffer Output buffer for the encoded field element
  * @param[in] a Field element to encode
  */
-void fe448_encode(u8 * buffer, fe448 a) {
-
+void fe448_encode(u8 *buffer, fe448 a)
+{
     /* Canonicalize the element first */
     fe448_strong_reduce(a, a);
 
@@ -701,13 +701,13 @@ void fe448_encode(u8 * buffer, fe448 a) {
     u64 t6 = ( a[6] >> 48 ) | ( a[7] << 8 );
 
     /* The field elements get encoded as little-endian byte strings according to RFC 8032 */
-    _store_64(&buffer[0 * 8], t0);
-    _store_64(&buffer[1 * 8], t1);
-    _store_64(&buffer[2 * 8], t2);
-    _store_64(&buffer[3 * 8], t3);
-    _store_64(&buffer[4 * 8], t4);
-    _store_64(&buffer[5 * 8], t5);
-    _store_64(&buffer[6 * 8], t6);
+    store_64(&buffer[0 * 8], t0);
+    store_64(&buffer[1 * 8], t1);
+    store_64(&buffer[2 * 8], t2);
+    store_64(&buffer[3 * 8], t3);
+    store_64(&buffer[4 * 8], t4);
+    store_64(&buffer[5 * 8], t5);
+    store_64(&buffer[6 * 8], t6);
     /* Set the last byte to 0 */
     buffer[7 * 8] = 0;
 }
@@ -719,8 +719,8 @@ void fe448_encode(u8 * buffer, fe448 a) {
  * @return 1 if decoding succeeded, 0 otherwise
  */
 __attribute__((warn_unused_result))
-int fe448_decode(fe448 r, const u8 * buffer) {
-
+int fe448_decode(fe448 r, const u8 *buffer)
+{
     r[0] = _load_56(&buffer[0 * 7]);
     r[1] = _load_56(&buffer[1 * 7]);
     r[2] = _load_56(&buffer[2 * 7]);

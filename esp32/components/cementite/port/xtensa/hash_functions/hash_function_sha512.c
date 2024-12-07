@@ -228,13 +228,13 @@
     _ "add.n  %[" #rhi "],  %[" #rhi "],  %[aux1]"
 #endif /* XCHAL_HW_VERSION >= XTENSA_HWVERSION_RG_2015_0 */
 
-static inline void sha512_compress(u64 * state, const u8 * input_block, u64 * schedule, sha512_working_variables * work);
-static inline void sha512_prepare_message_schedule(u64 * schedule, const u8 * input);
-static inline void store_64(u8 * dst, const u64 * src, size_t wordcount);
-static inline void load_64(u64 * dst, const u8 * src, size_t wordcount);
+static inline void sha512_compress(u64 *state, const u8 *input_block, u64 *schedule, sha512_working_variables *work);
+static inline void sha512_prepare_message_schedule(u64 *schedule, const u8 *input);
+static inline void store_64(u8 *dst, const u64 *src, size_t wordcount);
+static inline void load_64(u64 *dst, const u8 *src, size_t wordcount);
 
-static inline void sha512_impl_sw(u8 * output, const struct iovec * iov, int iovcnt) {
-
+static inline void sha512_impl_sw(u8 *output, const struct iovec *iov, int iovcnt)
+{
     FE3C_SANITY_CHECK(output, NULL);
     FE3C_SANITY_CHECK(iov || iovcnt == 0, NULL);
 
@@ -265,7 +265,7 @@ static inline void sha512_impl_sw(u8 * output, const struct iovec * iov, int iov
 
         /* Update the state for each field */
         size_t input_length = iov[i].iov_len;
-        const u8 * input = iov[i].iov_base;
+        const u8 *input = iov[i].iov_base;
 
         /* Update the length */
 
@@ -275,10 +275,8 @@ static inline void sha512_impl_sw(u8 * output, const struct iovec * iov, int iov
          * and save in the high part of the bitlength */
         u64 temp_length_high = ( (u64) input_length ) >> 61;
         /* Check for overflow of the low word */
-        if ((message_length_low += temp_length_low) < temp_length_low) {
-            /* Overflow into the high word occurred */
+        if ((message_length_low += temp_length_low) < temp_length_low)
             message_length_high++;
-        }
         /* Add the high part of input_length into the aggregate message length. Note that
          * no secret data is used here, so we allow C implementation of 64-bit addition
          * (which compiles to branching code). */
@@ -356,8 +354,8 @@ static inline void sha512_impl_sw(u8 * output, const struct iovec * iov, int iov
     purge_secrets(block_buffer, sizeof(block_buffer));
 }
 
-static inline void sha512_compress(u64 * state, const u8 * input_block, u64 * schedule, sha512_working_variables * work) {
-
+static inline void sha512_compress(u64 *state, const u8 *input_block, u64 *schedule, sha512_working_variables *work)
+{
     sha512_prepare_message_schedule(schedule, input_block);
 
     /* Initialize the working variables - see RFC 6234 for the naming convention */
@@ -384,7 +382,7 @@ static inline void sha512_compress(u64 * state, const u8 * input_block, u64 * sc
     u32 aux4;
     u32 aux5;
     u32 aux6;
-    const u64 * rciter = round_constants;
+    const u64 *rciter = round_constants;
 
 #define update_state(i)                                       \
     _ "l32i %[aux3],       %[state],    " #i " * 8"           \
@@ -547,14 +545,14 @@ static inline void sha512_compress(u64 * state, const u8 * input_block, u64 * sc
     );
 }
 
-static inline void sha512_prepare_message_schedule(u64 * schedule, const u8 * input) {
-
+static inline void sha512_prepare_message_schedule(u64 *schedule, const u8 *input)
+{
     /* Write the current input block into the first 16 words of the message schedule */
     load_64(schedule, input, SHA512_BLOCK_SIZE_BYTES / 8);
 
     /* Keep the schedule iterator 16 words (64-bit words) behind the current "loop index"
      * since we cannot do negative offset addressing */
-    u64 * schediter = &schedule[SHA512_BLOCK_SIZE_BYTES / 8 - 16];
+    u64 *schediter = &schedule[SHA512_BLOCK_SIZE_BYTES / 8 - 16];
 
     /* Let the compiler allocate registers - we use a convention where
      * aux1-aux4 can be clobbered by the macros, whereas the other
@@ -630,24 +628,20 @@ static inline void sha512_prepare_message_schedule(u64 * schedule, const u8 * in
     );
 }
 
-static inline void store_64(u8 * dst, const u64 * src, size_t wordcount) {
-
-    for (size_t i = 0; i < wordcount; i++) {
-
+static inline void store_64(u8 *dst, const u64 *src, size_t wordcount)
+{
+    for (size_t i = 0; i < wordcount; i++)
         *(u64 *) &dst[8 * i] = __builtin_bswap64(src[i]);
-    }
 }
 
-static inline void load_64(u64 * dst, const u8 * src, size_t wordcount) {
-
-    for (size_t i = 0; i < wordcount; i++) {
-
+static inline void load_64(u64 *dst, const u8 *src, size_t wordcount)
+{
+    for (size_t i = 0; i < wordcount; i++)
         dst[i] = __builtin_bswap64(*(u64 *) &src[8 * i]);
-    }
 }
 
-void hash_sha512(u8 * output, const struct iovec * iov, int iovcnt) {
-
+void hash_sha512(u8 * output, const struct iovec * iov, int iovcnt)
+{
 #if FE3C_USE_SHA512_HARDWARE
     sha512_impl impl_select = sha512_try_lock_hw();
     if (impl_select == sha512_hw_acceleration) {
@@ -655,9 +649,8 @@ void hash_sha512(u8 * output, const struct iovec * iov, int iovcnt) {
         /* Try relying on the hardware accelerator. If that fails, we fall back to software. */
         int hw_error = sha512_impl_hw(output, iov, iovcnt);
         sha512_release_hw();
-        if (0 == hw_error) {
+        if (0 == hw_error)
             return;
-        }
 
         /* Hardware failed us. Do it the boring way. */
     }

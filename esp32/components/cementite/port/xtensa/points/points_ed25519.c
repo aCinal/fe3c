@@ -8,6 +8,9 @@
 #include <points/comb/comb_ed25519.h>
 #include "comb/comb_parallel.h"
 #include "comb/comb_parallel_ed25519.h"
+#if FE3C_ED25519_LATTICE_BASIS_REDUCTION
+    #include <points/lattice_basis_reduction/lattices_ed25519.h>
+#endif /* FE3C_ED25519_LATTICE_BASIS_REDUCTION */
 
 #define ED25519_STR \
     "    X = " FE25519_STR "\n" \
@@ -24,9 +27,24 @@ static const point_ed25519 ed25519_basepoint = {
     .T = ED25519_BASEPOINT_T
 };
 
-#if FE3C_ENABLE_SANITY_CHECKS
-static inline int ed25519_is_on_curve(const point_ed25519 * p) {
+#if FE3C_ED25519_LATTICE_BASIS_REDUCTION
+static const point_ed25519 ed25519_basepoint_times_2_128 = {
+    .X = ED25519_BASEPOINT_TIMES_2_128_X,
+    .Y = ED25519_BASEPOINT_TIMES_2_128_Y,
+    .Z = ED25519_BASEPOINT_TIMES_2_128_Z,
+    .T = ED25519_BASEPOINT_TIMES_2_128_T
+};
+static const point_ed25519 ed25519_basepoint_times_2_128_plus_1 = {
+    .X = ED25519_BASEPOINT_TIMES_2_128_PLUS_1_X,
+    .Y = ED25519_BASEPOINT_TIMES_2_128_PLUS_1_Y,
+    .Z = ED25519_BASEPOINT_TIMES_2_128_PLUS_1_Z,
+    .T = ED25519_BASEPOINT_TIMES_2_128_PLUS_1_T
+};
+#endif /* FE3C_ED25519_LATTICE_BASIS_REDUCTION */
 
+#if FE3C_ENABLE_SANITY_CHECKS
+static inline int ed25519_is_on_curve(const point_ed25519 *p)
+{
     fe25519 x, y, z;
     fe25519 lhs;
     fe25519 rhs;
@@ -53,8 +71,8 @@ static inline int ed25519_is_on_curve(const point_ed25519 * p) {
     return fe25519_equal(fe25519_zero, y);
 }
 
-static inline int ed25519_valid_extended_projective(const point_ed25519 * p) {
-
+static inline int ed25519_valid_extended_projective(const point_ed25519 *p)
+{
     /* Check the consistency of the extended projective coordinate */
     fe448 xy, tz;
     fe25519_mul(xy, p->X, p->Y);
@@ -65,23 +83,22 @@ static inline int ed25519_valid_extended_projective(const point_ed25519 * p) {
 }
 #endif /* FE3C_ENABLE_SANITY_CHECKS */
 
-static inline void ed25519_identity(point_ed25519 * p) {
-
+static inline void ed25519_identity(point_ed25519 *p)
+{
     fe25519_copy(p->X, fe25519_zero);
     fe25519_copy(p->Y, fe25519_one);
     fe25519_copy(p->Z, fe25519_one);
     fe25519_copy(p->T, fe25519_zero);
 }
 
-static void ed25519_point_negate(point * pgen) {
-
-    point_ed25519 * p = (point_ed25519 *) pgen;
+static void ed25519_point_negate(point_ed25519 *p)
+{
     fe25519_neg(p->X, p->X);
     fe25519_neg(p->T, p->T);
 }
 
-static void ed25519_points_add(point_ed25519 * r, const point_ed25519 * p, const point_ed25519 * q) {
-
+static void ed25519_points_add(point_ed25519 *r, const point_ed25519 *p, const point_ed25519 *q)
+{
     FE3C_SANITY_CHECK(ed25519_is_on_curve(p), ED25519_STR, ED25519_TO_STR(p));
     FE3C_SANITY_CHECK(ed25519_is_on_curve(q), ED25519_STR, ED25519_TO_STR(q));
     FE3C_SANITY_CHECK(ed25519_valid_extended_projective(p), ED25519_STR, ED25519_TO_STR(p));
@@ -131,8 +148,8 @@ static void ed25519_points_add(point_ed25519 * r, const point_ed25519 * p, const
     fe25519_mul(r->X, E, r->X);
 }
 
-static void ed25519_point_double(point_ed25519 * r, const point_ed25519 * p, int set_extended_coordinate) {
-
+static void ed25519_point_double(point_ed25519 *r, const point_ed25519 *p, int set_extended_coordinate)
+{
     FE3C_SANITY_CHECK(ed25519_is_on_curve(p), ED25519_STR, ED25519_TO_STR(p));
 
     /* For optimal stack and cache usage we reduce the number of variables
@@ -171,23 +188,17 @@ static void ed25519_point_double(point_ed25519 * r, const point_ed25519 * p, int
 
     /* When scheduled to be followed by another doubling we can skip setting the extended coordinate T
      * which is not needed for doubling */
-    if (set_extended_coordinate) {
-
-        /* T3 := E*H */
-        fe25519_mul(r->T, r->T, H);
-    }
+    if (set_extended_coordinate)
+        fe25519_mul(r->T, r->T, H);  /* T3 := E*H */
 }
 
-static int ed25519_points_equal_modulo_cofactor(const point * pgen, const point * qgen) {
-
-    const point_ed25519 * p = (const point_ed25519 *) pgen;
-    const point_ed25519 * q = (const point_ed25519 *) qgen;
-
+static int ed25519_points_equal_modulo_cofactor(const point_ed25519 *p, const point_ed25519 *q)
+{
     point_ed25519 pmq;
 
     /* Compute the difference p-q */
     pmq = *q;
-    ed25519_point_negate((point *) &pmq);
+    ed25519_point_negate(&pmq);
     ed25519_points_add(&pmq, p, &pmq);
     /* Double the difference three times to obtain cofactor (8) times the difference */
     ed25519_point_double(&pmq, &pmq, 0);
@@ -209,9 +220,9 @@ static int ed25519_points_equal_modulo_cofactor(const point * pgen, const point 
     return equal;
 }
 
-static void ed25519_encode(u8 * buf, const point * pgen) {
-
-    const point_ed25519 * p = (const point_ed25519 *) pgen;
+static void ed25519_encode(u8 *buf, const point *pgen)
+{
+    const point_ed25519 *p = (const point_ed25519 *) pgen;
     fe25519 x;
     fe25519 y;
     fe25519 z_inv;
@@ -233,17 +244,17 @@ static void ed25519_encode(u8 * buf, const point * pgen) {
     purge_secrets(z_inv, sizeof(z_inv));
 }
 
-static inline int ed25519_is_ok_order(const point_ed25519 * p) {
-
+static inline int ed25519_is_ok_order(const point_ed25519 *p)
+{
     point_ed25519 e;
     ed25519_identity(&e);
     /* Check if p lies in the "cofactor subgroup" */
-    return 1 - ed25519_points_equal_modulo_cofactor((const point *) p, (const point *) &e);
+    return 1 - ed25519_points_equal_modulo_cofactor(p, &e);
 }
 
-static int ed25519_decode(point * pgen, const u8 * buf) {
-
-    point_ed25519 * p = (point_ed25519 *) pgen;
+static int ed25519_decode(point *pgen, const u8 *buf)
+{
+    point_ed25519 *p = (point_ed25519 *) pgen;
 
     int success = 1;
     /* Recover the "sign" or "parity" of the x-coordinate */
@@ -345,9 +356,9 @@ static int ed25519_decode(point * pgen, const u8 * buf) {
     return success;
 }
 
-static void ed25519_multiply_basepoint(point * rgen, const u8 * s) {
-
-    point_ed25519 * r = (point_ed25519 *) rgen;
+static void ed25519_multiply_basepoint(point *rgen, const u8 *s)
+{
+    point_ed25519 *r = (point_ed25519 *) rgen;
 
     /* See src/points/points_ed25519.c for a description of the comb method algorithm used here.
      * The core of the algorithm uses two loops iterating respectively over the odd and the even
@@ -394,27 +405,17 @@ static void ed25519_multiply_basepoint(point * rgen, const u8 * s) {
     purge_secrets(&even_part, sizeof(even_part));
 }
 
-static inline void ed25519_conditional_move(point_ed25519 * r, const point_ed25519 * p, int move) {
-
-    fe25519_conditional_move(r->X, p->X, move);
-    fe25519_conditional_move(r->Y, p->Y, move);
-    fe25519_conditional_move(r->Z, p->Z, move);
-    fe25519_conditional_move(r->T, p->T, move);
-}
-
-static void ed25519_double_scalar_multiply(point * rgen, const u8 * s, const u8 * h, const point * pgen) {
-
-    point_ed25519 * r = (point_ed25519 *) rgen;
-    const point_ed25519 * p = (const point_ed25519 *) pgen;
-
+#if !FE3C_ED25519_LATTICE_BASIS_REDUCTION
+static inline void ed25519_double_scalar_multiply_vartime(point_ed25519 *r, const u8 *s, const u8 *h, const point_ed25519 *p)
+{
     /* To reduce stack usage, only store pointers to the public key A
      * and the basepoint B, and allocate only one point (A+B) */
     point_ed25519 sum;
     ed25519_points_add(&sum, p, &ed25519_basepoint);
-    const point_ed25519 * G[3];
-    G[0] = &ed25519_basepoint;  /* [0]A + [1]B */
-    G[1] = p;                   /* [1]A + [0]B */
-    G[2] = &sum;                /* [1]A + [1]B */
+    const point_ed25519 *lookup[3];
+    lookup[0] = &ed25519_basepoint;  /* [0]A + [1]B */
+    lookup[1] = p;                   /* [1]A + [0]B */
+    lookup[2] = &sum;                /* [1]A + [1]B */
 
     ed25519_identity(r);
 
@@ -423,28 +424,106 @@ static void ed25519_double_scalar_multiply(point * rgen, const u8 * s, const u8 
     for (int i = 252; i >= 0; i--) {
 
         ed25519_point_double(r, r, 1);
-
-        u8 index = (array_bit(h, i) << 1) | array_bit(s, i);
-
-        /* Access all elements of the array to prevent cache-based timing
-         * attacks. Note that for most applications constant-time signature
-         * verification is not needed. It is for the few that care that we
-         * do this. */
-        point_ed25519 t;
-        ed25519_identity(&t);
-        ed25519_conditional_move(&t, G[0], byte_equal(index, 1));
-        ed25519_conditional_move(&t, G[1], byte_equal(index, 2));
-        ed25519_conditional_move(&t, G[2], byte_equal(index, 3));
-
-        ed25519_points_add(r, r, &t);
+        int index = (array_bit(h, i) << 1) | array_bit(s, i);
+        if (index)
+            ed25519_points_add(r, r, lookup[index - 1]);
     }
+}
+#endif /* !FE3C_ED25519_LATTICE_BASIS_REDUCTION */
+
+static int ed25519_check_group_equation(point *pubkey_gen, point *commit_gen, const u8 *challenge, const u8 *response)
+{
+    point_ed25519 *public_key = (point_ed25519 *) pubkey_gen;
+    point_ed25519 *commitment = (point_ed25519 *) commit_gen;
+
+#if !FE3C_ED25519_LATTICE_BASIS_REDUCTION
+    point_ed25519 commitment_pretender;
+    /* Compute S*B - h*A */
+    ed25519_point_negate(public_key);
+    ed25519_double_scalar_multiply_vartime(&commitment_pretender, response, challenge, public_key);
+    /* Check if 2^c*(S*B - h*A) == 2^c*R */
+    return ed25519_points_equal_modulo_cofactor(&commitment_pretender, commitment);
+#else
+    /* Follow eprint:2020/454 and find a value k such that both
+     * k and k*h (where h is the challenge) are short modulo the
+     * group order L. Instead of verifying [c][S]B = [c]R + [c][h]A, we
+     * shall check that:
+     *
+     *               [c]([kS]B - [k]R - [kh]A) = (0, 1)
+     *
+     * Both k (mod L) and kh (mod L) will be below 128 bits in
+     * length, and kS we will split in half and use the precomputed
+     * value of [2^{128}]B to cut the number of point doublings in half.
+     */
+
+    u8 delta[16];
+    int delta_negative;
+    u8 delta_challenge[16];
+    int delta_challenge_negative;
+    u8 delta_response[32];
+    /* Construct a lattice spanned by { (L, 0), (h, 1) } and find its
+     * size-reduced basis. Specifically, we are interested in a short
+     * vector (v0, v1) with v0 = v1*h (mod L). Both v0 and v1 may be
+     * negative and we must not normalize them to range [0, L), since
+     * L-vi will not be short anymore. Instead, return absolute values
+     * delta_challenge = |v0| and delta = |v1|, but keep track of the
+     * signs. Based on the signs, we shall negate the group elements
+     * before doing the multi-scalar multiplication below. Compute
+     * also v1*S (mod L), which we will split in half as described above. */
+    ed25519_lattice_basis_reduction(
+        delta_challenge,
+        &delta_challenge_negative,
+        delta,
+        &delta_negative,
+        delta_response,
+        challenge,
+        response
+    );
+
+    /* Negate the input points only if their associated scalars remained positive */
+    if (!delta_negative)
+        ed25519_point_negate(commitment);
+    if (!delta_challenge_negative)
+        ed25519_point_negate(public_key);
+
+    /* Use two small lookup tables instead of one large one. It is possible to precompute more combinations of the points
+     * here and use a 15-entry lookup table saving a point addition in each loop iteration. */
+    const point_ed25519 *right_lookup[3];
+    const point_ed25519 *left_lookup[3];
+
+    point_ed25519 sum;
+    ed25519_points_add(&sum, commitment, public_key);
+    right_lookup[0] = commitment;
+    right_lookup[1] = public_key;
+    right_lookup[2] = &sum;
+
+    left_lookup[0] = &ed25519_basepoint;
+    left_lookup[1] = &ed25519_basepoint_times_2_128;
+    left_lookup[2] = &ed25519_basepoint_times_2_128_plus_1;
+
+    point_ed25519 accumulator;
+    ed25519_identity(&accumulator);
+    for (int i = 127; i >= 0; i--) {
+
+        ed25519_point_double(&accumulator, &accumulator, 1);
+        int right_lookup_index = (array_bit(delta_challenge, i) << 1) | array_bit(delta, i);
+        if (right_lookup_index)
+            ed25519_points_add(&accumulator, &accumulator, right_lookup[right_lookup_index - 1]);
+        int left_lookup_index = (array_bit(delta_response, 128 + i) << 1) | array_bit(delta_response, i);
+        if (left_lookup_index)
+            ed25519_points_add(&accumulator, &accumulator, left_lookup[left_lookup_index - 1]);
+    }
+
+    point_ed25519 identity;
+    ed25519_identity(&identity);
+    /* Clear the cofactor and check if the result is the identity */
+    return ed25519_points_equal_modulo_cofactor(&accumulator, &identity);
+#endif /* !FE3C_ED25519_LATTICE_BASIS_REDUCTION */
 }
 
 const group_ops ed25519_group_ops = {
-    .points_equal_modulo_cofactor = ed25519_points_equal_modulo_cofactor,
     .encode = ed25519_encode,
     .decode = ed25519_decode,
     .multiply_basepoint = ed25519_multiply_basepoint,
-    .point_negate = ed25519_point_negate,
-    .double_scalar_multiply = ed25519_double_scalar_multiply
+    .check_group_equation = ed25519_check_group_equation
 };

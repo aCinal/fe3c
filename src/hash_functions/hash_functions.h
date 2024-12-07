@@ -8,14 +8,12 @@ extern "C" {
 
 #include <global_defs.h>
 
-typedef void (* hash)(u8 * output, const struct iovec * iov, int iovcnt);
-
 #if FE3C_SUPPORT_CURVE_ED25519
-void hash_sha512(u8 * output, const struct iovec * iov, int iovcnt);
+void hash_sha512(u8 *output, const struct iovec *iov, int iovcnt);
 #endif /* FE3C_SUPPORT_CURVE_ED25519 */
 
 #if FE3C_SUPPORT_CURVE_ED448
-void hash_shake256(u8 * output, const struct iovec * iov, int iovcnt);
+void hash_shake256(u8 *output, const struct iovec *iov, int iovcnt);
 #endif /* FE3C_SUPPORT_CURVE_ED448 */
 
 #ifdef __cplusplus

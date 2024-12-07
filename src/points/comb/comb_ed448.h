@@ -28,13 +28,13 @@ typedef point_ed448 ed448_precomp;
 
 #endif /* !FE3C_ED448_SMALL_PRECOMPUTATION */
 
-void ed448_comb_read_precomp(ed448_precomp * r, u8 j, i8 ijt);
-void ed448_comb_add_precomp(point_ed448 * r, const point_ed448 * p, const ed448_precomp * q);
+void ed448_comb_read_precomp(ed448_precomp *r, u8 j, i8 ijt);
+void ed448_comb_add_precomp(point_ed448 *r, const point_ed448 *p, const ed448_precomp *q);
 
 extern const ed448_precomp_internal ed448_comb_precomp[57][8];
 
-static inline void ed448_comb_recode_scalar_into_width4_sd(i8 recoding[113], const u8 s[56]) {
-
+static inline void ed448_comb_recode_scalar_into_width4_sd(i8 recoding[113], const u8 s[56])
+{
     i8 carry = 0;
     for (int i = 0; i < 56; i++) {
 

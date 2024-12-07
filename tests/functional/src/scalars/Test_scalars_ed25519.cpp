@@ -2,13 +2,13 @@
 #include <scalars/scalars.h>
 
 #if FE3C_FUNCTIONAL_TESTS_HOST
-TEST_GROUP(SCALARS_ED25519) {
-
+TEST_GROUP(SCALARS_ED25519)
+{
 };
 #endif /* FE3C_FUNCTIONAL_TESTS_HOST */
 
-FE3C_TEST(SCALARS_ED25519, IsCanonical_AllBytesLessThanOrEqualToOrder_ShouldReturnTrue) {
-
+FE3C_TEST(SCALARS_ED25519, IsCanonical_AllBytesLessThanOrEqualToOrder_ShouldReturnTrue)
+{
     const u8 input[] = {
         0xec, 0xd2, 0xf4, 0x5b, 0x1b, 0x62, 0x11, 0x57,
         0xd5, 0x9b, 0xf6, 0xaa, 0xdd, 0xf8, 0xdd, 0x13,
@@ -19,8 +19,8 @@ FE3C_TEST(SCALARS_ED25519, IsCanonical_AllBytesLessThanOrEqualToOrder_ShouldRetu
     FAIL_UNLESS_EQUAL(1, canonical);
 }
 
-FE3C_TEST(SCALARS_ED25519, IsCanonical_CanonicalButSomeBytesLargerThanOrder_ShouldReturnTrue) {
-
+FE3C_TEST(SCALARS_ED25519, IsCanonical_CanonicalButSomeBytesLargerThanOrder_ShouldReturnTrue)
+{
     const u8 input[] = {
         0xef, 0xdd, 0xff, 0x55, 0x1a, 0x66, 0x12, 0x58,
         0xdd, 0x9c, 0xf7, 0xa2, 0xee, 0xff, 0xdd, 0x13,
@@ -31,8 +31,8 @@ FE3C_TEST(SCALARS_ED25519, IsCanonical_CanonicalButSomeBytesLargerThanOrder_Shou
     FAIL_UNLESS_EQUAL(1, canonical);
 }
 
-FE3C_TEST(SCALARS_ED25519, IsCanonical_CanonicalButMostBytesEqualToOrder_ShouldReturnTrue) {
-
+FE3C_TEST(SCALARS_ED25519, IsCanonical_CanonicalButMostBytesEqualToOrder_ShouldReturnTrue)
+{
     const u8 input[] = {
         0xec, 0xd3, 0xf5, 0x5c, 0x1a, 0x63, 0x12, 0x58,
         0xd6, 0x9c, 0xf7, 0xa2, 0xde, 0xf9, 0xde, 0x14,
@@ -43,8 +43,8 @@ FE3C_TEST(SCALARS_ED25519, IsCanonical_CanonicalButMostBytesEqualToOrder_ShouldR
     FAIL_UNLESS_EQUAL(1, canonical);
 }
 
-FE3C_TEST(SCALARS_ED25519, IsCanonical_OneLargerThanOrder_ShouldReturnFalse) {
-
+FE3C_TEST(SCALARS_ED25519, IsCanonical_OneLargerThanOrder_ShouldReturnFalse)
+{
     const u8 input[] = {
         0xee, 0xd3, 0xf5, 0x5c, 0x1a, 0x63, 0x12, 0x58,
         0xd6, 0x9c, 0xf7, 0xa2, 0xde, 0xf9, 0xde, 0x14,
@@ -55,8 +55,8 @@ FE3C_TEST(SCALARS_ED25519, IsCanonical_OneLargerThanOrder_ShouldReturnFalse) {
     FAIL_UNLESS_EQUAL(0, canonical);
 }
 
-FE3C_TEST(SCALARS_ED25519, IsCanonical_EqualToOrder_ShouldReturnFalse) {
-
+FE3C_TEST(SCALARS_ED25519, IsCanonical_EqualToOrder_ShouldReturnFalse)
+{
     const u8 input[] = {
         0xed, 0xd3, 0xf5, 0x5c, 0x1a, 0x63, 0x12, 0x58,
         0xd6, 0x9c, 0xf7, 0xa2, 0xde, 0xf9, 0xde, 0x14,
@@ -67,8 +67,8 @@ FE3C_TEST(SCALARS_ED25519, IsCanonical_EqualToOrder_ShouldReturnFalse) {
     FAIL_UNLESS_EQUAL(0, canonical);
 }
 
-FE3C_TEST(SCALARS_ED25519, Reduce_MuchSmallerThanOrder_NoOp) {
-
+FE3C_TEST(SCALARS_ED25519, Reduce_MuchSmallerThanOrder_NoOp)
+{
     u8 input[] = {
         0xe0, 0xd0, 0xf0, 0x50, 0x10, 0x60, 0x10, 0x50,
         0xd0, 0x90, 0xf0, 0xa0, 0xd0, 0xf0, 0xd0, 0x10,
@@ -89,8 +89,8 @@ FE3C_TEST(SCALARS_ED25519, Reduce_MuchSmallerThanOrder_NoOp) {
     FAIL_IF_MEMCMP(expected, input, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Reduce_EqualTo2To252_NoOp) {
-
+FE3C_TEST(SCALARS_ED25519, Reduce_EqualTo2To252_NoOp)
+{
     u8 input[] = {
         0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
         0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -111,8 +111,8 @@ FE3C_TEST(SCALARS_ED25519, Reduce_EqualTo2To252_NoOp) {
     FAIL_IF_MEMCMP(expected, input, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Reduce_EqualToOrder_ReduceToZero) {
-
+FE3C_TEST(SCALARS_ED25519, Reduce_EqualToOrder_ReduceToZero)
+{
     u8 input[] = {
         0xed, 0xd3, 0xf5, 0x5c, 0x1a, 0x63, 0x12, 0x58,
         0xd6, 0x9c, 0xf7, 0xa2, 0xde, 0xf9, 0xde, 0x14,
@@ -133,8 +133,8 @@ FE3C_TEST(SCALARS_ED25519, Reduce_EqualToOrder_ReduceToZero) {
     FAIL_IF_MEMCMP(expected, input, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Reduce_EqualToTwiceTheOrder_ReduceToZero) {
-
+FE3C_TEST(SCALARS_ED25519, Reduce_EqualToTwiceTheOrder_ReduceToZero)
+{
     u8 input[] = {
         0xda, 0xa7, 0xeb, 0xb9, 0x34, 0xc6, 0x24, 0xb0,
         0xac, 0x39, 0xef, 0x45, 0xbd, 0xf3, 0xbd, 0x29,
@@ -155,8 +155,8 @@ FE3C_TEST(SCALARS_ED25519, Reduce_EqualToTwiceTheOrder_ReduceToZero) {
     FAIL_IF_MEMCMP(expected, input, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Reduce_EqualToOrderPlusOne_ReduceToOne) {
-
+FE3C_TEST(SCALARS_ED25519, Reduce_EqualToOrderPlusOne_ReduceToOne)
+{
     u8 input[] = {
         0xee, 0xd3, 0xf5, 0x5c, 0x1a, 0x63, 0x12, 0x58,
         0xd6, 0x9c, 0xf7, 0xa2, 0xde, 0xf9, 0xde, 0x14,
@@ -177,8 +177,8 @@ FE3C_TEST(SCALARS_ED25519, Reduce_EqualToOrderPlusOne_ReduceToOne) {
     FAIL_IF_MEMCMP(expected, input, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Reduce_EqualToOrderMinusOne_NoOp) {
-
+FE3C_TEST(SCALARS_ED25519, Reduce_EqualToOrderMinusOne_NoOp)
+{
     u8 input[] = {
         0xec, 0xd3, 0xf5, 0x5c, 0x1a, 0x63, 0x12, 0x58,
         0xd6, 0x9c, 0xf7, 0xa2, 0xde, 0xf9, 0xde, 0x14,
@@ -199,8 +199,8 @@ FE3C_TEST(SCALARS_ED25519, Reduce_EqualToOrderMinusOne_NoOp) {
     FAIL_IF_MEMCMP(expected, input, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Reduce_MaxPossibleInput_ReduceCorrectly) {
-
+FE3C_TEST(SCALARS_ED25519, Reduce_MaxPossibleInput_ReduceCorrectly)
+{
     u8 input[] = {
         0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
         0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
@@ -221,8 +221,8 @@ FE3C_TEST(SCALARS_ED25519, Reduce_MaxPossibleInput_ReduceCorrectly) {
     FAIL_IF_MEMCMP(expected, input, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Reduce_OneBitAboveOrderSet_ReduceCorrectly) {
-
+FE3C_TEST(SCALARS_ED25519, Reduce_OneBitAboveOrderSet_ReduceCorrectly)
+{
     u8 input[] = {
         0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
         0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -243,8 +243,8 @@ FE3C_TEST(SCALARS_ED25519, Reduce_OneBitAboveOrderSet_ReduceCorrectly) {
     FAIL_IF_MEMCMP(expected, input, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Reduce_AllBitsAboveOrderSet_ReduceCorrectly) {
-
+FE3C_TEST(SCALARS_ED25519, Reduce_AllBitsAboveOrderSet_ReduceCorrectly)
+{
     u8 input[] = {
         0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
         0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -265,8 +265,8 @@ FE3C_TEST(SCALARS_ED25519, Reduce_AllBitsAboveOrderSet_ReduceCorrectly) {
     FAIL_IF_MEMCMP(expected, input, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Reduce_Bit256Set_ReduceCorrectly) {
-
+FE3C_TEST(SCALARS_ED25519, Reduce_Bit256Set_ReduceCorrectly)
+{
     u8 input[] = {
         0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
         0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -287,8 +287,8 @@ FE3C_TEST(SCALARS_ED25519, Reduce_Bit256Set_ReduceCorrectly) {
     FAIL_IF_MEMCMP(expected, input, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Reduce_AllBitsAbove256Set_ReduceCorrectly) {
-
+FE3C_TEST(SCALARS_ED25519, Reduce_AllBitsAbove256Set_ReduceCorrectly)
+{
     u8 input[] = {
         0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
         0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -309,8 +309,8 @@ FE3C_TEST(SCALARS_ED25519, Reduce_AllBitsAbove256Set_ReduceCorrectly) {
     FAIL_IF_MEMCMP(expected, input, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs1_NormalizeCorrectly){
-
+FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs1_NormalizeCorrectly)
+{
     u8 input[] = {
         0x29, 0xea, 0x44, 0x4a, 0x6c, 0x8c, 0xab, 0xb1,
         0x15, 0x22, 0x35, 0xc6, 0x54, 0x76, 0x97, 0x17,
@@ -331,8 +331,8 @@ FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs1_NormalizeCorrectly){
     FAIL_IF_MEMCMP(expected, input, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs2_NormalizeCorrectly){
-
+FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs2_NormalizeCorrectly)
+{
     u8 input[] = {
         0x41, 0xe1, 0x86, 0x82, 0xb7, 0x47, 0xae, 0xc2,
         0xe9, 0xed, 0xee, 0xb6, 0x9b, 0x70, 0x02, 0x5c,
@@ -353,8 +353,8 @@ FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs2_NormalizeCorrectly){
     FAIL_IF_MEMCMP(expected, input, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs3_NormalizeCorrectly){
-
+FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs3_NormalizeCorrectly)
+{
     u8 input[] = {
         0x31, 0x99, 0xc4, 0x1d, 0x16, 0xb8, 0xdc, 0x25,
         0x89, 0xce, 0x1c, 0xaa, 0xe0, 0xba, 0x42, 0x4c,
@@ -375,8 +375,8 @@ FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs3_NormalizeCorrectly){
     FAIL_IF_MEMCMP(expected, input, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs4_NormalizeCorrectly){
-
+FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs4_NormalizeCorrectly)
+{
     u8 input[] = {
         0x69, 0x27, 0x7d, 0x60, 0xee, 0x50, 0xe1, 0x50,
         0x5a, 0xd1, 0x57, 0x97, 0x3a, 0x86, 0x43, 0x1a,
@@ -397,8 +397,8 @@ FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs4_NormalizeCorrectly){
     FAIL_IF_MEMCMP(expected, input, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs5_NormalizeCorrectly){
-
+FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs5_NormalizeCorrectly)
+{
     u8 input[] = {
         0x6a, 0x8c, 0xcc, 0x7a, 0x70, 0x2d, 0x33, 0x55,
         0x0a, 0x9d, 0x71, 0x8f, 0x0c, 0x8e, 0xd1, 0x04,
@@ -419,8 +419,8 @@ FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs5_NormalizeCorrectly){
     FAIL_IF_MEMCMP(expected, input, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs6_NormalizeCorrectly){
-
+FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs6_NormalizeCorrectly)
+{
     u8 input[] = {
         0x48, 0x58, 0x09, 0x1c, 0xd5, 0xf6, 0x73, 0x85,
         0xa9, 0xe6, 0xca, 0x6a, 0xcb, 0x8e, 0xcf, 0x2f,
@@ -441,8 +441,8 @@ FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs6_NormalizeCorrectly){
     FAIL_IF_MEMCMP(expected, input, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs7_NormalizeCorrectly){
-
+FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs7_NormalizeCorrectly)
+{
     u8 input[] = {
         0xc8, 0x98, 0x54, 0x1c, 0x65, 0xe6, 0xcd, 0x4b,
         0xc9, 0xa3, 0x96, 0x53, 0x12, 0x80, 0xc6, 0xce,
@@ -463,8 +463,8 @@ FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs7_NormalizeCorrectly){
     FAIL_IF_MEMCMP(expected, input, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs8_NormalizeCorrectly){
-
+FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs8_NormalizeCorrectly)
+{
     u8 input[] = {
         0xb2, 0x31, 0xe2, 0x0a, 0x1c, 0x1d, 0x89, 0xe0,
         0x29, 0x1a, 0x33, 0x36, 0x41, 0xe0, 0x87, 0x40,
@@ -485,8 +485,8 @@ FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs8_NormalizeCorrectly){
     FAIL_IF_MEMCMP(expected, input, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs9_NormalizeCorrectly){
-
+FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs9_NormalizeCorrectly)
+{
     u8 input[] = {
         0x32, 0x59, 0x6e, 0x5d, 0x79, 0x59, 0x1c, 0xbc,
         0x17, 0xf0, 0xb5, 0x94, 0x8d, 0xb6, 0x0d, 0xe1,
@@ -507,8 +507,8 @@ FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs9_NormalizeCorrectly){
     FAIL_IF_MEMCMP(expected, input, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs10_NormalizeCorrectly){
-
+FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs10_NormalizeCorrectly)
+{
     u8 input[] = {
         0x14, 0xfa, 0x35, 0x6e, 0x27, 0x30, 0xcd, 0x3c,
         0xf0, 0xf3, 0x8c, 0x98, 0xab, 0x12, 0x32, 0x09,
@@ -529,8 +529,8 @@ FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs10_NormalizeCorrectly){
     FAIL_IF_MEMCMP(expected, input, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs11_NormalizeCorrectly){
-
+FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs11_NormalizeCorrectly)
+{
     u8 input[] = {
         0x96, 0x08, 0x2e, 0xdb, 0x38, 0x55, 0xaa, 0xf9,
         0x29, 0xa9, 0xba, 0xaf, 0xbf, 0xcd, 0x1e, 0x48,
@@ -551,8 +551,8 @@ FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs11_NormalizeCorrectly){
     FAIL_IF_MEMCMP(expected, input, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs12_NormalizeCorrectly){
-
+FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs12_NormalizeCorrectly)
+{
     u8 input[] = {
         0x99, 0x7c, 0x7f, 0x7a, 0x68, 0xb2, 0xc8, 0x29,
         0x83, 0x19, 0xde, 0x80, 0xdf, 0xe9, 0x79, 0x95,
@@ -573,8 +573,8 @@ FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs12_NormalizeCorrectly){
     FAIL_IF_MEMCMP(expected, input, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs13_NormalizeCorrectly){
-
+FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs13_NormalizeCorrectly)
+{
     u8 input[] = {
         0xf6, 0x6f, 0xa1, 0x0a, 0x3e, 0xfa, 0x19, 0x5e,
         0x8b, 0xe0, 0x3b, 0xd5, 0x48, 0x62, 0xe1, 0x4c,
@@ -595,8 +595,8 @@ FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs13_NormalizeCorrectly){
     FAIL_IF_MEMCMP(expected, input, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs14_NormalizeCorrectly){
-
+FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs14_NormalizeCorrectly)
+{
     u8 input[] = {
         0x88, 0xa8, 0x5f, 0x98, 0x81, 0x4b, 0xf6, 0x90,
         0x1d, 0x49, 0x37, 0xf7, 0xaf, 0x32, 0xf3, 0x41,
@@ -617,8 +617,8 @@ FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs14_NormalizeCorrectly){
     FAIL_IF_MEMCMP(expected, input, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs15_NormalizeCorrectly){
-
+FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs15_NormalizeCorrectly)
+{
     u8 input[] = {
         0xc5, 0xe9, 0x8b, 0x33, 0x6f, 0xdc, 0xfe, 0x56,
         0x58, 0x14, 0x39, 0x15, 0xf5, 0xe5, 0xf1, 0xd7,
@@ -639,8 +639,8 @@ FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs15_NormalizeCorrectly){
     FAIL_IF_MEMCMP(expected, input, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs16_NormalizeCorrectly){
-
+FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs16_NormalizeCorrectly)
+{
     u8 input[] = {
         0x8b, 0x88, 0x36, 0xbd, 0x9c, 0xcf, 0x25, 0x6b,
         0x84, 0xbc, 0xd3, 0x28, 0x73, 0xa5, 0x7b, 0x4c,
@@ -661,8 +661,8 @@ FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs16_NormalizeCorrectly){
     FAIL_IF_MEMCMP(expected, input, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs17_NormalizeCorrectly){
-
+FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs17_NormalizeCorrectly)
+{
     u8 input[] = {
         0x3f, 0x38, 0x5d, 0x98, 0xed, 0x49, 0x95, 0xd6,
         0x1d, 0x2b, 0xc6, 0xd1, 0x75, 0x16, 0x59, 0x92,
@@ -683,8 +683,8 @@ FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs17_NormalizeCorrectly){
     FAIL_IF_MEMCMP(expected, input, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs18_NormalizeCorrectly){
-
+FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs18_NormalizeCorrectly)
+{
     u8 input[] = {
         0xf9, 0x58, 0x21, 0x9f, 0x01, 0x20, 0x35, 0xf9,
         0x46, 0xc3, 0x38, 0xbc, 0x30, 0xd6, 0x22, 0x80,
@@ -705,8 +705,8 @@ FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs18_NormalizeCorrectly){
     FAIL_IF_MEMCMP(expected, input, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs19_NormalizeCorrectly){
-
+FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs19_NormalizeCorrectly)
+{
     u8 input[] = {
         0x4a, 0x95, 0x1b, 0x64, 0xbd, 0xe8, 0xea, 0x83,
         0xc1, 0x3f, 0x9f, 0xf6, 0x5d, 0x0d, 0x12, 0x44,
@@ -727,8 +727,8 @@ FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs19_NormalizeCorrectly){
     FAIL_IF_MEMCMP(expected, input, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs20_NormalizeCorrectly){
-
+FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs20_NormalizeCorrectly)
+{
     u8 input[] = {
         0x9d, 0x41, 0x7c, 0xe1, 0xb9, 0x14, 0xee, 0xd0,
         0x41, 0x24, 0xfd, 0x3e, 0x8f, 0x6a, 0x50, 0x56,
@@ -749,8 +749,8 @@ FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs20_NormalizeCorrectly){
     FAIL_IF_MEMCMP(expected, input, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs21_NormalizeCorrectly){
-
+FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs21_NormalizeCorrectly)
+{
     u8 input[] = {
         0x94, 0x76, 0x60, 0x71, 0x4c, 0x96, 0xec, 0x6f,
         0x0c, 0x17, 0xa2, 0x66, 0xe4, 0xbe, 0x56, 0xa6,
@@ -771,8 +771,8 @@ FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs21_NormalizeCorrectly){
     FAIL_IF_MEMCMP(expected, input, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs22_NormalizeCorrectly){
-
+FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs22_NormalizeCorrectly)
+{
     u8 input[] = {
         0xec, 0x0d, 0x08, 0xd5, 0xc9, 0xb7, 0xbb, 0x29,
         0xce, 0x4e, 0x8b, 0x30, 0x8e, 0x92, 0x58, 0x65,
@@ -793,8 +793,8 @@ FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs22_NormalizeCorrectly){
     FAIL_IF_MEMCMP(expected, input, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs23_NormalizeCorrectly){
-
+FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs23_NormalizeCorrectly)
+{
     u8 input[] = {
         0x97, 0xaa, 0xde, 0x34, 0xe2, 0x40, 0xdc, 0x90,
         0xaa, 0x29, 0x07, 0x37, 0xdf, 0x2e, 0x4b, 0x65,
@@ -815,8 +815,8 @@ FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs23_NormalizeCorrectly){
     FAIL_IF_MEMCMP(expected, input, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs24_NormalizeCorrectly){
-
+FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs24_NormalizeCorrectly)
+{
     u8 input[] = {
         0x2f, 0x48, 0xbe, 0xe9, 0xf3, 0xe6, 0x43, 0x43,
         0x27, 0x92, 0x64, 0x43, 0x22, 0x68, 0xb3, 0x2c,
@@ -837,8 +837,8 @@ FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs24_NormalizeCorrectly){
     FAIL_IF_MEMCMP(expected, input, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs25_NormalizeCorrectly){
-
+FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs25_NormalizeCorrectly)
+{
     u8 input[] = {
         0x0a, 0xc1, 0xa5, 0x7f, 0xa0, 0x58, 0x68, 0x32,
         0x5f, 0xf4, 0x84, 0x01, 0x8e, 0xad, 0xd5, 0xb1,
@@ -859,8 +859,8 @@ FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs25_NormalizeCorrectly){
     FAIL_IF_MEMCMP(expected, input, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs26_NormalizeCorrectly){
-
+FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs26_NormalizeCorrectly)
+{
     u8 input[] = {
         0x9b, 0x41, 0xcf, 0xd9, 0xdb, 0x6a, 0xa6, 0x70,
         0x54, 0x48, 0xa2, 0x1f, 0xba, 0x4d, 0x1c, 0x55,
@@ -881,8 +881,8 @@ FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs26_NormalizeCorrectly){
     FAIL_IF_MEMCMP(expected, input, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs27_NormalizeCorrectly){
-
+FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs27_NormalizeCorrectly)
+{
     u8 input[] = {
         0x4e, 0x95, 0x16, 0xdd, 0x41, 0x2e, 0x87, 0x4e,
         0x35, 0xae, 0xe8, 0x1b, 0xe9, 0x54, 0x30, 0x30,
@@ -903,8 +903,8 @@ FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs27_NormalizeCorrectly){
     FAIL_IF_MEMCMP(expected, input, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs28_NormalizeCorrectly){
-
+FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs28_NormalizeCorrectly)
+{
     u8 input[] = {
         0x21, 0x24, 0x51, 0x24, 0x39, 0x8a, 0x45, 0x0b,
         0x68, 0x11, 0xa4, 0x6b, 0x51, 0x16, 0xdc, 0x80,
@@ -925,8 +925,8 @@ FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs28_NormalizeCorrectly){
     FAIL_IF_MEMCMP(expected, input, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs29_NormalizeCorrectly){
-
+FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs29_NormalizeCorrectly)
+{
     u8 input[] = {
         0x16, 0xa2, 0xba, 0x1f, 0xb6, 0x2f, 0x08, 0x6f,
         0xeb, 0x20, 0x97, 0x90, 0x22, 0x83, 0x04, 0x20,
@@ -947,8 +947,8 @@ FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs29_NormalizeCorrectly){
     FAIL_IF_MEMCMP(expected, input, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs30_NormalizeCorrectly){
-
+FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs30_NormalizeCorrectly)
+{
     u8 input[] = {
         0xcd, 0xd1, 0xfc, 0x42, 0xc8, 0xa9, 0x66, 0xac,
         0x5b, 0xdd, 0xe8, 0x2d, 0x6c, 0x65, 0x96, 0x9c,
@@ -969,8 +969,8 @@ FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs30_NormalizeCorrectly){
     FAIL_IF_MEMCMP(expected, input, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs31_NormalizeCorrectly){
-
+FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs31_NormalizeCorrectly)
+{
     u8 input[] = {
         0x72, 0x67, 0x1d, 0x37, 0xdc, 0x60, 0x60, 0x3b,
         0x8d, 0x07, 0x6e, 0xca, 0xfe, 0x97, 0x62, 0xaf,
@@ -991,8 +991,8 @@ FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs31_NormalizeCorrectly){
     FAIL_IF_MEMCMP(expected, input, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs32_NormalizeCorrectly){
-
+FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs32_NormalizeCorrectly)
+{
     u8 input[] = {
         0x26, 0xf4, 0x13, 0x52, 0x11, 0xa0, 0xf3, 0x61,
         0x9b, 0x63, 0xb7, 0xdf, 0xc5, 0x48, 0x95, 0xf6,
@@ -1013,8 +1013,8 @@ FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs32_NormalizeCorrectly){
     FAIL_IF_MEMCMP(expected, input, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs33_NormalizeCorrectly){
-
+FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs33_NormalizeCorrectly)
+{
     u8 input[] = {
         0xee, 0x37, 0x26, 0x3f, 0xc9, 0x97, 0xdd, 0xb5,
         0x0c, 0xba, 0x55, 0x50, 0x97, 0x56, 0x02, 0x6e,
@@ -1035,8 +1035,8 @@ FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs33_NormalizeCorrectly){
     FAIL_IF_MEMCMP(expected, input, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs34_NormalizeCorrectly){
-
+FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs34_NormalizeCorrectly)
+{
     u8 input[] = {
         0xcf, 0x83, 0x0f, 0x69, 0x0e, 0x82, 0xad, 0x0f,
         0x6a, 0x20, 0xea, 0xa4, 0x7a, 0x8f, 0x52, 0x1f,
@@ -1057,8 +1057,8 @@ FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs34_NormalizeCorrectly){
     FAIL_IF_MEMCMP(expected, input, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs35_NormalizeCorrectly){
-
+FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs35_NormalizeCorrectly)
+{
     u8 input[] = {
         0xe9, 0x2d, 0xe2, 0x2a, 0x7f, 0x08, 0x67, 0xf8,
         0xaf, 0x73, 0x77, 0xb5, 0x38, 0xe0, 0xc2, 0x28,
@@ -1079,8 +1079,8 @@ FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs35_NormalizeCorrectly){
     FAIL_IF_MEMCMP(expected, input, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs36_NormalizeCorrectly){
-
+FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs36_NormalizeCorrectly)
+{
     u8 input[] = {
         0x44, 0x3b, 0xf2, 0x25, 0xa1, 0xfe, 0x11, 0x5d,
         0x42, 0x3c, 0x0a, 0x6c, 0x81, 0x0f, 0x56, 0xc7,
@@ -1101,8 +1101,8 @@ FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs36_NormalizeCorrectly){
     FAIL_IF_MEMCMP(expected, input, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs37_NormalizeCorrectly){
-
+FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs37_NormalizeCorrectly)
+{
     u8 input[] = {
         0x40, 0xc7, 0x0f, 0x14, 0x80, 0x7b, 0x49, 0xdb,
         0xe8, 0xa8, 0x44, 0xf1, 0xf6, 0x37, 0x97, 0x6e,
@@ -1123,8 +1123,8 @@ FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs37_NormalizeCorrectly){
     FAIL_IF_MEMCMP(expected, input, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs38_NormalizeCorrectly){
-
+FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs38_NormalizeCorrectly)
+{
     u8 input[] = {
         0x2b, 0x47, 0x22, 0xfb, 0x7f, 0x1e, 0xf1, 0xc7,
         0x63, 0xdb, 0xc9, 0xa4, 0x69, 0x48, 0xf7, 0x28,
@@ -1145,8 +1145,8 @@ FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs38_NormalizeCorrectly){
     FAIL_IF_MEMCMP(expected, input, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs39_NormalizeCorrectly){
-
+FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs39_NormalizeCorrectly)
+{
     u8 input[] = {
         0x49, 0x4b, 0x30, 0xef, 0xfe, 0xd5, 0x08, 0x95,
         0x97, 0x2c, 0x28, 0x20, 0xe0, 0x1f, 0x41, 0xd6,
@@ -1167,8 +1167,8 @@ FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs39_NormalizeCorrectly){
     FAIL_IF_MEMCMP(expected, input, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs40_NormalizeCorrectly){
-
+FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs40_NormalizeCorrectly)
+{
     u8 input[] = {
         0x2d, 0x96, 0x9a, 0xa4, 0xda, 0x6d, 0x1b, 0xcc,
         0x6e, 0xf8, 0xf4, 0x90, 0x5f, 0xd5, 0x06, 0xc2,
@@ -1189,8 +1189,8 @@ FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs40_NormalizeCorrectly){
     FAIL_IF_MEMCMP(expected, input, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs41_NormalizeCorrectly){
-
+FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs41_NormalizeCorrectly)
+{
     u8 input[] = {
         0xae, 0x8a, 0xd3, 0x52, 0x56, 0x04, 0xb8, 0x23,
         0x22, 0x38, 0x0b, 0xfe, 0xfa, 0x1f, 0xf6, 0xcd,
@@ -1211,8 +1211,8 @@ FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs41_NormalizeCorrectly){
     FAIL_IF_MEMCMP(expected, input, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs42_NormalizeCorrectly){
-
+FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs42_NormalizeCorrectly)
+{
     u8 input[] = {
         0x7c, 0xec, 0x3a, 0x2a, 0x4c, 0x04, 0x8a, 0xc8,
         0xf7, 0x91, 0x4c, 0x79, 0xa9, 0x3a, 0x18, 0xc1,
@@ -1233,8 +1233,8 @@ FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs42_NormalizeCorrectly){
     FAIL_IF_MEMCMP(expected, input, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs43_NormalizeCorrectly){
-
+FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs43_NormalizeCorrectly)
+{
     u8 input[] = {
         0x77, 0x56, 0x9f, 0x08, 0xf9, 0x2f, 0xc9, 0x1f,
         0xa0, 0xd0, 0xe6, 0xca, 0xc1, 0x3e, 0x61, 0xd8,
@@ -1255,8 +1255,8 @@ FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs43_NormalizeCorrectly){
     FAIL_IF_MEMCMP(expected, input, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs44_NormalizeCorrectly){
-
+FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs44_NormalizeCorrectly)
+{
     u8 input[] = {
         0x43, 0x3e, 0x21, 0x0c, 0x70, 0x15, 0x3a, 0x09,
         0x17, 0x2b, 0x2a, 0xce, 0x3d, 0x25, 0xbe, 0x4e,
@@ -1277,8 +1277,8 @@ FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs44_NormalizeCorrectly){
     FAIL_IF_MEMCMP(expected, input, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs45_NormalizeCorrectly){
-
+FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs45_NormalizeCorrectly)
+{
     u8 input[] = {
         0x12, 0xd6, 0xfd, 0x27, 0x5f, 0x2e, 0xfc, 0x4e,
         0x1a, 0x41, 0xe0, 0xb0, 0x25, 0xe2, 0x19, 0x99,
@@ -1299,8 +1299,8 @@ FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs45_NormalizeCorrectly){
     FAIL_IF_MEMCMP(expected, input, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs46_NormalizeCorrectly){
-
+FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs46_NormalizeCorrectly)
+{
     u8 input[] = {
         0x8e, 0x91, 0x96, 0xe2, 0x58, 0x14, 0xd9, 0xda,
         0x6a, 0x29, 0xb0, 0x2f, 0x49, 0x28, 0xc4, 0xfb,
@@ -1321,8 +1321,8 @@ FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs46_NormalizeCorrectly){
     FAIL_IF_MEMCMP(expected, input, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs47_NormalizeCorrectly){
-
+FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs47_NormalizeCorrectly)
+{
     u8 input[] = {
         0x57, 0xed, 0xde, 0x74, 0x50, 0x62, 0xf6, 0x68,
         0x61, 0xa0, 0x90, 0x6d, 0x7c, 0xeb, 0x1b, 0x5a,
@@ -1343,8 +1343,8 @@ FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs47_NormalizeCorrectly){
     FAIL_IF_MEMCMP(expected, input, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs48_NormalizeCorrectly){
-
+FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs48_NormalizeCorrectly)
+{
     u8 input[] = {
         0xdb, 0x7f, 0xd8, 0x31, 0x03, 0xed, 0x7f, 0x9d,
         0x8d, 0x47, 0x2e, 0xd5, 0xac, 0xa5, 0xcc, 0xbc,
@@ -1365,8 +1365,8 @@ FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs48_NormalizeCorrectly){
     FAIL_IF_MEMCMP(expected, input, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs49_NormalizeCorrectly){
-
+FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs49_NormalizeCorrectly)
+{
     u8 input[] = {
         0x38, 0xe3, 0xdd, 0x7f, 0x80, 0x32, 0x3f, 0x5d,
         0xe7, 0x5b, 0x1e, 0xac, 0x88, 0xc8, 0xb6, 0xf6,
@@ -1387,8 +1387,8 @@ FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs49_NormalizeCorrectly){
     FAIL_IF_MEMCMP(expected, input, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs50_NormalizeCorrectly){
-
+FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs50_NormalizeCorrectly)
+{
     u8 input[] = {
         0xb9, 0x8b, 0x46, 0x48, 0x4b, 0x95, 0xef, 0x90,
         0xce, 0xce, 0xec, 0xb1, 0x0b, 0x08, 0x3e, 0x96,
@@ -1409,8 +1409,8 @@ FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs50_NormalizeCorrectly){
     FAIL_IF_MEMCMP(expected, input, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs51_NormalizeCorrectly){
-
+FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs51_NormalizeCorrectly)
+{
     u8 input[] = {
         0xfe, 0x89, 0xef, 0x09, 0x28, 0x27, 0xa8, 0x1f,
         0x4c, 0xbf, 0x04, 0x17, 0xc2, 0xf9, 0x2a, 0x06,
@@ -1431,8 +1431,8 @@ FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs51_NormalizeCorrectly){
     FAIL_IF_MEMCMP(expected, input, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs52_NormalizeCorrectly){
-
+FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs52_NormalizeCorrectly)
+{
     u8 input[] = {
         0xde, 0x77, 0xc0, 0x09, 0x9d, 0xd2, 0xc5, 0xfa,
         0x16, 0x5e, 0x27, 0xc7, 0x68, 0x08, 0x48, 0x17,
@@ -1453,8 +1453,8 @@ FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs52_NormalizeCorrectly){
     FAIL_IF_MEMCMP(expected, input, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs53_NormalizeCorrectly){
-
+FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs53_NormalizeCorrectly)
+{
     u8 input[] = {
         0x57, 0x73, 0xb5, 0x2a, 0xd2, 0xfe, 0xb5, 0xca,
         0x25, 0x00, 0x17, 0x35, 0x78, 0x87, 0x7c, 0xa3,
@@ -1475,8 +1475,8 @@ FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs53_NormalizeCorrectly){
     FAIL_IF_MEMCMP(expected, input, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs54_NormalizeCorrectly){
-
+FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs54_NormalizeCorrectly)
+{
     u8 input[] = {
         0x8d, 0x6b, 0x23, 0x44, 0xd6, 0x8f, 0x0c, 0x6e,
         0xd6, 0xa1, 0x01, 0xea, 0x0d, 0x60, 0x27, 0x69,
@@ -1497,8 +1497,8 @@ FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs54_NormalizeCorrectly){
     FAIL_IF_MEMCMP(expected, input, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs55_NormalizeCorrectly){
-
+FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs55_NormalizeCorrectly)
+{
     u8 input[] = {
         0xde, 0xec, 0x89, 0x77, 0x00, 0xdc, 0x3f, 0xab,
         0x5c, 0x0d, 0xac, 0x31, 0xe2, 0x23, 0xce, 0xa6,
@@ -1519,8 +1519,8 @@ FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs55_NormalizeCorrectly){
     FAIL_IF_MEMCMP(expected, input, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs56_NormalizeCorrectly){
-
+FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs56_NormalizeCorrectly)
+{
     u8 input[] = {
         0x2c, 0x99, 0x66, 0xdd, 0x12, 0x43, 0x59, 0x8a,
         0x1b, 0xcb, 0xd1, 0x3d, 0xbb, 0xce, 0xbf, 0x82,
@@ -1541,8 +1541,8 @@ FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs56_NormalizeCorrectly){
     FAIL_IF_MEMCMP(expected, input, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs57_NormalizeCorrectly){
-
+FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs57_NormalizeCorrectly)
+{
     u8 input[] = {
         0x9b, 0x08, 0xa9, 0x67, 0x83, 0xd6, 0x2d, 0x80,
         0x32, 0xc0, 0x3e, 0x47, 0x5a, 0x20, 0x63, 0xe7,
@@ -1563,8 +1563,8 @@ FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs57_NormalizeCorrectly){
     FAIL_IF_MEMCMP(expected, input, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs58_NormalizeCorrectly){
-
+FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs58_NormalizeCorrectly)
+{
     u8 input[] = {
         0x90, 0xab, 0x4f, 0x44, 0xad, 0x39, 0xc1, 0x8f,
         0x6f, 0x0e, 0xa2, 0xe2, 0x19, 0xb2, 0xb1, 0xc8,
@@ -1585,8 +1585,8 @@ FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs58_NormalizeCorrectly){
     FAIL_IF_MEMCMP(expected, input, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs59_NormalizeCorrectly){
-
+FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs59_NormalizeCorrectly)
+{
     u8 input[] = {
         0xb9, 0x79, 0xb0, 0x2f, 0xc0, 0xf1, 0xe2, 0xb3,
         0x1c, 0x2f, 0xa1, 0x19, 0x23, 0xde, 0xb2, 0xff,
@@ -1607,8 +1607,8 @@ FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs59_NormalizeCorrectly){
     FAIL_IF_MEMCMP(expected, input, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs60_NormalizeCorrectly){
-
+FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs60_NormalizeCorrectly)
+{
     u8 input[] = {
         0xad, 0x24, 0xfe, 0x33, 0x04, 0xa3, 0xce, 0xff,
         0x12, 0x8a, 0x11, 0xf9, 0x2e, 0x9c, 0x9e, 0x4f,
@@ -1629,8 +1629,8 @@ FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs60_NormalizeCorrectly){
     FAIL_IF_MEMCMP(expected, input, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs61_NormalizeCorrectly){
-
+FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs61_NormalizeCorrectly)
+{
     u8 input[] = {
         0x0c, 0xd9, 0x35, 0x7b, 0xdb, 0x62, 0x91, 0x3f,
         0x7c, 0x3f, 0x69, 0xfb, 0x72, 0x4a, 0xb2, 0x6c,
@@ -1651,8 +1651,8 @@ FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs61_NormalizeCorrectly){
     FAIL_IF_MEMCMP(expected, input, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs62_NormalizeCorrectly){
-
+FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs62_NormalizeCorrectly)
+{
     u8 input[] = {
         0x81, 0xde, 0x5c, 0x94, 0xae, 0x18, 0x9f, 0xb1,
         0x82, 0x30, 0x84, 0x86, 0x0f, 0x03, 0x6c, 0x42,
@@ -1673,8 +1673,8 @@ FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs62_NormalizeCorrectly){
     FAIL_IF_MEMCMP(expected, input, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs63_NormalizeCorrectly){
-
+FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs63_NormalizeCorrectly)
+{
     u8 input[] = {
         0xb1, 0x9d, 0xd6, 0x07, 0xf9, 0xc4, 0xcc, 0x76,
         0xe8, 0x76, 0x39, 0xed, 0xb8, 0xb4, 0xae, 0x35,
@@ -1695,8 +1695,8 @@ FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs63_NormalizeCorrectly){
     FAIL_IF_MEMCMP(expected, input, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs64_NormalizeCorrectly){
-
+FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs64_NormalizeCorrectly)
+{
     u8 input[] = {
         0xe2, 0xdc, 0xb7, 0x4a, 0x98, 0xf0, 0x91, 0x43,
         0x68, 0x4c, 0x71, 0x95, 0xab, 0x2d, 0xb5, 0xc7,
@@ -1717,8 +1717,8 @@ FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs64_NormalizeCorrectly){
     FAIL_IF_MEMCMP(expected, input, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs65_NormalizeCorrectly){
-
+FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs65_NormalizeCorrectly)
+{
     u8 input[] = {
         0x92, 0x26, 0x2f, 0x5c, 0x9b, 0xd8, 0xc2, 0x5c,
         0xf7, 0x38, 0x73, 0x61, 0x67, 0x48, 0xa1, 0x9a,
@@ -1739,8 +1739,8 @@ FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs65_NormalizeCorrectly){
     FAIL_IF_MEMCMP(expected, input, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs66_NormalizeCorrectly){
-
+FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs66_NormalizeCorrectly)
+{
     u8 input[] = {
         0x9e, 0xff, 0x16, 0x1b, 0x5d, 0x3c, 0xe8, 0x48,
         0xe5, 0xcf, 0xe3, 0x83, 0x03, 0x3f, 0x71, 0x25,
@@ -1761,8 +1761,8 @@ FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs66_NormalizeCorrectly){
     FAIL_IF_MEMCMP(expected, input, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs67_NormalizeCorrectly){
-
+FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs67_NormalizeCorrectly)
+{
     u8 input[] = {
         0x8b, 0x93, 0x52, 0x03, 0xd2, 0x71, 0x65, 0x76,
         0x12, 0x9f, 0xaa, 0x16, 0xc1, 0x4e, 0xd8, 0xcf,
@@ -1783,8 +1783,8 @@ FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs67_NormalizeCorrectly){
     FAIL_IF_MEMCMP(expected, input, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs68_NormalizeCorrectly){
-
+FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs68_NormalizeCorrectly)
+{
     u8 input[] = {
         0x48, 0x49, 0x1b, 0x6e, 0x79, 0x5b, 0xcd, 0xa0,
         0x07, 0xd7, 0x3d, 0x5e, 0xeb, 0xf2, 0xc9, 0xc2,
@@ -1805,8 +1805,8 @@ FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs68_NormalizeCorrectly){
     FAIL_IF_MEMCMP(expected, input, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs69_NormalizeCorrectly){
-
+FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs69_NormalizeCorrectly)
+{
     u8 input[] = {
         0x9a, 0x2a, 0x14, 0xdf, 0x04, 0x5d, 0x93, 0xac,
         0x53, 0x28, 0x6d, 0x27, 0x15, 0xf2, 0x05, 0x2f,
@@ -1827,8 +1827,8 @@ FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs69_NormalizeCorrectly){
     FAIL_IF_MEMCMP(expected, input, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs70_NormalizeCorrectly){
-
+FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs70_NormalizeCorrectly)
+{
     u8 input[] = {
         0x49, 0xf7, 0xb2, 0x0c, 0xfe, 0x27, 0x72, 0x83,
         0x8e, 0x9e, 0x36, 0x19, 0x33, 0x64, 0xdb, 0xb7,
@@ -1849,8 +1849,8 @@ FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs70_NormalizeCorrectly){
     FAIL_IF_MEMCMP(expected, input, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs71_NormalizeCorrectly){
-
+FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs71_NormalizeCorrectly)
+{
     u8 input[] = {
         0x99, 0xde, 0xaa, 0xa8, 0xdc, 0x4f, 0x70, 0x70,
         0xc0, 0xf0, 0x63, 0xa2, 0xb8, 0x43, 0x06, 0x2c,
@@ -1871,8 +1871,8 @@ FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs71_NormalizeCorrectly){
     FAIL_IF_MEMCMP(expected, input, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs72_NormalizeCorrectly){
-
+FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs72_NormalizeCorrectly)
+{
     u8 input[] = {
         0x41, 0xd3, 0x2e, 0xc8, 0x04, 0xf9, 0x83, 0x1a,
         0xb4, 0x46, 0x65, 0xc7, 0x73, 0x11, 0x4d, 0x1a,
@@ -1893,8 +1893,8 @@ FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs72_NormalizeCorrectly){
     FAIL_IF_MEMCMP(expected, input, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs73_NormalizeCorrectly){
-
+FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs73_NormalizeCorrectly)
+{
     u8 input[] = {
         0x52, 0x63, 0x53, 0x34, 0x97, 0x13, 0x48, 0xc1,
         0x81, 0x86, 0x45, 0x2d, 0xd3, 0x43, 0xe6, 0x70,
@@ -1915,8 +1915,8 @@ FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs73_NormalizeCorrectly){
     FAIL_IF_MEMCMP(expected, input, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs74_NormalizeCorrectly){
-
+FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs74_NormalizeCorrectly)
+{
     u8 input[] = {
         0xa3, 0x46, 0x5c, 0xf9, 0xcc, 0x5d, 0xf0, 0xcf,
         0x0d, 0xa5, 0xb0, 0x99, 0xad, 0x13, 0xa1, 0x88,
@@ -1937,8 +1937,8 @@ FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs74_NormalizeCorrectly){
     FAIL_IF_MEMCMP(expected, input, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs75_NormalizeCorrectly){
-
+FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs75_NormalizeCorrectly)
+{
     u8 input[] = {
         0x66, 0xec, 0xd5, 0x75, 0xf0, 0x97, 0x0b, 0x9c,
         0x90, 0x2a, 0x6f, 0x3d, 0x86, 0xf3, 0x14, 0xea,
@@ -1959,8 +1959,8 @@ FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs75_NormalizeCorrectly){
     FAIL_IF_MEMCMP(expected, input, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs76_NormalizeCorrectly){
-
+FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs76_NormalizeCorrectly)
+{
     u8 input[] = {
         0x4d, 0x39, 0x6e, 0x84, 0x7c, 0xb0, 0xf2, 0x2b,
         0xa2, 0x22, 0xa0, 0xd8, 0x94, 0xc5, 0xb9, 0xdf,
@@ -1981,8 +1981,8 @@ FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs76_NormalizeCorrectly){
     FAIL_IF_MEMCMP(expected, input, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs77_NormalizeCorrectly){
-
+FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs77_NormalizeCorrectly)
+{
     u8 input[] = {
         0x36, 0x79, 0x2e, 0xa5, 0xba, 0x8d, 0x0b, 0xf9,
         0x3e, 0xed, 0x38, 0x1b, 0xe0, 0x0c, 0x2a, 0x84,
@@ -2003,8 +2003,8 @@ FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs77_NormalizeCorrectly){
     FAIL_IF_MEMCMP(expected, input, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs78_NormalizeCorrectly){
-
+FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs78_NormalizeCorrectly)
+{
     u8 input[] = {
         0x2c, 0xc4, 0xa9, 0xb6, 0xce, 0x45, 0x2a, 0x6f,
         0x52, 0xd9, 0xfb, 0x44, 0x4f, 0xad, 0x2c, 0xb4,
@@ -2025,8 +2025,8 @@ FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs78_NormalizeCorrectly){
     FAIL_IF_MEMCMP(expected, input, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs79_NormalizeCorrectly){
-
+FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs79_NormalizeCorrectly)
+{
     u8 input[] = {
         0x0b, 0x23, 0x61, 0x13, 0x16, 0xc4, 0x6a, 0x5b,
         0xe5, 0xd4, 0xdf, 0xef, 0xb4, 0xdf, 0x9a, 0xb3,
@@ -2047,8 +2047,8 @@ FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs79_NormalizeCorrectly){
     FAIL_IF_MEMCMP(expected, input, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs80_NormalizeCorrectly){
-
+FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs80_NormalizeCorrectly)
+{
     u8 input[] = {
         0x81, 0x35, 0xdc, 0x46, 0x59, 0xb1, 0x61, 0x3c,
         0x4b, 0xba, 0x03, 0xf9, 0x24, 0xb4, 0xae, 0xfb,
@@ -2069,8 +2069,8 @@ FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs80_NormalizeCorrectly){
     FAIL_IF_MEMCMP(expected, input, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs81_NormalizeCorrectly){
-
+FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs81_NormalizeCorrectly)
+{
     u8 input[] = {
         0x23, 0xde, 0x0f, 0xf8, 0x6a, 0x85, 0xfa, 0x72,
         0xdc, 0x96, 0xdb, 0xb5, 0x28, 0xd0, 0x6d, 0xd4,
@@ -2091,8 +2091,8 @@ FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs81_NormalizeCorrectly){
     FAIL_IF_MEMCMP(expected, input, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs82_NormalizeCorrectly){
-
+FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs82_NormalizeCorrectly)
+{
     u8 input[] = {
         0xd5, 0x43, 0x1f, 0x87, 0x53, 0x3e, 0x64, 0x49,
         0x9a, 0xc1, 0xca, 0x5e, 0xd6, 0x97, 0x08, 0x9f,
@@ -2113,8 +2113,8 @@ FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs82_NormalizeCorrectly){
     FAIL_IF_MEMCMP(expected, input, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs83_NormalizeCorrectly){
-
+FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs83_NormalizeCorrectly)
+{
     u8 input[] = {
         0xcf, 0x4a, 0x48, 0xfc, 0x1b, 0x94, 0xdc, 0x4d,
         0xcc, 0x4b, 0xb4, 0xb9, 0x8a, 0xd6, 0x95, 0x16,
@@ -2135,8 +2135,8 @@ FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs83_NormalizeCorrectly){
     FAIL_IF_MEMCMP(expected, input, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs84_NormalizeCorrectly){
-
+FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs84_NormalizeCorrectly)
+{
     u8 input[] = {
         0x72, 0x19, 0x8b, 0x34, 0x93, 0xed, 0x95, 0x6c,
         0x98, 0x89, 0x95, 0xc4, 0x52, 0x54, 0xeb, 0x4f,
@@ -2157,8 +2157,8 @@ FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs84_NormalizeCorrectly){
     FAIL_IF_MEMCMP(expected, input, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs85_NormalizeCorrectly){
-
+FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs85_NormalizeCorrectly)
+{
     u8 input[] = {
         0x94, 0x11, 0x14, 0x44, 0x50, 0x27, 0x6e, 0x8f,
         0x67, 0x52, 0x40, 0xbd, 0xf6, 0x87, 0xde, 0x79,
@@ -2179,8 +2179,8 @@ FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs85_NormalizeCorrectly){
     FAIL_IF_MEMCMP(expected, input, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs86_NormalizeCorrectly){
-
+FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs86_NormalizeCorrectly)
+{
     u8 input[] = {
         0x97, 0x63, 0x75, 0xd1, 0x92, 0xcd, 0xa4, 0xdc,
         0xba, 0xa5, 0xa4, 0xa5, 0x47, 0x89, 0xc1, 0x35,
@@ -2201,8 +2201,8 @@ FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs86_NormalizeCorrectly){
     FAIL_IF_MEMCMP(expected, input, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs87_NormalizeCorrectly){
-
+FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs87_NormalizeCorrectly)
+{
     u8 input[] = {
         0xc7, 0x9f, 0xa9, 0x71, 0x7f, 0xd2, 0x87, 0xb0,
         0x4a, 0xb2, 0x14, 0x5f, 0x23, 0xbc, 0x95, 0x99,
@@ -2223,8 +2223,8 @@ FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs87_NormalizeCorrectly){
     FAIL_IF_MEMCMP(expected, input, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs88_NormalizeCorrectly){
-
+FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs88_NormalizeCorrectly)
+{
     u8 input[] = {
         0x46, 0x03, 0xd0, 0xeb, 0x5b, 0x70, 0x5e, 0x70,
         0xd8, 0x70, 0xe0, 0x0a, 0x14, 0xcb, 0x9b, 0x8d,
@@ -2245,8 +2245,8 @@ FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs88_NormalizeCorrectly){
     FAIL_IF_MEMCMP(expected, input, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs89_NormalizeCorrectly){
-
+FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs89_NormalizeCorrectly)
+{
     u8 input[] = {
         0x79, 0xbf, 0xde, 0x8c, 0x99, 0xe4, 0x28, 0x42,
         0x8e, 0x0d, 0x10, 0xf1, 0x18, 0xca, 0xa3, 0xa7,
@@ -2267,8 +2267,8 @@ FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs89_NormalizeCorrectly){
     FAIL_IF_MEMCMP(expected, input, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs90_NormalizeCorrectly){
-
+FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs90_NormalizeCorrectly)
+{
     u8 input[] = {
         0x27, 0x40, 0xce, 0xee, 0x60, 0x3e, 0x2f, 0xed,
         0xc7, 0xb8, 0x12, 0xce, 0x0d, 0x4e, 0xf3, 0xf0,
@@ -2289,8 +2289,8 @@ FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs90_NormalizeCorrectly){
     FAIL_IF_MEMCMP(expected, input, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs91_NormalizeCorrectly){
-
+FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs91_NormalizeCorrectly)
+{
     u8 input[] = {
         0x6d, 0x5c, 0x8e, 0xee, 0x3b, 0xe6, 0x33, 0x77,
         0x77, 0x2d, 0xba, 0x05, 0x45, 0x8f, 0xd7, 0x12,
@@ -2311,8 +2311,8 @@ FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs91_NormalizeCorrectly){
     FAIL_IF_MEMCMP(expected, input, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs92_NormalizeCorrectly){
-
+FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs92_NormalizeCorrectly)
+{
     u8 input[] = {
         0x89, 0x3b, 0x6d, 0xe6, 0x61, 0xfc, 0xc1, 0xd7,
         0xcc, 0x98, 0x56, 0x67, 0x7a, 0x12, 0x7e, 0x9c,
@@ -2333,8 +2333,8 @@ FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs92_NormalizeCorrectly){
     FAIL_IF_MEMCMP(expected, input, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs93_NormalizeCorrectly){
-
+FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs93_NormalizeCorrectly)
+{
     u8 input[] = {
         0xf3, 0xf5, 0x11, 0xfc, 0x70, 0x23, 0xe7, 0xee,
         0x8e, 0x47, 0x66, 0x54, 0x2b, 0x91, 0x08, 0xf5,
@@ -2355,8 +2355,8 @@ FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs93_NormalizeCorrectly){
     FAIL_IF_MEMCMP(expected, input, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs94_NormalizeCorrectly){
-
+FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs94_NormalizeCorrectly)
+{
     u8 input[] = {
         0x22, 0x14, 0xd7, 0xfd, 0x7e, 0xac, 0x8c, 0xd2,
         0x16, 0x53, 0x19, 0x91, 0x63, 0xb1, 0xb9, 0x91,
@@ -2377,8 +2377,8 @@ FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs94_NormalizeCorrectly){
     FAIL_IF_MEMCMP(expected, input, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs95_NormalizeCorrectly){
-
+FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs95_NormalizeCorrectly)
+{
     u8 input[] = {
         0x57, 0x4a, 0xba, 0x2c, 0x47, 0x90, 0x6c, 0x48,
         0xdc, 0xb2, 0x4b, 0x1f, 0x9c, 0xd3, 0xb6, 0xc2,
@@ -2399,8 +2399,8 @@ FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs95_NormalizeCorrectly){
     FAIL_IF_MEMCMP(expected, input, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs96_NormalizeCorrectly){
-
+FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs96_NormalizeCorrectly)
+{
     u8 input[] = {
         0xba, 0xe4, 0x13, 0xf3, 0x4c, 0xd5, 0xf0, 0x81,
         0x57, 0xa9, 0x51, 0x41, 0xeb, 0x02, 0x92, 0xc7,
@@ -2421,8 +2421,8 @@ FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs96_NormalizeCorrectly){
     FAIL_IF_MEMCMP(expected, input, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs97_NormalizeCorrectly){
-
+FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs97_NormalizeCorrectly)
+{
     u8 input[] = {
         0x68, 0x76, 0x47, 0xf5, 0xd5, 0x18, 0xce, 0x05,
         0x6e, 0xa1, 0x82, 0xe6, 0xab, 0xb1, 0xef, 0x72,
@@ -2443,8 +2443,8 @@ FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs97_NormalizeCorrectly){
     FAIL_IF_MEMCMP(expected, input, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs98_NormalizeCorrectly){
-
+FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs98_NormalizeCorrectly)
+{
     u8 input[] = {
         0xe3, 0x77, 0x58, 0x11, 0xb5, 0x54, 0x77, 0x1b,
         0xe7, 0xde, 0x8f, 0xe6, 0xe6, 0x5a, 0x56, 0xea,
@@ -2465,8 +2465,8 @@ FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs98_NormalizeCorrectly){
     FAIL_IF_MEMCMP(expected, input, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs99_NormalizeCorrectly){
-
+FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs99_NormalizeCorrectly)
+{
     u8 input[] = {
         0x16, 0xda, 0x8b, 0x3a, 0xc0, 0xf8, 0xe4, 0xa8,
         0xe8, 0x93, 0xd3, 0xd0, 0x44, 0x50, 0xa0, 0x9e,
@@ -2487,8 +2487,8 @@ FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs99_NormalizeCorrectly){
     FAIL_IF_MEMCMP(expected, input, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs100_NormalizeCorrectly){
-
+FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs100_NormalizeCorrectly)
+{
     u8 input[] = {
         0xca, 0x2d, 0x7a, 0x0f, 0xac, 0xb9, 0x7e, 0x1d,
         0x81, 0xcc, 0x06, 0xae, 0x7b, 0xe9, 0xec, 0xb2,
@@ -2509,8 +2509,8 @@ FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs100_NormalizeCorrectly)
     FAIL_IF_MEMCMP(expected, input, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs101_NormalizeCorrectly){
-
+FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs101_NormalizeCorrectly)
+{
     u8 input[] = {
         0x2b, 0x9f, 0x90, 0x06, 0x37, 0x4c, 0x29, 0x13,
         0x81, 0x0b, 0x94, 0x32, 0x6b, 0xf9, 0x76, 0x8b,
@@ -2531,8 +2531,8 @@ FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs101_NormalizeCorrectly)
     FAIL_IF_MEMCMP(expected, input, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs102_NormalizeCorrectly){
-
+FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs102_NormalizeCorrectly)
+{
     u8 input[] = {
         0x5a, 0xfb, 0xd1, 0x89, 0xbc, 0xe6, 0x6b, 0xc9,
         0x7d, 0xe7, 0x08, 0x68, 0x0d, 0x89, 0xd4, 0xc6,
@@ -2553,8 +2553,8 @@ FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs102_NormalizeCorrectly)
     FAIL_IF_MEMCMP(expected, input, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs103_NormalizeCorrectly){
-
+FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs103_NormalizeCorrectly)
+{
     u8 input[] = {
         0x20, 0xa1, 0x2c, 0xba, 0xe8, 0xd3, 0x0c, 0xce,
         0x38, 0xa8, 0xe4, 0xa0, 0xc3, 0x77, 0x46, 0xc7,
@@ -2575,8 +2575,8 @@ FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs103_NormalizeCorrectly)
     FAIL_IF_MEMCMP(expected, input, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs104_NormalizeCorrectly){
-
+FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs104_NormalizeCorrectly)
+{
     u8 input[] = {
         0x2a, 0x1b, 0xf2, 0x17, 0xc1, 0xc1, 0xdd, 0x6a,
         0x11, 0xad, 0xdb, 0x1c, 0x4d, 0xdd, 0xee, 0x90,
@@ -2597,8 +2597,8 @@ FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs104_NormalizeCorrectly)
     FAIL_IF_MEMCMP(expected, input, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs105_NormalizeCorrectly){
-
+FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs105_NormalizeCorrectly)
+{
     u8 input[] = {
         0x1d, 0x66, 0x6a, 0x8f, 0x9a, 0x72, 0x86, 0x38,
         0x1e, 0xca, 0x11, 0x76, 0xee, 0x1f, 0x20, 0x9d,
@@ -2619,8 +2619,8 @@ FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs105_NormalizeCorrectly)
     FAIL_IF_MEMCMP(expected, input, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs106_NormalizeCorrectly){
-
+FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs106_NormalizeCorrectly)
+{
     u8 input[] = {
         0x43, 0x6a, 0x6b, 0x83, 0x7c, 0x37, 0xc7, 0x6d,
         0x30, 0xf8, 0xc2, 0x0a, 0x39, 0x11, 0xfe, 0xc8,
@@ -2641,8 +2641,8 @@ FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs106_NormalizeCorrectly)
     FAIL_IF_MEMCMP(expected, input, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs107_NormalizeCorrectly){
-
+FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs107_NormalizeCorrectly)
+{
     u8 input[] = {
         0x8f, 0xa1, 0x31, 0x46, 0xa5, 0xdd, 0x55, 0x19,
         0xb9, 0x76, 0xee, 0xba, 0x5d, 0x7e, 0xcd, 0x95,
@@ -2663,8 +2663,8 @@ FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs107_NormalizeCorrectly)
     FAIL_IF_MEMCMP(expected, input, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs108_NormalizeCorrectly){
-
+FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs108_NormalizeCorrectly)
+{
     u8 input[] = {
         0x18, 0xea, 0x91, 0x6a, 0x8f, 0x1b, 0xec, 0x56,
         0x9c, 0xe0, 0x05, 0xc7, 0xae, 0x9e, 0x53, 0x3f,
@@ -2685,8 +2685,8 @@ FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs108_NormalizeCorrectly)
     FAIL_IF_MEMCMP(expected, input, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs109_NormalizeCorrectly){
-
+FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs109_NormalizeCorrectly)
+{
     u8 input[] = {
         0xfb, 0xff, 0x94, 0x65, 0x19, 0x09, 0x19, 0xda,
         0x90, 0xa1, 0xff, 0xfe, 0x5e, 0x5b, 0xf5, 0x0b,
@@ -2707,8 +2707,8 @@ FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs109_NormalizeCorrectly)
     FAIL_IF_MEMCMP(expected, input, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs110_NormalizeCorrectly){
-
+FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs110_NormalizeCorrectly)
+{
     u8 input[] = {
         0x91, 0xcf, 0x06, 0x28, 0xb7, 0x36, 0xe9, 0xc3,
         0x81, 0x4c, 0x8a, 0x6e, 0x16, 0xb7, 0xb9, 0x23,
@@ -2729,8 +2729,8 @@ FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs110_NormalizeCorrectly)
     FAIL_IF_MEMCMP(expected, input, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs111_NormalizeCorrectly){
-
+FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs111_NormalizeCorrectly)
+{
     u8 input[] = {
         0x1c, 0x4a, 0x70, 0xdf, 0xfb, 0xb3, 0x53, 0x95,
         0xa7, 0x5c, 0xb0, 0x9e, 0x20, 0xf3, 0xac, 0xd1,
@@ -2751,8 +2751,8 @@ FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs111_NormalizeCorrectly)
     FAIL_IF_MEMCMP(expected, input, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs112_NormalizeCorrectly){
-
+FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs112_NormalizeCorrectly)
+{
     u8 input[] = {
         0x00, 0x96, 0x57, 0x6b, 0xe9, 0x88, 0x92, 0x7d,
         0xb6, 0x9c, 0x2f, 0x86, 0x5f, 0x5d, 0xd2, 0x64,
@@ -2773,8 +2773,8 @@ FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs112_NormalizeCorrectly)
     FAIL_IF_MEMCMP(expected, input, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs113_NormalizeCorrectly){
-
+FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs113_NormalizeCorrectly)
+{
     u8 input[] = {
         0x75, 0xd0, 0x50, 0x0e, 0x3b, 0x89, 0xbd, 0xca,
         0x20, 0x7a, 0x7e, 0xb0, 0x64, 0x65, 0x9c, 0x44,
@@ -2795,8 +2795,8 @@ FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs113_NormalizeCorrectly)
     FAIL_IF_MEMCMP(expected, input, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs114_NormalizeCorrectly){
-
+FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs114_NormalizeCorrectly)
+{
     u8 input[] = {
         0x7d, 0x77, 0x52, 0x96, 0xf8, 0x91, 0x68, 0x50,
         0x52, 0x5b, 0x4b, 0x41, 0xda, 0x2c, 0x34, 0x5b,
@@ -2817,8 +2817,8 @@ FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs114_NormalizeCorrectly)
     FAIL_IF_MEMCMP(expected, input, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs115_NormalizeCorrectly){
-
+FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs115_NormalizeCorrectly)
+{
     u8 input[] = {
         0x9e, 0x64, 0xac, 0xbe, 0xa8, 0xec, 0xee, 0x95,
         0xf7, 0x6b, 0x70, 0x2c, 0xe8, 0xab, 0xc2, 0x9a,
@@ -2839,8 +2839,8 @@ FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs115_NormalizeCorrectly)
     FAIL_IF_MEMCMP(expected, input, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs116_NormalizeCorrectly){
-
+FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs116_NormalizeCorrectly)
+{
     u8 input[] = {
         0xb3, 0xdd, 0x90, 0x4a, 0x8f, 0xd7, 0x62, 0x19,
         0x40, 0xe9, 0x35, 0x35, 0xfe, 0x94, 0x53, 0x39,
@@ -2861,8 +2861,8 @@ FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs116_NormalizeCorrectly)
     FAIL_IF_MEMCMP(expected, input, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs117_NormalizeCorrectly){
-
+FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs117_NormalizeCorrectly)
+{
     u8 input[] = {
         0xbe, 0x3c, 0xca, 0xe0, 0xb6, 0x55, 0xa6, 0xe6,
         0xc9, 0xc9, 0x2c, 0x10, 0xee, 0xe2, 0x9b, 0xa2,
@@ -2883,8 +2883,8 @@ FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs117_NormalizeCorrectly)
     FAIL_IF_MEMCMP(expected, input, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs118_NormalizeCorrectly){
-
+FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs118_NormalizeCorrectly)
+{
     u8 input[] = {
         0xcc, 0xa6, 0x91, 0xb7, 0xac, 0x23, 0x17, 0x23,
         0x9b, 0x9e, 0x2d, 0xcf, 0xad, 0x7f, 0x59, 0x6f,
@@ -2905,8 +2905,8 @@ FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs118_NormalizeCorrectly)
     FAIL_IF_MEMCMP(expected, input, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs119_NormalizeCorrectly){
-
+FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs119_NormalizeCorrectly)
+{
     u8 input[] = {
         0x1a, 0x71, 0xda, 0x9c, 0xc1, 0xe7, 0x53, 0x85,
         0x6f, 0x8f, 0x76, 0xb0, 0x18, 0x7d, 0x16, 0x0a,
@@ -2927,8 +2927,8 @@ FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs119_NormalizeCorrectly)
     FAIL_IF_MEMCMP(expected, input, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs120_NormalizeCorrectly){
-
+FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs120_NormalizeCorrectly)
+{
     u8 input[] = {
         0xac, 0x96, 0xf1, 0x7f, 0xa2, 0x81, 0x9c, 0x0b,
         0x18, 0x8c, 0xaa, 0xac, 0xcd, 0xbe, 0x38, 0x69,
@@ -2949,8 +2949,8 @@ FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs120_NormalizeCorrectly)
     FAIL_IF_MEMCMP(expected, input, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs121_NormalizeCorrectly){
-
+FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs121_NormalizeCorrectly)
+{
     u8 input[] = {
         0xb4, 0xf8, 0x49, 0x9d, 0xa8, 0xc0, 0xfd, 0xd8,
         0x52, 0x05, 0xf5, 0x44, 0x06, 0x3d, 0xae, 0xc7,
@@ -2971,8 +2971,8 @@ FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs121_NormalizeCorrectly)
     FAIL_IF_MEMCMP(expected, input, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs122_NormalizeCorrectly){
-
+FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs122_NormalizeCorrectly)
+{
     u8 input[] = {
         0xe9, 0x1f, 0x5c, 0xe5, 0x8f, 0x68, 0xa9, 0x58,
         0x8b, 0x7b, 0x9b, 0x1f, 0xf3, 0x49, 0x15, 0x4d,
@@ -2993,8 +2993,8 @@ FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs122_NormalizeCorrectly)
     FAIL_IF_MEMCMP(expected, input, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs123_NormalizeCorrectly){
-
+FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs123_NormalizeCorrectly)
+{
     u8 input[] = {
         0xf3, 0xd1, 0x02, 0x24, 0x99, 0xf3, 0x26, 0x34,
         0xf0, 0x67, 0x10, 0x72, 0x05, 0x52, 0x2b, 0x4f,
@@ -3015,8 +3015,8 @@ FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs123_NormalizeCorrectly)
     FAIL_IF_MEMCMP(expected, input, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs124_NormalizeCorrectly){
-
+FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs124_NormalizeCorrectly)
+{
     u8 input[] = {
         0x9d, 0x0b, 0x2c, 0x78, 0x82, 0x23, 0xf3, 0x4e,
         0x37, 0xc3, 0xed, 0x96, 0x9c, 0x34, 0x6d, 0x21,
@@ -3037,8 +3037,8 @@ FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs124_NormalizeCorrectly)
     FAIL_IF_MEMCMP(expected, input, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs125_NormalizeCorrectly){
-
+FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs125_NormalizeCorrectly)
+{
     u8 input[] = {
         0x40, 0xd3, 0x4f, 0xa2, 0xd1, 0xf3, 0x13, 0x29,
         0x1d, 0x42, 0x47, 0x92, 0x93, 0x38, 0x37, 0x21,
@@ -3059,8 +3059,8 @@ FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs125_NormalizeCorrectly)
     FAIL_IF_MEMCMP(expected, input, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs126_NormalizeCorrectly){
-
+FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs126_NormalizeCorrectly)
+{
     u8 input[] = {
         0xb4, 0x1e, 0x4a, 0x7a, 0x3f, 0x01, 0xfb, 0x75,
         0x55, 0xab, 0x08, 0xc9, 0xd7, 0xd7, 0x56, 0x5f,
@@ -3081,8 +3081,8 @@ FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs126_NormalizeCorrectly)
     FAIL_IF_MEMCMP(expected, input, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs127_NormalizeCorrectly){
-
+FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs127_NormalizeCorrectly)
+{
     u8 input[] = {
         0x26, 0x9b, 0x71, 0x4d, 0xc2, 0x56, 0x5b, 0x22,
         0x94, 0xe4, 0xb0, 0x01, 0x76, 0xb6, 0x13, 0xea,
@@ -3103,8 +3103,8 @@ FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs127_NormalizeCorrectly)
     FAIL_IF_MEMCMP(expected, input, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs128_NormalizeCorrectly){
-
+FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs128_NormalizeCorrectly)
+{
     u8 input[] = {
         0xbf, 0x40, 0xed, 0x29, 0x40, 0x69, 0x33, 0xa6,
         0xc4, 0x98, 0x82, 0xf9, 0xfe, 0x2f, 0x54, 0xb7,
@@ -3125,8 +3125,70 @@ FE3C_TEST(SCALARS_ED25519, Reduce_RandomlyGeneratedInputs128_NormalizeCorrectly)
     FAIL_IF_MEMCMP(expected, input, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs1_ProduceCorrectResult) {
+FE3C_TEST(SCALARS_ED25519, Muladd_TwoTimesOrderPlusZero_GiveZero)
+{
+    const u8 a[] = {
+        0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
+    };
+    const u8 b[] = {
+        0xed, 0xd3, 0xf5, 0x5c, 0x1a, 0x63, 0x12, 0x58,
+        0xd6, 0x9c, 0xf7, 0xa2, 0xde, 0xf9, 0xde, 0x14,
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x10
+    };
+    const u8 c[] = {
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
+    };
+    u8 output[32];
+    const u8 expected[] = {
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
+    };
+    ed25519_scalar_ops.muladd(output, a, b, c);
+    FAIL_IF_MEMCMP(expected, output, sizeof(expected));
+}
 
+FE3C_TEST(SCALARS_ED25519, Muladd_OrderPlusOrder_GiveZero)
+{
+    const u8 a[] = {
+        0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
+    };
+    const u8 b[] = {
+        0xed, 0xd3, 0xf5, 0x5c, 0x1a, 0x63, 0x12, 0x58,
+        0xd6, 0x9c, 0xf7, 0xa2, 0xde, 0xf9, 0xde, 0x14,
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x10
+    };
+    const u8 c[] = {
+        0xed, 0xd3, 0xf5, 0x5c, 0x1a, 0x63, 0x12, 0x58,
+        0xd6, 0x9c, 0xf7, 0xa2, 0xde, 0xf9, 0xde, 0x14,
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x10
+    };
+    u8 output[32];
+    const u8 expected[] = {
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
+    };
+    ed25519_scalar_ops.muladd(output, a, b, c);
+    FAIL_IF_MEMCMP(expected, output, sizeof(expected));
+}
+
+FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs1_ProduceCorrectResult)
+{
     const u8 a[] = {
         0xc0, 0x9f, 0x5e, 0xb7, 0xc6, 0x05, 0xbd, 0x23,
         0x02, 0x39, 0x16, 0x65, 0xa7, 0x6b, 0x86, 0xf2,
@@ -3156,8 +3218,8 @@ FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs1_ProduceCorrectResult)
     FAIL_IF_MEMCMP(expected, output, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs2_ProduceCorrectResult) {
-
+FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs2_ProduceCorrectResult)
+{
     const u8 a[] = {
         0x8a, 0x90, 0x86, 0x95, 0xed, 0xee, 0xa0, 0x5d,
         0x15, 0x53, 0x80, 0x7f, 0x63, 0xaa, 0x07, 0x86,
@@ -3187,8 +3249,8 @@ FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs2_ProduceCorrectResult)
     FAIL_IF_MEMCMP(expected, output, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs3_ProduceCorrectResult) {
-
+FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs3_ProduceCorrectResult)
+{
     const u8 a[] = {
         0xf2, 0x24, 0x11, 0xf9, 0x97, 0x91, 0xa9, 0x60,
         0x79, 0x3a, 0x21, 0x6a, 0xa1, 0x2b, 0x3d, 0x5d,
@@ -3218,8 +3280,8 @@ FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs3_ProduceCorrectResult)
     FAIL_IF_MEMCMP(expected, output, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs4_ProduceCorrectResult) {
-
+FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs4_ProduceCorrectResult)
+{
     const u8 a[] = {
         0xb1, 0x75, 0x68, 0x4a, 0x5e, 0xd0, 0x91, 0x5c,
         0x6b, 0xc3, 0xd5, 0xf4, 0xa1, 0xf1, 0x0c, 0x37,
@@ -3249,8 +3311,8 @@ FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs4_ProduceCorrectResult)
     FAIL_IF_MEMCMP(expected, output, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs5_ProduceCorrectResult) {
-
+FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs5_ProduceCorrectResult)
+{
     const u8 a[] = {
         0x54, 0x67, 0x20, 0x25, 0x7f, 0x52, 0xe8, 0x15,
         0xb7, 0x9d, 0x33, 0xab, 0x7e, 0x63, 0xb7, 0x5f,
@@ -3280,8 +3342,8 @@ FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs5_ProduceCorrectResult)
     FAIL_IF_MEMCMP(expected, output, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs6_ProduceCorrectResult) {
-
+FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs6_ProduceCorrectResult)
+{
     const u8 a[] = {
         0x54, 0xfa, 0x2d, 0xe2, 0x74, 0x31, 0xfe, 0x4a,
         0x9b, 0x3d, 0xc7, 0xb9, 0x1e, 0xd4, 0x58, 0x79,
@@ -3311,8 +3373,8 @@ FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs6_ProduceCorrectResult)
     FAIL_IF_MEMCMP(expected, output, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs7_ProduceCorrectResult) {
-
+FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs7_ProduceCorrectResult)
+{
     const u8 a[] = {
         0xd1, 0x7a, 0xe8, 0xe2, 0x18, 0xe9, 0xba, 0xdc,
         0x6e, 0x0a, 0x92, 0xbc, 0x01, 0x78, 0x38, 0xf3,
@@ -3342,8 +3404,8 @@ FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs7_ProduceCorrectResult)
     FAIL_IF_MEMCMP(expected, output, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs8_ProduceCorrectResult) {
-
+FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs8_ProduceCorrectResult)
+{
     const u8 a[] = {
         0x9b, 0x27, 0xaa, 0x48, 0xac, 0xfd, 0xb9, 0x47,
         0x2c, 0xf4, 0x5c, 0xd5, 0x38, 0x4e, 0x47, 0xf6,
@@ -3373,8 +3435,8 @@ FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs8_ProduceCorrectResult)
     FAIL_IF_MEMCMP(expected, output, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs9_ProduceCorrectResult) {
-
+FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs9_ProduceCorrectResult)
+{
     const u8 a[] = {
         0x97, 0x27, 0x5c, 0x96, 0xe1, 0x4b, 0xca, 0xd7,
         0xb2, 0x31, 0xc0, 0x9a, 0xaf, 0xf0, 0x80, 0x3e,
@@ -3404,8 +3466,8 @@ FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs9_ProduceCorrectResult)
     FAIL_IF_MEMCMP(expected, output, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs10_ProduceCorrectResult) {
-
+FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs10_ProduceCorrectResult)
+{
     const u8 a[] = {
         0xe9, 0xe9, 0xd0, 0xd8, 0x8f, 0xe5, 0x69, 0x23,
         0x86, 0xfa, 0x9e, 0x17, 0x1d, 0x58, 0x2e, 0x74,
@@ -3435,8 +3497,8 @@ FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs10_ProduceCorrectResult
     FAIL_IF_MEMCMP(expected, output, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs11_ProduceCorrectResult) {
-
+FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs11_ProduceCorrectResult)
+{
     const u8 a[] = {
         0x99, 0xfc, 0x19, 0xb8, 0x46, 0x30, 0x1a, 0x75,
         0x57, 0x70, 0x1a, 0x47, 0x03, 0xa6, 0xb5, 0xea,
@@ -3466,8 +3528,8 @@ FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs11_ProduceCorrectResult
     FAIL_IF_MEMCMP(expected, output, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs12_ProduceCorrectResult) {
-
+FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs12_ProduceCorrectResult)
+{
     const u8 a[] = {
         0x92, 0xd1, 0xbb, 0xd3, 0xbf, 0xcd, 0xa0, 0x25,
         0x11, 0xe3, 0x5b, 0x38, 0xef, 0x22, 0x4e, 0x0f,
@@ -3497,8 +3559,8 @@ FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs12_ProduceCorrectResult
     FAIL_IF_MEMCMP(expected, output, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs13_ProduceCorrectResult) {
-
+FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs13_ProduceCorrectResult)
+{
     const u8 a[] = {
         0x7d, 0xac, 0xf5, 0xaa, 0x5a, 0x42, 0x3e, 0xca,
         0x2c, 0x68, 0x00, 0x45, 0x45, 0x32, 0x21, 0xd7,
@@ -3528,8 +3590,8 @@ FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs13_ProduceCorrectResult
     FAIL_IF_MEMCMP(expected, output, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs14_ProduceCorrectResult) {
-
+FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs14_ProduceCorrectResult)
+{
     const u8 a[] = {
         0x4a, 0xd3, 0x9d, 0xb7, 0xbe, 0xfe, 0x50, 0xbb,
         0x4e, 0xd9, 0xc3, 0xe0, 0x3f, 0x06, 0x60, 0x22,
@@ -3559,8 +3621,8 @@ FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs14_ProduceCorrectResult
     FAIL_IF_MEMCMP(expected, output, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs15_ProduceCorrectResult) {
-
+FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs15_ProduceCorrectResult)
+{
     const u8 a[] = {
         0xef, 0xe1, 0xf1, 0xc5, 0x5e, 0x0a, 0x1c, 0x95,
         0x06, 0x8d, 0x71, 0xff, 0x28, 0x5e, 0x0a, 0x84,
@@ -3590,8 +3652,8 @@ FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs15_ProduceCorrectResult
     FAIL_IF_MEMCMP(expected, output, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs16_ProduceCorrectResult) {
-
+FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs16_ProduceCorrectResult)
+{
     const u8 a[] = {
         0xa9, 0x97, 0x78, 0x90, 0x31, 0x5d, 0x64, 0xb4,
         0x01, 0x99, 0xbc, 0x20, 0xae, 0xc6, 0x87, 0xc2,
@@ -3621,8 +3683,8 @@ FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs16_ProduceCorrectResult
     FAIL_IF_MEMCMP(expected, output, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs17_ProduceCorrectResult) {
-
+FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs17_ProduceCorrectResult)
+{
     const u8 a[] = {
         0x63, 0xc3, 0x13, 0x34, 0x1a, 0xc2, 0x66, 0x50,
         0x26, 0xa6, 0x4f, 0xca, 0x6a, 0xe4, 0xf7, 0x74,
@@ -3652,8 +3714,8 @@ FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs17_ProduceCorrectResult
     FAIL_IF_MEMCMP(expected, output, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs18_ProduceCorrectResult) {
-
+FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs18_ProduceCorrectResult)
+{
     const u8 a[] = {
         0xf8, 0x07, 0x96, 0x2b, 0x06, 0x79, 0x64, 0x73,
         0x37, 0x7f, 0x5a, 0x25, 0xe3, 0xed, 0x80, 0x2e,
@@ -3683,8 +3745,8 @@ FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs18_ProduceCorrectResult
     FAIL_IF_MEMCMP(expected, output, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs19_ProduceCorrectResult) {
-
+FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs19_ProduceCorrectResult)
+{
     const u8 a[] = {
         0xcd, 0x83, 0x2c, 0xec, 0x92, 0x56, 0x13, 0x5e,
         0xa0, 0xfd, 0x40, 0x4a, 0x75, 0x6f, 0x33, 0x5a,
@@ -3714,8 +3776,8 @@ FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs19_ProduceCorrectResult
     FAIL_IF_MEMCMP(expected, output, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs20_ProduceCorrectResult) {
-
+FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs20_ProduceCorrectResult)
+{
     const u8 a[] = {
         0xe7, 0xc9, 0xea, 0xde, 0xe2, 0x82, 0xe2, 0x40,
         0x89, 0x51, 0xd5, 0x9f, 0xa4, 0xcf, 0x39, 0xb9,
@@ -3745,8 +3807,8 @@ FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs20_ProduceCorrectResult
     FAIL_IF_MEMCMP(expected, output, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs21_ProduceCorrectResult) {
-
+FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs21_ProduceCorrectResult)
+{
     const u8 a[] = {
         0x33, 0xd5, 0x72, 0xa2, 0x1e, 0xc0, 0xf4, 0x3c,
         0x05, 0x90, 0x90, 0xac, 0x2f, 0x3e, 0xfd, 0x59,
@@ -3776,8 +3838,8 @@ FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs21_ProduceCorrectResult
     FAIL_IF_MEMCMP(expected, output, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs22_ProduceCorrectResult) {
-
+FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs22_ProduceCorrectResult)
+{
     const u8 a[] = {
         0x10, 0x70, 0x50, 0x4a, 0xfa, 0xda, 0x84, 0x9b,
         0x03, 0x3f, 0x97, 0x57, 0x18, 0x53, 0x91, 0xc8,
@@ -3807,8 +3869,8 @@ FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs22_ProduceCorrectResult
     FAIL_IF_MEMCMP(expected, output, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs23_ProduceCorrectResult) {
-
+FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs23_ProduceCorrectResult)
+{
     const u8 a[] = {
         0x6c, 0x49, 0xb5, 0xa2, 0x83, 0x67, 0x2a, 0x14,
         0x5b, 0x91, 0xda, 0x3e, 0x30, 0x62, 0xc4, 0x7c,
@@ -3838,8 +3900,8 @@ FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs23_ProduceCorrectResult
     FAIL_IF_MEMCMP(expected, output, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs24_ProduceCorrectResult) {
-
+FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs24_ProduceCorrectResult)
+{
     const u8 a[] = {
         0x61, 0x26, 0x02, 0x4e, 0xa6, 0x95, 0xbd, 0x9f,
         0x21, 0xa6, 0x77, 0x6d, 0xaf, 0x79, 0x8c, 0xcc,
@@ -3869,8 +3931,8 @@ FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs24_ProduceCorrectResult
     FAIL_IF_MEMCMP(expected, output, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs25_ProduceCorrectResult) {
-
+FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs25_ProduceCorrectResult)
+{
     const u8 a[] = {
         0x11, 0x7f, 0x46, 0x62, 0xc9, 0xac, 0x32, 0xa2,
         0xd1, 0x76, 0x69, 0x84, 0x05, 0x05, 0x74, 0x9a,
@@ -3900,8 +3962,8 @@ FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs25_ProduceCorrectResult
     FAIL_IF_MEMCMP(expected, output, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs26_ProduceCorrectResult) {
-
+FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs26_ProduceCorrectResult)
+{
     const u8 a[] = {
         0x57, 0x42, 0x5c, 0xd0, 0x62, 0x07, 0xdc, 0x87,
         0xec, 0xcd, 0x83, 0x67, 0x21, 0x09, 0x09, 0xae,
@@ -3931,8 +3993,8 @@ FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs26_ProduceCorrectResult
     FAIL_IF_MEMCMP(expected, output, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs27_ProduceCorrectResult) {
-
+FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs27_ProduceCorrectResult)
+{
     const u8 a[] = {
         0x1e, 0xe3, 0x06, 0x7f, 0xdd, 0x59, 0x1b, 0x9f,
         0x59, 0x43, 0x10, 0x9f, 0x84, 0x73, 0xfc, 0xa3,
@@ -3962,8 +4024,8 @@ FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs27_ProduceCorrectResult
     FAIL_IF_MEMCMP(expected, output, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs28_ProduceCorrectResult) {
-
+FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs28_ProduceCorrectResult)
+{
     const u8 a[] = {
         0xb0, 0xaf, 0x36, 0x97, 0x68, 0xed, 0x88, 0xdd,
         0xf5, 0x20, 0x8e, 0x32, 0x49, 0xd8, 0x36, 0xa3,
@@ -3993,8 +4055,8 @@ FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs28_ProduceCorrectResult
     FAIL_IF_MEMCMP(expected, output, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs29_ProduceCorrectResult) {
-
+FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs29_ProduceCorrectResult)
+{
     const u8 a[] = {
         0xfd, 0xa8, 0xd9, 0xfa, 0x34, 0xa4, 0x2e, 0xdc,
         0x60, 0x90, 0x82, 0x7f, 0x0c, 0xe1, 0xea, 0xde,
@@ -4024,8 +4086,8 @@ FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs29_ProduceCorrectResult
     FAIL_IF_MEMCMP(expected, output, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs30_ProduceCorrectResult) {
-
+FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs30_ProduceCorrectResult)
+{
     const u8 a[] = {
         0xd9, 0xc0, 0xbd, 0x09, 0xfa, 0x45, 0x20, 0x51,
         0x7e, 0xa8, 0x0b, 0x31, 0x89, 0x3e, 0x33, 0x21,
@@ -4055,8 +4117,8 @@ FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs30_ProduceCorrectResult
     FAIL_IF_MEMCMP(expected, output, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs31_ProduceCorrectResult) {
-
+FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs31_ProduceCorrectResult)
+{
     const u8 a[] = {
         0xba, 0x3d, 0x1e, 0x0d, 0xaf, 0x33, 0xe4, 0x5b,
         0x0c, 0x0c, 0xef, 0x67, 0x0e, 0x5e, 0xe0, 0x19,
@@ -4086,8 +4148,8 @@ FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs31_ProduceCorrectResult
     FAIL_IF_MEMCMP(expected, output, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs32_ProduceCorrectResult) {
-
+FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs32_ProduceCorrectResult)
+{
     const u8 a[] = {
         0xe0, 0x95, 0x0c, 0x01, 0xc2, 0x19, 0x83, 0x35,
         0x2b, 0x18, 0xec, 0xa4, 0x90, 0x4d, 0x58, 0xe3,
@@ -4117,8 +4179,8 @@ FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs32_ProduceCorrectResult
     FAIL_IF_MEMCMP(expected, output, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs33_ProduceCorrectResult) {
-
+FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs33_ProduceCorrectResult)
+{
     const u8 a[] = {
         0x97, 0x50, 0x55, 0xd1, 0xbd, 0x41, 0x1c, 0x87,
         0x77, 0x88, 0xa6, 0xcd, 0x9d, 0xa6, 0xbc, 0xd0,
@@ -4148,8 +4210,8 @@ FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs33_ProduceCorrectResult
     FAIL_IF_MEMCMP(expected, output, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs34_ProduceCorrectResult) {
-
+FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs34_ProduceCorrectResult)
+{
     const u8 a[] = {
         0x05, 0x02, 0x73, 0x35, 0x66, 0x88, 0xcf, 0xda,
         0x4c, 0x19, 0xf4, 0xaf, 0xcb, 0x77, 0x44, 0xd3,
@@ -4179,8 +4241,8 @@ FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs34_ProduceCorrectResult
     FAIL_IF_MEMCMP(expected, output, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs35_ProduceCorrectResult) {
-
+FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs35_ProduceCorrectResult)
+{
     const u8 a[] = {
         0x21, 0x26, 0x2a, 0xe6, 0x24, 0x5b, 0xa1, 0xea,
         0xf5, 0x33, 0x4c, 0xce, 0xee, 0x79, 0x30, 0x11,
@@ -4210,8 +4272,8 @@ FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs35_ProduceCorrectResult
     FAIL_IF_MEMCMP(expected, output, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs36_ProduceCorrectResult) {
-
+FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs36_ProduceCorrectResult)
+{
     const u8 a[] = {
         0x50, 0x35, 0xe6, 0xfb, 0xee, 0x4a, 0x65, 0xf9,
         0x95, 0x35, 0x21, 0xe7, 0xff, 0x8b, 0x9b, 0x68,
@@ -4241,8 +4303,8 @@ FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs36_ProduceCorrectResult
     FAIL_IF_MEMCMP(expected, output, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs37_ProduceCorrectResult) {
-
+FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs37_ProduceCorrectResult)
+{
     const u8 a[] = {
         0x49, 0x37, 0x67, 0x30, 0xd1, 0x67, 0x34, 0x95,
         0xb4, 0xb1, 0x2a, 0x2a, 0xd0, 0x16, 0xc0, 0xb8,
@@ -4272,8 +4334,8 @@ FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs37_ProduceCorrectResult
     FAIL_IF_MEMCMP(expected, output, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs38_ProduceCorrectResult) {
-
+FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs38_ProduceCorrectResult)
+{
     const u8 a[] = {
         0xf3, 0xaa, 0x53, 0xac, 0xbf, 0x49, 0x08, 0x00,
         0xb1, 0x2c, 0x96, 0x6d, 0xcb, 0x92, 0x9d, 0x25,
@@ -4303,8 +4365,8 @@ FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs38_ProduceCorrectResult
     FAIL_IF_MEMCMP(expected, output, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs39_ProduceCorrectResult) {
-
+FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs39_ProduceCorrectResult)
+{
     const u8 a[] = {
         0xaa, 0xec, 0x88, 0x6d, 0xc0, 0x26, 0x41, 0xa0,
         0x84, 0x92, 0x21, 0xf9, 0x65, 0x02, 0x9b, 0x15,
@@ -4334,8 +4396,8 @@ FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs39_ProduceCorrectResult
     FAIL_IF_MEMCMP(expected, output, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs40_ProduceCorrectResult) {
-
+FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs40_ProduceCorrectResult)
+{
     const u8 a[] = {
         0x10, 0xa9, 0xce, 0x2b, 0xbc, 0x47, 0x41, 0x07,
         0xfa, 0xc5, 0xb9, 0x76, 0xba, 0xf9, 0x9d, 0xe6,
@@ -4365,8 +4427,8 @@ FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs40_ProduceCorrectResult
     FAIL_IF_MEMCMP(expected, output, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs41_ProduceCorrectResult){
-
+FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs41_ProduceCorrectResult)
+{
     const u8 a[] = {
         0x39, 0xf4, 0x1d, 0x1a, 0xf6, 0x2f, 0x26, 0x13,
         0x13, 0x72, 0x3d, 0x9f, 0x3a, 0xab, 0xe6, 0x5c,
@@ -4396,8 +4458,8 @@ FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs41_ProduceCorrectResult
     FAIL_IF_MEMCMP(expected, output, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs42_ProduceCorrectResult){
-
+FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs42_ProduceCorrectResult)
+{
     const u8 a[] = {
         0x02, 0x0f, 0x35, 0x9d, 0xf8, 0x1f, 0xf8, 0x21,
         0x8d, 0x53, 0x88, 0x0f, 0xf6, 0xed, 0x03, 0xc0,
@@ -4427,8 +4489,8 @@ FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs42_ProduceCorrectResult
     FAIL_IF_MEMCMP(expected, output, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs43_ProduceCorrectResult){
-
+FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs43_ProduceCorrectResult)
+{
     const u8 a[] = {
         0xc0, 0x44, 0xd3, 0x08, 0x06, 0xf0, 0xef, 0xe7,
         0xa2, 0x07, 0xb0, 0xbb, 0xdb, 0x6a, 0xbe, 0x68,
@@ -4458,8 +4520,8 @@ FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs43_ProduceCorrectResult
     FAIL_IF_MEMCMP(expected, output, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs44_ProduceCorrectResult){
-
+FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs44_ProduceCorrectResult)
+{
     const u8 a[] = {
         0x35, 0x55, 0x16, 0x15, 0xbd, 0xcc, 0xb7, 0xf4,
         0x03, 0x40, 0x23, 0xed, 0xba, 0x83, 0xc2, 0x37,
@@ -4489,8 +4551,8 @@ FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs44_ProduceCorrectResult
     FAIL_IF_MEMCMP(expected, output, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs45_ProduceCorrectResult){
-
+FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs45_ProduceCorrectResult)
+{
     const u8 a[] = {
         0x88, 0xdd, 0x86, 0x26, 0x2e, 0xf2, 0xf3, 0x8d,
         0x43, 0x8f, 0xa3, 0x6c, 0xfc, 0xb0, 0xd8, 0x4e,
@@ -4520,8 +4582,8 @@ FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs45_ProduceCorrectResult
     FAIL_IF_MEMCMP(expected, output, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs46_ProduceCorrectResult){
-
+FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs46_ProduceCorrectResult)
+{
     const u8 a[] = {
         0x07, 0xfe, 0xc8, 0x6c, 0xff, 0x2f, 0x4c, 0x17,
         0x6b, 0x71, 0xff, 0x93, 0x6b, 0x7e, 0xf5, 0x39,
@@ -4551,8 +4613,8 @@ FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs46_ProduceCorrectResult
     FAIL_IF_MEMCMP(expected, output, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs47_ProduceCorrectResult){
-
+FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs47_ProduceCorrectResult)
+{
     const u8 a[] = {
         0x61, 0x4c, 0x74, 0x5c, 0xca, 0xab, 0x67, 0xa9,
         0x91, 0x11, 0x91, 0x3e, 0xf8, 0xdc, 0xe4, 0x53,
@@ -4582,8 +4644,8 @@ FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs47_ProduceCorrectResult
     FAIL_IF_MEMCMP(expected, output, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs48_ProduceCorrectResult){
-
+FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs48_ProduceCorrectResult)
+{
     const u8 a[] = {
         0xd9, 0x50, 0x2e, 0x6a, 0xff, 0xc3, 0xa2, 0xca,
         0xa3, 0xf1, 0x49, 0xac, 0xeb, 0x48, 0xbc, 0x5e,
@@ -4613,8 +4675,8 @@ FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs48_ProduceCorrectResult
     FAIL_IF_MEMCMP(expected, output, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs49_ProduceCorrectResult){
-
+FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs49_ProduceCorrectResult)
+{
     const u8 a[] = {
         0x09, 0x52, 0x1b, 0xac, 0xf7, 0x4a, 0xba, 0xc5,
         0xe4, 0xd7, 0x79, 0x83, 0x47, 0x1b, 0x34, 0xba,
@@ -4644,8 +4706,8 @@ FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs49_ProduceCorrectResult
     FAIL_IF_MEMCMP(expected, output, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs50_ProduceCorrectResult){
-
+FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs50_ProduceCorrectResult)
+{
     const u8 a[] = {
         0x8c, 0x07, 0xc2, 0x9e, 0x48, 0x5b, 0xae, 0xce,
         0x04, 0x6c, 0x7f, 0x43, 0x94, 0x1b, 0x7d, 0x23,
@@ -4675,8 +4737,8 @@ FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs50_ProduceCorrectResult
     FAIL_IF_MEMCMP(expected, output, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs51_ProduceCorrectResult){
-
+FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs51_ProduceCorrectResult)
+{
     const u8 a[] = {
         0x6a, 0x8a, 0x35, 0x1c, 0x44, 0x46, 0x04, 0x8e,
         0x91, 0x27, 0xcf, 0x39, 0x54, 0x1d, 0x66, 0xf2,
@@ -4706,8 +4768,8 @@ FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs51_ProduceCorrectResult
     FAIL_IF_MEMCMP(expected, output, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs52_ProduceCorrectResult){
-
+FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs52_ProduceCorrectResult)
+{
     const u8 a[] = {
         0xc4, 0xc1, 0x76, 0x64, 0xa7, 0x5e, 0x47, 0xbc,
         0x84, 0x3f, 0x06, 0xaf, 0x33, 0xc4, 0x73, 0x95,
@@ -4737,8 +4799,8 @@ FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs52_ProduceCorrectResult
     FAIL_IF_MEMCMP(expected, output, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs53_ProduceCorrectResult){
-
+FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs53_ProduceCorrectResult)
+{
     const u8 a[] = {
         0x15, 0x72, 0x98, 0x40, 0x54, 0x12, 0x79, 0xef,
         0x6e, 0xc5, 0xc2, 0x97, 0x92, 0x84, 0x87, 0x24,
@@ -4768,8 +4830,8 @@ FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs53_ProduceCorrectResult
     FAIL_IF_MEMCMP(expected, output, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs54_ProduceCorrectResult){
-
+FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs54_ProduceCorrectResult)
+{
     const u8 a[] = {
         0xb1, 0xb9, 0xbe, 0xb0, 0x43, 0x10, 0x43, 0x7d,
         0x3c, 0xa2, 0x48, 0x8d, 0x0f, 0x26, 0x0c, 0x0e,
@@ -4799,8 +4861,8 @@ FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs54_ProduceCorrectResult
     FAIL_IF_MEMCMP(expected, output, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs55_ProduceCorrectResult){
-
+FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs55_ProduceCorrectResult)
+{
     const u8 a[] = {
         0xbf, 0x56, 0x87, 0xfb, 0x4f, 0x0f, 0xdd, 0xdb,
         0x58, 0x93, 0x75, 0x3a, 0xe3, 0x5f, 0xe1, 0x6b,
@@ -4830,8 +4892,8 @@ FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs55_ProduceCorrectResult
     FAIL_IF_MEMCMP(expected, output, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs56_ProduceCorrectResult){
-
+FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs56_ProduceCorrectResult)
+{
     const u8 a[] = {
         0x85, 0xd5, 0x72, 0x73, 0xac, 0x05, 0x9f, 0xc8,
         0xab, 0x2b, 0x05, 0x67, 0x59, 0x9c, 0x7c, 0x22,
@@ -4861,8 +4923,8 @@ FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs56_ProduceCorrectResult
     FAIL_IF_MEMCMP(expected, output, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs57_ProduceCorrectResult){
-
+FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs57_ProduceCorrectResult)
+{
     const u8 a[] = {
         0x47, 0xa1, 0x02, 0x9d, 0x85, 0x0b, 0xf8, 0x65,
         0xe7, 0x04, 0x5c, 0xf7, 0xe5, 0x6c, 0xaa, 0x6d,
@@ -4892,8 +4954,8 @@ FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs57_ProduceCorrectResult
     FAIL_IF_MEMCMP(expected, output, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs58_ProduceCorrectResult){
-
+FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs58_ProduceCorrectResult)
+{
     const u8 a[] = {
         0x1a, 0x10, 0x78, 0x7f, 0xab, 0x8e, 0x2e, 0xd5,
         0x18, 0x97, 0xb6, 0x5b, 0x5b, 0x2c, 0x90, 0x21,
@@ -4923,8 +4985,8 @@ FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs58_ProduceCorrectResult
     FAIL_IF_MEMCMP(expected, output, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs59_ProduceCorrectResult){
-
+FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs59_ProduceCorrectResult)
+{
     const u8 a[] = {
         0xe4, 0x9e, 0xd3, 0x59, 0x1d, 0x0b, 0xe4, 0xa1,
         0x00, 0xa8, 0x70, 0xc1, 0x12, 0xfb, 0x3c, 0xe8,
@@ -4954,8 +5016,8 @@ FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs59_ProduceCorrectResult
     FAIL_IF_MEMCMP(expected, output, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs60_ProduceCorrectResult){
-
+FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs60_ProduceCorrectResult)
+{
     const u8 a[] = {
         0x22, 0xf2, 0xb0, 0x54, 0x23, 0x6f, 0x6e, 0x51,
         0x2b, 0x50, 0x4d, 0xb4, 0xe0, 0x6f, 0x79, 0xf4,
@@ -4985,8 +5047,8 @@ FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs60_ProduceCorrectResult
     FAIL_IF_MEMCMP(expected, output, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs61_ProduceCorrectResult){
-
+FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs61_ProduceCorrectResult)
+{
     const u8 a[] = {
         0x78, 0x70, 0xd8, 0xd1, 0xbb, 0x9e, 0xfd, 0x04,
         0x96, 0x51, 0xba, 0xcd, 0x86, 0x22, 0x0e, 0xe2,
@@ -5016,8 +5078,8 @@ FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs61_ProduceCorrectResult
     FAIL_IF_MEMCMP(expected, output, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs62_ProduceCorrectResult){
-
+FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs62_ProduceCorrectResult)
+{
     const u8 a[] = {
         0x42, 0x6f, 0xbf, 0x6d, 0x52, 0xf4, 0x32, 0x84,
         0xa0, 0x6d, 0xfb, 0xca, 0x8b, 0x04, 0x0d, 0xa3,
@@ -5047,8 +5109,8 @@ FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs62_ProduceCorrectResult
     FAIL_IF_MEMCMP(expected, output, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs63_ProduceCorrectResult){
-
+FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs63_ProduceCorrectResult)
+{
     const u8 a[] = {
         0x86, 0xd1, 0x8a, 0x66, 0x5c, 0xa7, 0x90, 0x31,
         0x9e, 0x6c, 0x58, 0x76, 0x30, 0xc6, 0x7c, 0xdc,
@@ -5078,8 +5140,8 @@ FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs63_ProduceCorrectResult
     FAIL_IF_MEMCMP(expected, output, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs64_ProduceCorrectResult){
-
+FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs64_ProduceCorrectResult)
+{
     const u8 a[] = {
         0xa9, 0x9d, 0xb0, 0x1b, 0x6e, 0xee, 0xb4, 0x56,
         0x8f, 0x6a, 0xb1, 0xa1, 0x07, 0x65, 0xa0, 0x64,
@@ -5109,8 +5171,8 @@ FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs64_ProduceCorrectResult
     FAIL_IF_MEMCMP(expected, output, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs65_ProduceCorrectResult){
-
+FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs65_ProduceCorrectResult)
+{
     const u8 a[] = {
         0xd0, 0x18, 0x3e, 0x00, 0x9d, 0xf4, 0xcc, 0x61,
         0x9e, 0x30, 0x5f, 0x54, 0xff, 0x90, 0x1c, 0x0d,
@@ -5140,8 +5202,8 @@ FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs65_ProduceCorrectResult
     FAIL_IF_MEMCMP(expected, output, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs66_ProduceCorrectResult){
-
+FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs66_ProduceCorrectResult)
+{
     const u8 a[] = {
         0xcd, 0x29, 0x26, 0xd7, 0xae, 0x71, 0xc7, 0xa7,
         0x89, 0x73, 0xdf, 0x36, 0x3f, 0xe7, 0x64, 0xd2,
@@ -5171,8 +5233,8 @@ FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs66_ProduceCorrectResult
     FAIL_IF_MEMCMP(expected, output, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs67_ProduceCorrectResult){
-
+FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs67_ProduceCorrectResult)
+{
     const u8 a[] = {
         0x84, 0xc8, 0x85, 0x10, 0x17, 0x07, 0xad, 0x4e,
         0xb9, 0xea, 0xcd, 0xd7, 0xda, 0x2b, 0xf5, 0xf1,
@@ -5202,8 +5264,8 @@ FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs67_ProduceCorrectResult
     FAIL_IF_MEMCMP(expected, output, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs68_ProduceCorrectResult){
-
+FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs68_ProduceCorrectResult)
+{
     const u8 a[] = {
         0x59, 0xc3, 0x74, 0x98, 0xde, 0xe0, 0xea, 0xd3,
         0xd3, 0xd7, 0xce, 0x62, 0xe8, 0x2a, 0x5c, 0xa8,
@@ -5233,8 +5295,8 @@ FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs68_ProduceCorrectResult
     FAIL_IF_MEMCMP(expected, output, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs69_ProduceCorrectResult){
-
+FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs69_ProduceCorrectResult)
+{
     const u8 a[] = {
         0x88, 0x5d, 0xfc, 0x71, 0xc5, 0x72, 0x0d, 0x2a,
         0x55, 0xae, 0x4a, 0x2f, 0x2e, 0xf7, 0x2c, 0xa9,
@@ -5264,8 +5326,8 @@ FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs69_ProduceCorrectResult
     FAIL_IF_MEMCMP(expected, output, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs70_ProduceCorrectResult){
-
+FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs70_ProduceCorrectResult)
+{
     const u8 a[] = {
         0xb3, 0x19, 0x99, 0x6e, 0x53, 0x1b, 0x09, 0xa7,
         0x75, 0x17, 0x25, 0x29, 0x1b, 0xc9, 0x98, 0xf1,
@@ -5295,8 +5357,8 @@ FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs70_ProduceCorrectResult
     FAIL_IF_MEMCMP(expected, output, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs71_ProduceCorrectResult){
-
+FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs71_ProduceCorrectResult)
+{
     const u8 a[] = {
         0x87, 0x80, 0x69, 0x48, 0xe2, 0xcc, 0x60, 0x69,
         0x22, 0xd9, 0xae, 0xf3, 0x68, 0x22, 0xac, 0x50,
@@ -5326,8 +5388,8 @@ FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs71_ProduceCorrectResult
     FAIL_IF_MEMCMP(expected, output, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs72_ProduceCorrectResult){
-
+FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs72_ProduceCorrectResult)
+{
     const u8 a[] = {
         0xad, 0x3f, 0xa3, 0x01, 0xcd, 0x07, 0xb9, 0x3b,
         0xd2, 0xd1, 0xe4, 0x56, 0x39, 0xb4, 0xaf, 0x91,
@@ -5357,8 +5419,8 @@ FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs72_ProduceCorrectResult
     FAIL_IF_MEMCMP(expected, output, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs73_ProduceCorrectResult){
-
+FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs73_ProduceCorrectResult)
+{
     const u8 a[] = {
         0xd8, 0xdf, 0xa7, 0xf8, 0xa8, 0x86, 0xc3, 0xc6,
         0xd1, 0xd4, 0x2f, 0xc9, 0x61, 0x09, 0x35, 0x9e,
@@ -5388,8 +5450,8 @@ FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs73_ProduceCorrectResult
     FAIL_IF_MEMCMP(expected, output, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs74_ProduceCorrectResult){
-
+FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs74_ProduceCorrectResult)
+{
     const u8 a[] = {
         0xd4, 0x83, 0xc0, 0xbe, 0x17, 0x84, 0x94, 0xb9,
         0x46, 0x93, 0x2c, 0x9d, 0x9b, 0xea, 0x9e, 0xb6,
@@ -5419,8 +5481,8 @@ FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs74_ProduceCorrectResult
     FAIL_IF_MEMCMP(expected, output, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs75_ProduceCorrectResult){
-
+FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs75_ProduceCorrectResult)
+{
     const u8 a[] = {
         0x1c, 0xa4, 0x2e, 0x24, 0x8d, 0xc1, 0xb2, 0xf1,
         0x41, 0x42, 0x0b, 0x92, 0xe0, 0x87, 0x0b, 0x25,
@@ -5450,8 +5512,8 @@ FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs75_ProduceCorrectResult
     FAIL_IF_MEMCMP(expected, output, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs76_ProduceCorrectResult){
-
+FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs76_ProduceCorrectResult)
+{
     const u8 a[] = {
         0xda, 0x8e, 0x30, 0xd4, 0x83, 0x1d, 0x03, 0x4a,
         0x5b, 0x29, 0xa8, 0x89, 0x1c, 0x2c, 0x14, 0x36,
@@ -5481,8 +5543,8 @@ FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs76_ProduceCorrectResult
     FAIL_IF_MEMCMP(expected, output, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs77_ProduceCorrectResult){
-
+FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs77_ProduceCorrectResult)
+{
     const u8 a[] = {
         0x0c, 0xb2, 0x0b, 0xc6, 0x2d, 0x55, 0xbe, 0xde,
         0x6d, 0x14, 0x98, 0xe3, 0xa1, 0x38, 0x15, 0x0b,
@@ -5512,8 +5574,8 @@ FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs77_ProduceCorrectResult
     FAIL_IF_MEMCMP(expected, output, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs78_ProduceCorrectResult){
-
+FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs78_ProduceCorrectResult)
+{
     const u8 a[] = {
         0x6f, 0x4b, 0xd5, 0x4c, 0x4b, 0xb2, 0x55, 0x31,
         0xa6, 0xa5, 0x77, 0xbe, 0xbd, 0xd6, 0x53, 0x3b,
@@ -5543,8 +5605,8 @@ FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs78_ProduceCorrectResult
     FAIL_IF_MEMCMP(expected, output, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs79_ProduceCorrectResult){
-
+FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs79_ProduceCorrectResult)
+{
     const u8 a[] = {
         0x11, 0xd5, 0x50, 0xd5, 0x8d, 0xa4, 0x39, 0x20,
         0x41, 0xb7, 0x83, 0x72, 0x52, 0xd4, 0xb9, 0x5b,
@@ -5574,8 +5636,8 @@ FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs79_ProduceCorrectResult
     FAIL_IF_MEMCMP(expected, output, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs80_ProduceCorrectResult){
-
+FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs80_ProduceCorrectResult)
+{
     const u8 a[] = {
         0x6d, 0x36, 0x89, 0xeb, 0x7b, 0xba, 0x93, 0x67,
         0xf5, 0x83, 0xdb, 0x2c, 0x59, 0x81, 0xba, 0x76,
@@ -5605,8 +5667,8 @@ FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs80_ProduceCorrectResult
     FAIL_IF_MEMCMP(expected, output, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs81_ProduceCorrectResult){
-
+FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs81_ProduceCorrectResult)
+{
     const u8 a[] = {
         0x15, 0x78, 0x3f, 0x41, 0x58, 0x66, 0x69, 0x0e,
         0xbb, 0x5b, 0xcf, 0x51, 0x17, 0xc0, 0xb2, 0x4d,
@@ -5636,8 +5698,8 @@ FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs81_ProduceCorrectResult
     FAIL_IF_MEMCMP(expected, output, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs82_ProduceCorrectResult){
-
+FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs82_ProduceCorrectResult)
+{
     const u8 a[] = {
         0x20, 0xf2, 0x30, 0xed, 0x00, 0x9b, 0x35, 0xab,
         0x9e, 0x21, 0x5a, 0x75, 0x45, 0x48, 0xaa, 0xe2,
@@ -5667,8 +5729,8 @@ FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs82_ProduceCorrectResult
     FAIL_IF_MEMCMP(expected, output, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs83_ProduceCorrectResult){
-
+FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs83_ProduceCorrectResult)
+{
     const u8 a[] = {
         0x4f, 0xa7, 0x4d, 0xb3, 0x1a, 0x51, 0xd9, 0x9b,
         0x20, 0xd6, 0xab, 0xb0, 0x1c, 0x33, 0xf3, 0x6f,
@@ -5698,8 +5760,8 @@ FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs83_ProduceCorrectResult
     FAIL_IF_MEMCMP(expected, output, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs84_ProduceCorrectResult){
-
+FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs84_ProduceCorrectResult)
+{
     const u8 a[] = {
         0x6f, 0xd4, 0xa4, 0x79, 0x72, 0xa4, 0x65, 0x63,
         0x5f, 0xd2, 0x3e, 0xac, 0xfa, 0x9f, 0x43, 0xf4,
@@ -5729,8 +5791,8 @@ FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs84_ProduceCorrectResult
     FAIL_IF_MEMCMP(expected, output, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs85_ProduceCorrectResult){
-
+FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs85_ProduceCorrectResult)
+{
     const u8 a[] = {
         0xcd, 0x58, 0x7b, 0x83, 0x20, 0x17, 0xff, 0x52,
         0x1e, 0x85, 0x54, 0xdc, 0x4f, 0x4b, 0xf6, 0xd6,
@@ -5760,8 +5822,8 @@ FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs85_ProduceCorrectResult
     FAIL_IF_MEMCMP(expected, output, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs86_ProduceCorrectResult){
-
+FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs86_ProduceCorrectResult)
+{
     const u8 a[] = {
         0x5d, 0xbe, 0x2b, 0x85, 0xcd, 0x32, 0x7e, 0x84,
         0xb1, 0xb7, 0xdf, 0xeb, 0x13, 0x93, 0xcf, 0x00,
@@ -5791,8 +5853,8 @@ FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs86_ProduceCorrectResult
     FAIL_IF_MEMCMP(expected, output, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs87_ProduceCorrectResult){
-
+FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs87_ProduceCorrectResult)
+{
     const u8 a[] = {
         0x2b, 0x3b, 0x8d, 0xe6, 0xd5, 0x43, 0xd7, 0xd2,
         0x3d, 0xdd, 0x2c, 0x8b, 0xc1, 0x7b, 0x6a, 0x94,
@@ -5822,8 +5884,8 @@ FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs87_ProduceCorrectResult
     FAIL_IF_MEMCMP(expected, output, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs88_ProduceCorrectResult){
-
+FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs88_ProduceCorrectResult)
+{
     const u8 a[] = {
         0x70, 0xc9, 0xa9, 0x4f, 0x7c, 0x4b, 0xb1, 0x04,
         0x63, 0x17, 0x6d, 0xbc, 0x00, 0xcc, 0x57, 0xfb,
@@ -5853,8 +5915,8 @@ FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs88_ProduceCorrectResult
     FAIL_IF_MEMCMP(expected, output, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs89_ProduceCorrectResult){
-
+FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs89_ProduceCorrectResult)
+{
     const u8 a[] = {
         0x87, 0x86, 0x8f, 0xa7, 0x69, 0x10, 0x4c, 0xee,
         0x0b, 0x06, 0x9c, 0x8e, 0xd1, 0x87, 0xd6, 0x7b,
@@ -5884,8 +5946,8 @@ FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs89_ProduceCorrectResult
     FAIL_IF_MEMCMP(expected, output, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs90_ProduceCorrectResult){
-
+FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs90_ProduceCorrectResult)
+{
     const u8 a[] = {
         0x2e, 0xa6, 0x96, 0x82, 0x48, 0x96, 0x85, 0xf3,
         0x7a, 0x97, 0xfd, 0x1e, 0x0c, 0xef, 0x1e, 0x22,
@@ -5915,8 +5977,8 @@ FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs90_ProduceCorrectResult
     FAIL_IF_MEMCMP(expected, output, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs91_ProduceCorrectResult){
-
+FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs91_ProduceCorrectResult)
+{
     const u8 a[] = {
         0xd5, 0x23, 0x0c, 0xe5, 0x83, 0x7a, 0x0c, 0x2a,
         0xcb, 0xa6, 0x3e, 0xca, 0xf4, 0x17, 0x4d, 0x10,
@@ -5946,8 +6008,8 @@ FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs91_ProduceCorrectResult
     FAIL_IF_MEMCMP(expected, output, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs92_ProduceCorrectResult){
-
+FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs92_ProduceCorrectResult)
+{
     const u8 a[] = {
         0x23, 0xe6, 0xe0, 0xea, 0x03, 0xaa, 0x45, 0x39,
         0x4d, 0x5e, 0x73, 0x33, 0x30, 0x62, 0x30, 0x48,
@@ -5977,8 +6039,8 @@ FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs92_ProduceCorrectResult
     FAIL_IF_MEMCMP(expected, output, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs93_ProduceCorrectResult){
-
+FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs93_ProduceCorrectResult)
+{
     const u8 a[] = {
         0xf0, 0xba, 0xad, 0xdc, 0xf7, 0xa6, 0x9b, 0xdb,
         0x1d, 0x3a, 0x97, 0x9f, 0x4d, 0x19, 0x1a, 0x02,
@@ -6008,8 +6070,8 @@ FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs93_ProduceCorrectResult
     FAIL_IF_MEMCMP(expected, output, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs94_ProduceCorrectResult){
-
+FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs94_ProduceCorrectResult)
+{
     const u8 a[] = {
         0xbc, 0xc8, 0xf6, 0x89, 0xc2, 0x07, 0xbd, 0x1d,
         0xda, 0x11, 0xf5, 0xcc, 0x8d, 0xb3, 0x72, 0xb1,
@@ -6039,8 +6101,8 @@ FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs94_ProduceCorrectResult
     FAIL_IF_MEMCMP(expected, output, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs95_ProduceCorrectResult){
-
+FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs95_ProduceCorrectResult)
+{
     const u8 a[] = {
         0xec, 0x61, 0x9d, 0x3d, 0x69, 0x65, 0x71, 0x76,
         0xb0, 0xd9, 0xbe, 0x9f, 0xac, 0x4b, 0x29, 0xd8,
@@ -6070,8 +6132,8 @@ FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs95_ProduceCorrectResult
     FAIL_IF_MEMCMP(expected, output, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs96_ProduceCorrectResult){
-
+FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs96_ProduceCorrectResult)
+{
     const u8 a[] = {
         0xfd, 0x00, 0x44, 0xc6, 0x96, 0x5f, 0x0f, 0x0a,
         0x04, 0xcd, 0x3a, 0xbf, 0x24, 0x0a, 0x77, 0x71,
@@ -6101,8 +6163,8 @@ FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs96_ProduceCorrectResult
     FAIL_IF_MEMCMP(expected, output, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs97_ProduceCorrectResult){
-
+FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs97_ProduceCorrectResult)
+{
     const u8 a[] = {
         0xa9, 0xb3, 0xd4, 0x0c, 0x98, 0xb6, 0x00, 0xe5,
         0xb6, 0x2a, 0x48, 0x89, 0xa6, 0x69, 0x76, 0x7e,
@@ -6132,8 +6194,8 @@ FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs97_ProduceCorrectResult
     FAIL_IF_MEMCMP(expected, output, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs98_ProduceCorrectResult){
-
+FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs98_ProduceCorrectResult)
+{
     const u8 a[] = {
         0x20, 0x2b, 0x37, 0xc8, 0xe2, 0xcb, 0xfd, 0x0f,
         0x9e, 0x35, 0x0d, 0xa7, 0xc1, 0x30, 0x1f, 0xfe,
@@ -6163,8 +6225,8 @@ FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs98_ProduceCorrectResult
     FAIL_IF_MEMCMP(expected, output, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs99_ProduceCorrectResult){
-
+FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs99_ProduceCorrectResult)
+{
     const u8 a[] = {
         0xbb, 0x96, 0xb9, 0x29, 0x45, 0x21, 0xcd, 0xf7,
         0xbf, 0xe7, 0x02, 0xff, 0xba, 0x47, 0x93, 0xb3,
@@ -6194,8 +6256,8 @@ FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs99_ProduceCorrectResult
     FAIL_IF_MEMCMP(expected, output, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs100_ProduceCorrectResult){
-
+FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs100_ProduceCorrectResult)
+{
     const u8 a[] = {
         0x07, 0x1c, 0xa0, 0x70, 0xa3, 0xab, 0x67, 0x85,
         0x68, 0x8b, 0x89, 0x08, 0x2e, 0x1f, 0x44, 0x83,
@@ -6225,8 +6287,8 @@ FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs100_ProduceCorrectResul
     FAIL_IF_MEMCMP(expected, output, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs101_ProduceCorrectResult){
-
+FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs101_ProduceCorrectResult)
+{
     const u8 a[] = {
         0xc2, 0x9d, 0x86, 0xc3, 0x8a, 0x8c, 0x0e, 0x8a,
         0x80, 0x46, 0x56, 0x9d, 0x18, 0xf1, 0x92, 0x4d,
@@ -6256,8 +6318,8 @@ FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs101_ProduceCorrectResul
     FAIL_IF_MEMCMP(expected, output, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs102_ProduceCorrectResult){
-
+FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs102_ProduceCorrectResult)
+{
     const u8 a[] = {
         0xf5, 0xb5, 0xe5, 0x15, 0xa9, 0xab, 0xcb, 0x62,
         0xbc, 0x8c, 0x30, 0x46, 0x75, 0x52, 0x65, 0x0f,
@@ -6287,8 +6349,8 @@ FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs102_ProduceCorrectResul
     FAIL_IF_MEMCMP(expected, output, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs103_ProduceCorrectResult){
-
+FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs103_ProduceCorrectResult)
+{
     const u8 a[] = {
         0xcc, 0x67, 0xb7, 0x74, 0xfb, 0x2d, 0x73, 0x58,
         0x5c, 0x73, 0xf6, 0xa6, 0x7e, 0x8a, 0x5a, 0xb2,
@@ -6318,8 +6380,8 @@ FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs103_ProduceCorrectResul
     FAIL_IF_MEMCMP(expected, output, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs104_ProduceCorrectResult){
-
+FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs104_ProduceCorrectResult)
+{
     const u8 a[] = {
         0xbe, 0x5b, 0x62, 0x6b, 0x20, 0x0c, 0xcb, 0x87,
         0x21, 0x59, 0x4e, 0x52, 0x5a, 0xe1, 0xea, 0x1c,
@@ -6349,8 +6411,8 @@ FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs104_ProduceCorrectResul
     FAIL_IF_MEMCMP(expected, output, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs105_ProduceCorrectResult){
-
+FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs105_ProduceCorrectResult)
+{
     const u8 a[] = {
         0xfa, 0xe8, 0x78, 0x63, 0xbc, 0xba, 0x9e, 0xd9,
         0x60, 0x3c, 0xd9, 0x3b, 0x96, 0x95, 0x21, 0xd3,
@@ -6380,8 +6442,8 @@ FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs105_ProduceCorrectResul
     FAIL_IF_MEMCMP(expected, output, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs106_ProduceCorrectResult){
-
+FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs106_ProduceCorrectResult)
+{
     const u8 a[] = {
         0x69, 0xdf, 0x55, 0x26, 0x2c, 0xa7, 0x10, 0x3d,
         0x87, 0xb2, 0x80, 0xf9, 0x38, 0x6b, 0x2c, 0xd9,
@@ -6411,8 +6473,8 @@ FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs106_ProduceCorrectResul
     FAIL_IF_MEMCMP(expected, output, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs107_ProduceCorrectResult){
-
+FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs107_ProduceCorrectResult)
+{
     const u8 a[] = {
         0x7b, 0x91, 0x98, 0x92, 0xcc, 0xc2, 0x0d, 0xee,
         0x1e, 0x03, 0x58, 0xf3, 0x5d, 0xa4, 0xb1, 0x4a,
@@ -6442,8 +6504,8 @@ FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs107_ProduceCorrectResul
     FAIL_IF_MEMCMP(expected, output, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs108_ProduceCorrectResult){
-
+FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs108_ProduceCorrectResult)
+{
     const u8 a[] = {
         0xad, 0x01, 0x2e, 0xa1, 0x4f, 0x77, 0x1e, 0x6a,
         0x44, 0x48, 0x50, 0xc5, 0xc5, 0x6f, 0x17, 0x78,
@@ -6473,8 +6535,8 @@ FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs108_ProduceCorrectResul
     FAIL_IF_MEMCMP(expected, output, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs109_ProduceCorrectResult){
-
+FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs109_ProduceCorrectResult)
+{
     const u8 a[] = {
         0xbf, 0x74, 0x11, 0xda, 0x07, 0x79, 0x1a, 0x4b,
         0x1a, 0x7a, 0xd1, 0xdb, 0x1c, 0x33, 0xdf, 0x41,
@@ -6504,8 +6566,8 @@ FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs109_ProduceCorrectResul
     FAIL_IF_MEMCMP(expected, output, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs110_ProduceCorrectResult){
-
+FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs110_ProduceCorrectResult)
+{
     const u8 a[] = {
         0x74, 0x94, 0xff, 0x4b, 0x18, 0x8a, 0xd6, 0xbd,
         0x93, 0x27, 0xca, 0x5b, 0x02, 0x02, 0x13, 0x93,
@@ -6535,8 +6597,8 @@ FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs110_ProduceCorrectResul
     FAIL_IF_MEMCMP(expected, output, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs111_ProduceCorrectResult){
-
+FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs111_ProduceCorrectResult)
+{
     const u8 a[] = {
         0xde, 0x84, 0x46, 0x3c, 0xc2, 0x20, 0x36, 0xad,
         0x52, 0x7b, 0xd9, 0x8d, 0xc5, 0x14, 0x03, 0x1c,
@@ -6566,8 +6628,8 @@ FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs111_ProduceCorrectResul
     FAIL_IF_MEMCMP(expected, output, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs112_ProduceCorrectResult){
-
+FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs112_ProduceCorrectResult)
+{
     const u8 a[] = {
         0x33, 0xc2, 0x1c, 0x68, 0x29, 0x73, 0x56, 0x79,
         0xad, 0x5f, 0x94, 0x1b, 0x9a, 0xeb, 0x81, 0x04,
@@ -6597,8 +6659,8 @@ FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs112_ProduceCorrectResul
     FAIL_IF_MEMCMP(expected, output, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs113_ProduceCorrectResult){
-
+FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs113_ProduceCorrectResult)
+{
     const u8 a[] = {
         0x4b, 0xd2, 0x78, 0x47, 0xe9, 0xc4, 0x0f, 0xfa,
         0x23, 0x0c, 0x15, 0xc9, 0x33, 0x63, 0x4f, 0xea,
@@ -6628,8 +6690,8 @@ FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs113_ProduceCorrectResul
     FAIL_IF_MEMCMP(expected, output, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs114_ProduceCorrectResult){
-
+FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs114_ProduceCorrectResult)
+{
     const u8 a[] = {
         0xcc, 0x5e, 0x8b, 0xc9, 0x7c, 0x2c, 0xad, 0x18,
         0x9b, 0xa4, 0xf6, 0x69, 0x85, 0xb6, 0x23, 0xf3,
@@ -6659,8 +6721,8 @@ FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs114_ProduceCorrectResul
     FAIL_IF_MEMCMP(expected, output, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs115_ProduceCorrectResult){
-
+FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs115_ProduceCorrectResult)
+{
     const u8 a[] = {
         0x31, 0xbd, 0x94, 0x68, 0x0b, 0x04, 0x22, 0xde,
         0xa1, 0xd6, 0xb5, 0xc1, 0xdc, 0xd2, 0x8f, 0x73,
@@ -6690,8 +6752,8 @@ FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs115_ProduceCorrectResul
     FAIL_IF_MEMCMP(expected, output, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs116_ProduceCorrectResult){
-
+FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs116_ProduceCorrectResult)
+{
     const u8 a[] = {
         0x6d, 0x82, 0x49, 0xbb, 0x39, 0x4a, 0x80, 0x90,
         0x89, 0x41, 0x28, 0x80, 0xcf, 0x29, 0x30, 0xbe,
@@ -6721,8 +6783,8 @@ FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs116_ProduceCorrectResul
     FAIL_IF_MEMCMP(expected, output, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs117_ProduceCorrectResult){
-
+FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs117_ProduceCorrectResult)
+{
     const u8 a[] = {
         0xc7, 0x1f, 0x2b, 0xa8, 0xf8, 0xde, 0xc1, 0x19,
         0x1a, 0x81, 0x5b, 0x80, 0xe0, 0x2e, 0x9d, 0x9c,
@@ -6752,8 +6814,8 @@ FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs117_ProduceCorrectResul
     FAIL_IF_MEMCMP(expected, output, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs118_ProduceCorrectResult){
-
+FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs118_ProduceCorrectResult)
+{
     const u8 a[] = {
         0xe2, 0xa4, 0x02, 0x3c, 0x16, 0x65, 0x87, 0x2b,
         0xc3, 0xef, 0xd5, 0x40, 0xfa, 0x85, 0x6d, 0xd5,
@@ -6783,8 +6845,8 @@ FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs118_ProduceCorrectResul
     FAIL_IF_MEMCMP(expected, output, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs119_ProduceCorrectResult){
-
+FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs119_ProduceCorrectResult)
+{
     const u8 a[] = {
         0x7c, 0x0e, 0xb8, 0x0a, 0xe1, 0xa2, 0x5f, 0x1e,
         0x86, 0xe3, 0x8e, 0x53, 0xc3, 0x66, 0xf6, 0xd8,
@@ -6814,8 +6876,8 @@ FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs119_ProduceCorrectResul
     FAIL_IF_MEMCMP(expected, output, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs120_ProduceCorrectResult){
-
+FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs120_ProduceCorrectResult)
+{
     const u8 a[] = {
         0xb8, 0x38, 0xcb, 0xfe, 0x76, 0x01, 0x5c, 0xf2,
         0x7c, 0x1f, 0xa9, 0xf3, 0x11, 0xe5, 0xd9, 0x1d,
@@ -6845,8 +6907,8 @@ FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs120_ProduceCorrectResul
     FAIL_IF_MEMCMP(expected, output, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs121_ProduceCorrectResult){
-
+FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs121_ProduceCorrectResult)
+{
     const u8 a[] = {
         0xd8, 0xad, 0x55, 0xf0, 0x2d, 0x2d, 0x32, 0xcb,
         0x22, 0x97, 0xbb, 0x54, 0x11, 0x08, 0x5f, 0x0d,
@@ -6876,8 +6938,8 @@ FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs121_ProduceCorrectResul
     FAIL_IF_MEMCMP(expected, output, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs122_ProduceCorrectResult){
-
+FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs122_ProduceCorrectResult)
+{
     const u8 a[] = {
         0x89, 0x27, 0x72, 0x98, 0xcc, 0xfa, 0x44, 0x6e,
         0x07, 0xd3, 0x9a, 0xc0, 0x9e, 0xa1, 0xc1, 0x6b,
@@ -6907,8 +6969,8 @@ FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs122_ProduceCorrectResul
     FAIL_IF_MEMCMP(expected, output, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs123_ProduceCorrectResult){
-
+FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs123_ProduceCorrectResult)
+{
     const u8 a[] = {
         0xac, 0xfb, 0x85, 0xc0, 0x57, 0x79, 0x7b, 0x70,
         0xdd, 0x75, 0xbe, 0x28, 0xcf, 0x5b, 0x51, 0x32,
@@ -6938,8 +7000,8 @@ FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs123_ProduceCorrectResul
     FAIL_IF_MEMCMP(expected, output, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs124_ProduceCorrectResult){
-
+FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs124_ProduceCorrectResult)
+{
     const u8 a[] = {
         0xa8, 0x98, 0x1f, 0xc3, 0x09, 0xfb, 0x51, 0x32,
         0x6e, 0x18, 0xcb, 0x94, 0x26, 0x49, 0xd2, 0x43,
@@ -6969,8 +7031,8 @@ FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs124_ProduceCorrectResul
     FAIL_IF_MEMCMP(expected, output, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs125_ProduceCorrectResult){
-
+FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs125_ProduceCorrectResult)
+{
     const u8 a[] = {
         0x44, 0x1c, 0xff, 0x2e, 0x83, 0xff, 0x8b, 0x06,
         0xc7, 0x53, 0xe8, 0x9f, 0xd5, 0x91, 0x3b, 0x16,
@@ -7000,8 +7062,8 @@ FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs125_ProduceCorrectResul
     FAIL_IF_MEMCMP(expected, output, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs126_ProduceCorrectResult){
-
+FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs126_ProduceCorrectResult)
+{
     const u8 a[] = {
         0x75, 0x06, 0xe4, 0x06, 0xa6, 0xc6, 0x65, 0xfb,
         0x3e, 0xac, 0x1c, 0x59, 0xa3, 0x64, 0xca, 0xdd,
@@ -7031,8 +7093,8 @@ FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs126_ProduceCorrectResul
     FAIL_IF_MEMCMP(expected, output, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs127_ProduceCorrectResult){
-
+FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs127_ProduceCorrectResult)
+{
     const u8 a[] = {
         0xf8, 0x75, 0x62, 0xc9, 0x43, 0x4f, 0xed, 0x4f,
         0xb6, 0x1a, 0x34, 0x95, 0xe3, 0x42, 0x58, 0xb4,
@@ -7062,8 +7124,8 @@ FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs127_ProduceCorrectResul
     FAIL_IF_MEMCMP(expected, output, sizeof(expected));
 }
 
-FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs128_ProduceCorrectResult){
-
+FE3C_TEST(SCALARS_ED25519, Muladd_RandomlyGeneratedInputs128_ProduceCorrectResult)
+{
     const u8 a[] = {
         0x1a, 0x0d, 0xb3, 0x3b, 0x82, 0x44, 0xb8, 0x52,
         0xbe, 0x62, 0x2e, 0x88, 0xc5, 0x97, 0xbf, 0x89,

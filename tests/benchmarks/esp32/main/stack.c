@@ -8,16 +8,16 @@
 #define STACK_MEASUREMENT_TASK_STACK_DEPTH  (8 * 1024)
 #define STACK_MEASUREMENT_TASK_PRIORITY     (configMAX_PRIORITIES - 4)
 
-static void stack_measurement_task(void * args);
+static void stack_measurement_task(void *args);
 
 typedef struct stack_measurement_context {
     SemaphoreHandle_t sem;
-    eddsa_sign_request * sign_req;
-    eddsa_verify_request * verify_req;
+    eddsa_sign_request *sign_req;
+    eddsa_verify_request *verify_req;
 } stack_measurement_context;
 
-void stack_dimensioning_for_curve(eddsa_curve curve_id) {
-
+void stack_dimensioning_for_curve(eddsa_curve curve_id)
+{
     /* Synchronously spawn two tasks that shall sign and verify a message and compare
      * stack watermarks before and after the respective calls */
 
@@ -90,9 +90,9 @@ void stack_dimensioning_for_curve(eddsa_curve curve_id) {
     vSemaphoreDelete(context.sem);
 }
 
-static void stack_measurement_task(void * args) {
-
-    stack_measurement_context * context = (stack_measurement_context *) args;
+static void stack_measurement_task(void *args)
+{
+    stack_measurement_context *context = (stack_measurement_context *) args;
 
     /* Assert only one request is set */
     assert(NULL == context->sign_req || NULL == context->verify_req);

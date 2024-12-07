@@ -8,7 +8,7 @@
     #error "Build system inconsistency detected! curve_ed25519.c in use despite FE3C_SUPPORT_CURVE_ED25519 not being set"
 #endif /* !FE3C_SUPPORT_CURVE_ED25519 */
 
-static void prune_buffer(u8 * buffer);
+static void prune_buffer(u8 *buffer);
 
 curve ed25519_curve = {
     .hash_function = hash_sha512,
@@ -20,8 +20,8 @@ curve ed25519_curve = {
     .dom_string_length = 32
 };
 
-static void prune_buffer(u8 * buffer) {
-
+static void prune_buffer(u8 *buffer)
+{
     /* Prune the buffer or "clamp" the encoded scalar as specified by RFC 8032 */
 
     /* The lowest three bits of the first octet are cleared, so that the scalar is a multiple of the cofactor 8 */

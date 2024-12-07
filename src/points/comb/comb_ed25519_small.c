@@ -5,8 +5,8 @@
 #include <points/comb/comb_ed25519.h>
 #include <utils/utils.h>
 
-static inline void ed25519_comb_cmov(ed25519_precomp * r, const ed25519_precomp_internal * p, int move) {
-
+static inline void ed25519_comb_cmov(ed25519_precomp *r, const ed25519_precomp_internal *p, int move)
+{
     fe25519_conditional_move(r->X, p->X, move);
     fe25519_conditional_move(r->Y, p->Y, move);
     /* Note that for performance purposes we do not set the Z coordinate correctly at this point. This
@@ -14,16 +14,16 @@ static inline void ed25519_comb_cmov(ed25519_precomp * r, const ed25519_precomp_
      * T coordinate. */
 }
 
-static inline void ed25519_comb_cneg(ed25519_precomp * p, int negate) {
-
+static inline void ed25519_comb_cneg(ed25519_precomp *p, int negate)
+{
     /* Negate the X coordinate conditionally */
     fe25519 mX;
     fe25519_neg(mX, p->X);
     fe25519_conditional_move(p->X, mX, negate);
 }
 
-void ed25519_comb_read_precomp(ed25519_precomp * r, u8 j, i8 ijt) {
-
+void ed25519_comb_read_precomp(ed25519_precomp *r, u8 j, i8 ijt)
+{
     FE3C_SANITY_CHECK(j < static_array_len(ed25519_comb_precomp), NULL);
 
     /* Check the sign bit, cast ijt to u8 first to counteract sign extension */
@@ -57,8 +57,8 @@ void ed25519_comb_read_precomp(ed25519_precomp * r, u8 j, i8 ijt) {
     fe25519_mul(r->T, r->X, r->Y);
 }
 
-void ed25519_comb_add_precomp(point_ed25519 * r, const point_ed25519 * p, const ed25519_precomp * q) {
-
+void ed25519_comb_add_precomp(point_ed25519 *r, const point_ed25519 *p, const ed25519_precomp *q)
+{
     /* For optimal stack and cache usage we reduce the number of variables
      * allocated relative to the algorithm description in RFC 8032. For
      * clarity, the comments include the names of variables as they appear

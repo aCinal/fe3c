@@ -15,28 +15,27 @@
 typedef struct fe3c_params {
     enum { UNKNOWN, SIGN, VERIFY, KEYGEN } action;
     eddsa_curve curve_id;
-    const char * message_path;
-    const char * signature_path;
-    const char * context_path;
-    const char * secret_key_path;
-    const char * public_key_path;
+    const char *message_path;
+    const char *signature_path;
+    const char *context_path;
+    const char *secret_key_path;
+    const char *public_key_path;
     int prehash;
 } fe3c_params;
 
-static void print_usage_and_exit(const char * exename);
-static void parse_arguments(int argc, char **argv, fe3c_params * out);
-static void validate_arguments(const fe3c_params * args);
-static void sign(const fe3c_params * args);
-static void verify(const fe3c_params * args);
-static void keygen(const fe3c_params * args);
-static void * reliably_map_file(const char * path, size_t size);
-static size_t get_filesize(const char * path);
+static void print_usage_and_exit(const char *exename);
+static void parse_arguments(int argc, char *argv[], fe3c_params *out);
+static void validate_arguments(const fe3c_params *args);
+static void sign(const fe3c_params *args);
+static void verify(const fe3c_params *args);
+static void keygen(const fe3c_params *args);
+static void *reliably_map_file(const char *path, size_t size);
+static size_t get_filesize(const char *path);
 
-int main (int argc, char **argv) {
-
-    if (argc == 1) {
+int main (int argc, char *argv[])
+{
+    if (argc == 1)
         print_usage_and_exit(argv[0]);
-    }
 
     fe3c_params params;
     parse_arguments(argc, argv, &params);
@@ -64,8 +63,8 @@ int main (int argc, char **argv) {
     return 0;
 }
 
-static void print_usage_and_exit(const char * exename) {
-
+static void print_usage_and_exit(const char *exename)
+{
     printf("\n");
     printf("------------ Example application of the Fe3C crypto library ------------\n");
     printf("\n");
@@ -90,8 +89,8 @@ static void print_usage_and_exit(const char * exename) {
     exit(EXIT_SUCCESS);
 }
 
-static void parse_arguments(int argc, char **argv, fe3c_params * out) {
-
+static void parse_arguments(int argc, char *argv[], fe3c_params *out)
+{
     /* Set the defaults first */
     out->curve_id = EDDSA_NUMBER_OF_SUPPORTED_CURVES;
     out->action = UNKNOWN;
@@ -205,8 +204,8 @@ static void parse_arguments(int argc, char **argv, fe3c_params * out) {
     }
 }
 
-static void validate_arguments(const fe3c_params * args) {
-
+static void validate_arguments(const fe3c_params *args)
+{
     FAIL_IF(args->action == UNKNOWN,                                 "Unknown action, specify either --sign or --verify");
     FAIL_IF(args->curve_id == EDDSA_NUMBER_OF_SUPPORTED_CURVES,      "Unknown Edwards curve, specify either --ed448 or --ed25519");
     FAIL_IF(!eddsa_is_curve_supported(args->curve_id),               "Unsupported curve with ID: %d. Recompile libcementite with support enabled", args->curve_id);
@@ -235,18 +234,16 @@ static void validate_arguments(const fe3c_params * args) {
     }
 }
 
-static void sign(const fe3c_params * args) {
-
-    void * secret_key = reliably_map_file(args->secret_key_path, eddsa_get_secret_key_length(args->curve_id));
-    void * message = reliably_map_file(args->message_path, 0);
-    void * context = args->context_path ? reliably_map_file(args->context_path, 0) : NULL;
+static void sign(const fe3c_params *args)
+{
+    void *secret_key = reliably_map_file(args->secret_key_path, eddsa_get_secret_key_length(args->curve_id));
+    void *message = reliably_map_file(args->message_path, 0);
+    void *context = args->context_path ? reliably_map_file(args->context_path, 0) : NULL;
 
     size_t message_length = get_filesize(args->message_path);
     size_t context_length = args->context_path ? get_filesize(args->context_path) : 0;
-    if (context_length > 255) {
-        /* Truncate the context size to 255 if need be */
+    if (context_length > 255)
         context_length = 255;
-    }
 
     u8 signature[eddsa_get_signature_length(args->curve_id)];
     eddsa_sign_request req = {
@@ -264,19 +261,17 @@ static void sign(const fe3c_params * args) {
     (void) write(STDOUT_FILENO, signature, sizeof(signature));
 }
 
-static void verify(const fe3c_params * args) {
-
-    void * public_key = reliably_map_file(args->public_key_path, eddsa_get_public_key_length(args->curve_id));
-    void * message = reliably_map_file(args->message_path, 0);
-    void * signature = reliably_map_file(args->signature_path, eddsa_get_signature_length(args->curve_id));
-    void * context = args->context_path ? reliably_map_file(args->context_path, 0) : NULL;
+static void verify(const fe3c_params *args)
+{
+    void *public_key = reliably_map_file(args->public_key_path, eddsa_get_public_key_length(args->curve_id));
+    void *message = reliably_map_file(args->message_path, 0);
+    void *signature = reliably_map_file(args->signature_path, eddsa_get_signature_length(args->curve_id));
+    void *context = args->context_path ? reliably_map_file(args->context_path, 0) : NULL;
 
     size_t message_length = get_filesize(args->message_path);
     size_t context_length = args->context_path ? get_filesize(args->context_path) : 0;
-    if (context_length > 255) {
-        /* Truncate the context size to 255 if need be */
+    if (context_length > 255)
         context_length = 255;
-    }
 
     eddsa_verify_request req = {
         .signature = signature,
@@ -292,9 +287,9 @@ static void verify(const fe3c_params * args) {
     FAIL_IF(!verified, "Verification failed!");
 }
 
-static void keygen(const fe3c_params * args) {
-
-    u8 * secret_key = reliably_map_file(args->secret_key_path, eddsa_get_secret_key_length(args->curve_id));
+static void keygen(const fe3c_params *args)
+{
+    u8 *secret_key = reliably_map_file(args->secret_key_path, eddsa_get_secret_key_length(args->curve_id));
     u8 public_key[eddsa_get_public_key_length(args->curve_id)];
 
     eddsa_derive_public_key(public_key, secret_key, args->curve_id);
@@ -303,8 +298,8 @@ static void keygen(const fe3c_params * args) {
     (void) write(STDOUT_FILENO, public_key, sizeof(public_key));
 }
 
-static void * reliably_map_file(const char * path, size_t size) {
-
+static void *reliably_map_file(const char *path, size_t size)
+{
     /* Open the file for reading */
     int fd = open(path, O_RDONLY);
     FAIL_IF(fd < 0, "Failed to open file '%s': %s (%d)", path, strerror(errno), errno);
@@ -319,7 +314,7 @@ static void * reliably_map_file(const char * path, size_t size) {
         size = stat.st_size;
     }
     /* Map the file into the process' address space */
-    void * mapping = mmap(NULL, size, PROT_READ, MAP_PRIVATE | MAP_POPULATE | MAP_LOCKED, fd, 0);
+    void *mapping = mmap(NULL, size, PROT_READ, MAP_PRIVATE | MAP_POPULATE | MAP_LOCKED, fd, 0);
     FAIL_IF(mapping == MAP_FAILED, "mmap failed to map file '%s' with error: %s (%d)", path, strerror(errno), errno);
     /* Close the descriptor */
     (void) close(fd);
@@ -327,8 +322,8 @@ static void * reliably_map_file(const char * path, size_t size) {
     return mapping;
 }
 
-static size_t get_filesize(const char * path) {
-
+static size_t get_filesize(const char *path)
+{
     /* Open the file for reading */
     int fd = open(path, O_RDONLY);
     FAIL_IF(fd < 0, "Failed to open file '%s': %s (%d)", path, strerror(errno), errno);

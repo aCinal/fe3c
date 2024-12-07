@@ -2,8 +2,8 @@
 #include <fe3c/eddsa.h>
 
 #if FE3C_FUNCTIONAL_TESTS_HOST
-TEST_GROUP(EDDSA_TAMING_ED25519) {
-
+TEST_GROUP(EDDSA_TAMING_ED25519)
+{
     /* Test vectors published by Konstantinos Chalkias, François Garillot, and Valeria Nikolaenko
      * in "Taming the many EdDSAs" (DOI: 10.1007/978-3-030-64357-7_4). Notation corresponds to
      * the notation used in the paper as well as in RFC 8032, i.e. S is the response scalar,
@@ -13,8 +13,8 @@ TEST_GROUP(EDDSA_TAMING_ED25519) {
 };
 #endif /* FE3C_FUNCTIONAL_TESTS_HOST */
 
-FE3C_TEST(EDDSA_TAMING_ED25519, Test0) {
-
+FE3C_TEST(EDDSA_TAMING_ED25519, Test0)
+{
     /* Conditions satisified by the test vector:
      *
      *                  S:        S = 0
@@ -56,8 +56,8 @@ FE3C_TEST(EDDSA_TAMING_ED25519, Test0) {
     FAIL_UNLESS_EQUAL(0, verified);
 }
 
-FE3C_TEST(EDDSA_TAMING_ED25519, Test1) {
-
+FE3C_TEST(EDDSA_TAMING_ED25519, Test1)
+{
     /* Conditions satisified by the test vector:
      *
      *                  S:        0 < S < L
@@ -99,8 +99,8 @@ FE3C_TEST(EDDSA_TAMING_ED25519, Test1) {
     FAIL_UNLESS_EQUAL(0, verified);
 }
 
-FE3C_TEST(EDDSA_TAMING_ED25519, Test2) {
-
+FE3C_TEST(EDDSA_TAMING_ED25519, Test2)
+{
     /* Conditions satisified by the test vector:
      *
      *                  S:        0 < S < L
@@ -142,8 +142,8 @@ FE3C_TEST(EDDSA_TAMING_ED25519, Test2) {
     FAIL_UNLESS_EQUAL(0, verified);
 }
 
-FE3C_TEST(EDDSA_TAMING_ED25519, Test3) {
-
+FE3C_TEST(EDDSA_TAMING_ED25519, Test3)
+{
     /* Conditions satisified by the test vector:
      *
      *                  S:        0 < S < L
@@ -185,8 +185,8 @@ FE3C_TEST(EDDSA_TAMING_ED25519, Test3) {
     FAIL_UNLESS_EQUAL(1, verified);
 }
 
-FE3C_TEST(EDDSA_TAMING_ED25519, Test4) {
-
+FE3C_TEST(EDDSA_TAMING_ED25519, Test4)
+{
     /* Conditions satisified by the test vector:
      *
      *                  S:        0 < S < L
@@ -227,8 +227,8 @@ FE3C_TEST(EDDSA_TAMING_ED25519, Test4) {
     FAIL_UNLESS_EQUAL(1, verified);
 }
 
-FE3C_TEST(EDDSA_TAMING_ED25519, Test5) {
-
+FE3C_TEST(EDDSA_TAMING_ED25519, Test5)
+{
     /* Conditions satisified by the test vector:
      *
      *                  S:        0 < S < L
@@ -269,8 +269,8 @@ FE3C_TEST(EDDSA_TAMING_ED25519, Test5) {
     FAIL_UNLESS_EQUAL(1, verified);
 }
 
-FE3C_TEST(EDDSA_TAMING_ED25519, Test6) {
-
+FE3C_TEST(EDDSA_TAMING_ED25519, Test6)
+{
     /* Conditions satisified by the test vector:
      *
      *                  S:        S > L
@@ -312,8 +312,8 @@ FE3C_TEST(EDDSA_TAMING_ED25519, Test6) {
     FAIL_UNLESS_EQUAL(0, verified);
 }
 
-FE3C_TEST(EDDSA_TAMING_ED25519, Test7) {
-
+FE3C_TEST(EDDSA_TAMING_ED25519, Test7)
+{
     /* Conditions satisified by the test vector:
      *
      *                  S:        S >> L
@@ -356,8 +356,8 @@ FE3C_TEST(EDDSA_TAMING_ED25519, Test7) {
     FAIL_UNLESS_EQUAL(0, verified);
 }
 
-FE3C_TEST(EDDSA_TAMING_ED25519, Test8) {
-
+FE3C_TEST(EDDSA_TAMING_ED25519, Test8)
+{
     /* Conditions satisified by the test vector:
      *
      *                  S:        0 < S < L
@@ -406,8 +406,8 @@ FE3C_TEST(EDDSA_TAMING_ED25519, Test8) {
     FAIL_UNLESS_EQUAL(0, verified);
 }
 
-FE3C_TEST(EDDSA_TAMING_ED25519, Test9) {
-
+FE3C_TEST(EDDSA_TAMING_ED25519, Test9)
+{
     /* Conditions satisified by the test vector:
      *
      *                  S:        0 < S < L
@@ -455,8 +455,8 @@ FE3C_TEST(EDDSA_TAMING_ED25519, Test9) {
     FAIL_UNLESS_EQUAL(0, verified);
 }
 
-FE3C_TEST(EDDSA_TAMING_ED25519, Test10) {
-
+FE3C_TEST(EDDSA_TAMING_ED25519, Test10)
+{
     /* Conditions satisified by the test vector:
      *
      *                  S:        0 < S < L
@@ -503,8 +503,8 @@ FE3C_TEST(EDDSA_TAMING_ED25519, Test10) {
     FAIL_UNLESS_EQUAL(0, verified);
 }
 
-FE3C_TEST(EDDSA_TAMING_ED25519, Test11) {
-
+FE3C_TEST(EDDSA_TAMING_ED25519, Test11)
+{
     /* Conditions satisified by the test vector:
      *
      *                  S:        0 < S < L

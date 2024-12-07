@@ -29,8 +29,24 @@ menu "cementite (fe3c)"
             Enable comb method of scalar multiplication, which will increase data footprint,
             but will hugely increase performance.
 
+    config FE3C_ED25519_LATTICE_BASIS_REDUCTION
+        bool "Use lattice basis reduction for Ed25519 verification"
+        depends on FE3C_SUPPORT_CURVE_ED25519
+        default n
+        help
+            Enable lattice basis reduction (eprint:2020/454) during Ed25519 verification, which will increase
+            code footprint, but may increase verification performance.
+
+    config FE3C_ED448_LATTICE_BASIS_REDUCTION
+        bool "Use lattice basis reduction for Ed448 verification"
+        depends on FE3C_SUPPORT_CURVE_ED448
+        default n
+        help
+            Enable lattice basis reduction (eprint:2020/454) during Ed448 verification, which will increase
+            code footprint, but may increase verification performance.
+
     config FE3C_ED25519_SMALL_PRECOMPUTATION
-        bool "Use smaller comb method precomputation tables on Ed25519"
+        bool "Use smaller comb method precomputation tables for Ed25519"
         depends on FE3C_SUPPORT_CURVE_ED25519 && FE3C_COMB_METHOD
         default y
         help
@@ -39,7 +55,7 @@ menu "cementite (fe3c)"
             footprint and increases performance.
 
     config FE3C_ED448_SMALL_PRECOMPUTATION
-        bool "Use smaller comb method precomputation tables on Ed448"
+        bool "Use smaller comb method precomputation tables for Ed448"
         depends on FE3C_SUPPORT_CURVE_ED448 && FE3C_COMB_METHOD
         default n
         help

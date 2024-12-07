@@ -18,13 +18,13 @@
     #include <sha/sha_block.h>
 #endif /* SOC_SHA_SUPPORT_PARALLEL_ENG */
 
-static inline int sha512_compress(const u8 * input_block, u32 * first_block);
-static inline void sha512_read_final(u8 * output_buffer);
+static inline int sha512_compress(const u8 *input_block, u32 *first_block);
+static inline void sha512_read_final(u8 *output_buffer);
 static inline void sha512_purge_accelerator(void);
-static inline void store_64(u8 * dst, const u64 * src, size_t wordcount);
+static inline void store_64(u8 *dst, const u64 *src, size_t wordcount);
 
-int sha512_impl_hw(u8 * output, const struct iovec * iov, int iovcnt) {
-
+int sha512_impl_hw(u8 *output, const struct iovec *iov, int iovcnt)
+{
     FE3C_SANITY_CHECK(output, NULL);
     FE3C_SANITY_CHECK(iov || iovcnt == 0, NULL);
 
@@ -45,7 +45,7 @@ int sha512_impl_hw(u8 * output, const struct iovec * iov, int iovcnt) {
 
         /* Update the state for each field */
         size_t input_length = iov[i].iov_len;
-        const u8 * input = iov[i].iov_base;
+        const u8 *input = iov[i].iov_base;
 
         /* Update the length */
 
@@ -55,10 +55,8 @@ int sha512_impl_hw(u8 * output, const struct iovec * iov, int iovcnt) {
          * and save in the high part of the bitlength */
         u64 temp_length_high = ( (u64) input_length ) >> 61;
         /* Check for overflow of the low word */
-        if ((message_length_low += temp_length_low) < temp_length_low) {
-            /* Overflow into the high word occurred */
+        if ((message_length_low += temp_length_low) < temp_length_low)
             message_length_high++;
-        }
         /* Add the high part of input_length into the aggregate message length */
         message_length_high += temp_length_high;
 
@@ -151,8 +149,8 @@ out:
     return ret;
 }
 
-sha512_impl sha512_try_lock_hw(void) {
-
+sha512_impl sha512_try_lock_hw(void)
+{
 #if SOC_SHA_SUPPORT_PARALLEL_ENG
     if (esp_sha_try_lock_engine(SHA2_512)) {
 
@@ -172,8 +170,8 @@ sha512_impl sha512_try_lock_hw(void) {
 #endif
 }
 
-void sha512_release_hw(void) {
-
+void sha512_release_hw(void)
+{
 #if SOC_SHA_SUPPORT_PARALLEL_ENG
     esp_sha_unlock_engine(SHA2_512);
 #else
@@ -181,13 +179,12 @@ void sha512_release_hw(void) {
 #endif
 }
 
-static inline int sha512_compress(const u8 * input_block, u32 * first_block) {
-
+static inline int sha512_compress(const u8 *input_block, u32 *first_block)
+{
     u32 is_first_block = *first_block;
 #if SOC_SHA_SUPPORT_DMA
-    if (esp_sha_dma(SHA2_512, input_block, SHA512_BLOCK_SIZE_BYTES, NULL, 0, (bool) is_first_block)) {
+    if (esp_sha_dma(SHA2_512, input_block, SHA512_BLOCK_SIZE_BYTES, NULL, 0, (bool) is_first_block))
         return -1;
-    }
 #else
     esp_sha_block(SHA2_512, input_block, (bool) is_first_block);
 #endif
@@ -195,8 +192,8 @@ static inline int sha512_compress(const u8 * input_block, u32 * first_block) {
     return 0;
 }
 
-static inline void sha512_read_final(u8 * output_buffer) {
-
+static inline void sha512_read_final(u8 *output_buffer)
+{
     esp_sha_read_digest_state(SHA2_512, output_buffer);
 
 #if SOC_SHA_SUPPORT_PARALLEL_ENG
@@ -208,8 +205,8 @@ static inline void sha512_read_final(u8 * output_buffer) {
 #endif /* SOC_SHA_SUPPORT_PARALLEL_ENG */
 }
 
-static inline void sha512_purge_accelerator(void) {
-
+static inline void sha512_purge_accelerator(void)
+{
 #if !FE3C_SKIP_ZEROIZATION
     /* Erase the state of the accelerator */
 #if SOC_SHA_SUPPORT_DMA
@@ -222,10 +219,8 @@ static inline void sha512_purge_accelerator(void) {
 #endif /* !FE3C_SKIP_ZEROIZATION */
 }
 
-static inline void store_64(u8 * dst, const u64 * src, size_t wordcount) {
-
-    for (size_t i = 0; i < wordcount; i++) {
-
+static inline void store_64(u8 *dst, const u64 *src, size_t wordcount)
+{
+    for (size_t i = 0; i < wordcount; i++)
         *(u64 *) &dst[8 * i] = __builtin_bswap64(src[i]);
-    }
 }

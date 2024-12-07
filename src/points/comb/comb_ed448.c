@@ -5,15 +5,15 @@
 #include <points/comb/comb_ed448.h>
 #include <utils/utils.h>
 
-static inline void ed448_comb_cmov(ed448_precomp * r, const ed448_precomp_internal * p, int move) {
-
+static inline void ed448_comb_cmov(ed448_precomp *r, const ed448_precomp_internal *p, int move)
+{
     fe448_conditional_move(r->YplusX, p->YplusX, move);
     fe448_conditional_move(r->YminusX, p->YminusX, move);
     fe448_conditional_move(r->T2d, p->T2d, move);
 }
 
-static inline void ed448_comb_cneg(ed448_precomp * p, int negate) {
-
+static inline void ed448_comb_cneg(ed448_precomp *p, int negate)
+{
     /* Negate the X and T coordinates conditionally, which amounts to swapping
      * YminusX with YplusX and negating T2d */
     fe448 YminusX, minusT2d;
@@ -28,8 +28,8 @@ static inline void ed448_comb_cneg(ed448_precomp * p, int negate) {
     fe448_conditional_move(p->T2d, minusT2d, negate);
 }
 
-void ed448_comb_read_precomp(ed448_precomp * r, u8 j, i8 ijt) {
-
+void ed448_comb_read_precomp(ed448_precomp *r, u8 j, i8 ijt)
+{
     FE3C_SANITY_CHECK(j < static_array_len(ed448_comb_precomp), "j=%d", j);
 
     /* Check the sign bit, cast ijt to u8 first to counteract sign extension */
@@ -59,8 +59,8 @@ void ed448_comb_read_precomp(ed448_precomp * r, u8 j, i8 ijt) {
     ed448_comb_cneg(r, negate);
 }
 
-void ed448_comb_add_precomp(point_ed448 * r, const point_ed448 * p, const ed448_precomp * q) {
-
+void ed448_comb_add_precomp(point_ed448 *r, const point_ed448 *p, const ed448_precomp *q)
+{
     /* For optimal stack and cache usage we reduce the number of variables
      * allocated relative to the algorithm description in RFC 8032. For
      * clarity, the comments include the names of variables as they appear

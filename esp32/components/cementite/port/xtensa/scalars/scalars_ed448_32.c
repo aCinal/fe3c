@@ -27,46 +27,25 @@ static const u8 group_order_crandall_tail[] = {
     0x16, 0xdc, 0x35, 0x83
 };
 
-static int ed448_scalar_is_canonical(const u8 * s) {
+static int ed448_scalar_is_canonical(const u8 *s)
+{
+    u16 borrow = 0;
+    /* Try subtracting the group order L and check if borrow is set afterwards */
+    for (int i = 0; i < 57; i++) {
 
-    u32 temp;
-    u32 borrow = 0;
-    /* Store a flag in notq indicating whether the scalar is equal
-     * to the group order. If this is the case, borrow will be zero
-     * after the loop, despite the scalar not being canonical. */
-    u32 notq = 0;
-
-    /* Try subtracting s from the group order q and check if borrow is set afterwards */
-    for (int i = 0; i < sizeof(group_order); i++) {
-
-        u32 diff = group_order[i] - s[i];
-        /* If the subtraction was non-zero, then s != q,
-         * let the notq variable reflect that */
-        asm volatile("movnez %[notq], %[diff], %[diff]" : [notq] "+&r" (notq) : [diff] "r" (diff) : );
-        diff -= borrow;
+        u16 diff = s[i] - group_order[i] - borrow;
         /* Extract the sign bit to identify the borrow */
-        asm volatile("extui %[borrow], %[diff], 31, 1" : [borrow] "+&r" (borrow) : [diff] "r" (diff) : );
+        borrow = diff >> 15;
     }
 
-    /* Normalize the equality indicator */
-    asm volatile(
-        _ "movi.n %[temp], 1"
-        _ "movnez %[notq], %[temp], %[notq]"
-
-        : [notq] "+r" (notq),
-          [temp] "=r" (temp)
-        :
-        :
-    );
-
     /* A scalar is canonical if and only if there was
-     * no borrow at the end of the loop, i.e. s <= q, and
-     * notq is set, i.e. s != q */
-    return ~borrow & notq;
+     * borrow at the end of the loop, i.e., we were not
+     * able to subtract L from s */
+    return borrow;
 }
 
-static inline void ed448_scalar_sub_internal(u8 * r, const u8 * a, const u8 * b, int mock) {
-
+static inline void ed448_scalar_sub_internal(u8 *r, const u8 *a, const u8 *b, int mock)
+{
     /* Note that we could do subtraction with u16 granularity since we use packed-radix
      * representation, thus better utilizing the hardware adder and halving the number
      * of iterations. It does not seem to have any bearing on performance, however, so
@@ -84,8 +63,8 @@ static inline void ed448_scalar_sub_internal(u8 * r, const u8 * a, const u8 * b,
     }
 }
 
-static void ed448_scalar_reduce(u8 * s) {
-
+static void ed448_scalar_reduce(u8 *s)
+{
     /* Let L be the group order and c = 2^446 - L. Then we have:
      *
      *                        2^448 = 4c (mod L)
@@ -141,48 +120,37 @@ static void ed448_scalar_reduce(u8 * s) {
     for (int k = 0; k < 28; k++) {
 
         carry += s[k];
-        for (int i = 0; i <= k; i++) {
-
-            int j = k - i;
-            carry += s[56 + i] * ( (u32) group_order_crandall_tail[j] << 2 );
-        }
+        for (int i = 0; i <= k; i++)
+            carry += s[56 + i] * ( (u32) group_order_crandall_tail[k - i] << 2 );
         t[k] = (u8) carry;
         carry >>= 8;
     }
     for (int k = 28; k < 56; k++) {
 
         carry += s[k];
-        for (int i = k + 1 - 28; i <= k; i++) {
-
-            int j = k - i;
-            carry += s[56 + i] * ( (u32) group_order_crandall_tail[j] << 2 );
-        }
+        for (int i = k + 1 - 28; i <= k; i++)
+            carry += s[56 + i] * ( (u32) group_order_crandall_tail[k - i] << 2 );
         t[k] = (u8) carry;
         carry >>= 8;
     }
     for (int k = 56; k < 58; k++) {
 
-        for (int i = k + 1 - 28; i <= k; i++) {
-
-            int j = k - i;
-            carry += s[56 + i] * ( (u32) group_order_crandall_tail[j] << 2 );
-        }
+        for (int i = k + 1 - 28; i <= k; i++)
+            carry += s[56 + i] * ( (u32) group_order_crandall_tail[k - i] << 2 );
         t[k] = (u8) carry;
         carry >>= 8;
     }
     for (int k = 58; k < 86; k++) {
 
-        for (int i = k + 1 - 28; i < 58; i++) {
-
-            int j = k - i;
-            carry += s[56 + i] * ( (u32) group_order_crandall_tail[j] << 2 );
-        }
+        for (int i = k + 1 - 28; i < 58; i++)
+            carry += s[56 + i] * ( (u32) group_order_crandall_tail[k - i] << 2 );
         t[k] = (u8) carry;
         carry >>= 8;
     }
+    FE3C_SANITY_CHECK(carry <= 2, "Unexpected carry after first-pass scalar reduction: %" PRId32, carry);
     t[86] = (u8) carry;
-
     carry = 0;
+
     /* We have reduced s down to (at most) 87 bytes. Do the same trick again and
      * bring down the 31 bytes above the 56-byte boundary. This way we shall get down to
      * 31 + 29 - 1 = 59 bytes (after multiplying the 31 bytes by the 29-byte
@@ -190,80 +158,60 @@ static void ed448_scalar_reduce(u8 * s) {
     for (int k = 0; k < 28; k++) {
 
         carry += t[k];
-        for (int i = 0; i <= k; i++) {
-
-            int j = k - i;
-            carry += t[56 + i] * ( (u32) group_order_crandall_tail[j] << 2 );
-        }
+        for (int i = 0; i <= k; i++)
+            carry += t[56 + i] * ( (u32) group_order_crandall_tail[k - i] << 2 );
         t[k] = (u8) carry;
         carry >>= 8;
     }
     for (int k = 28; k < 31; k++) {
 
         carry += t[k];
-        for (int i = k + 1 - 28; i <= k; i++) {
-
-            int j = k - i;
-            carry += t[56 + i] * ( (u32) group_order_crandall_tail[j] << 2 );
-        }
+        for (int i = k + 1 - 28; i <= k; i++)
+            carry += t[56 + i] * ( (u32) group_order_crandall_tail[k - i] << 2 );
         t[k] = (u8) carry;
         carry >>= 8;
     }
     for (int k = 31; k < 56; k++) {
 
         carry += t[k];
-        for (int i = k + 1 - 28; i < 31; i++) {
-
-            int j = k - i;
-            carry += t[56 + i] * ( (u32) group_order_crandall_tail[j] << 2 );
-        }
+        for (int i = k + 1 - 28; i < 31; i++)
+            carry += t[56 + i] * ( (u32) group_order_crandall_tail[k - i] << 2 );
         t[k] = (u8) carry;
         carry >>= 8;
     }
     for (int k = 56; k < 59; k++) {
 
         for (int i = k + 1 - 28; i < 31; i++) {
-
-            int j = k - i;
-            carry += t[56 + i] * ( (u32) group_order_crandall_tail[j] << 2 );
+            carry += t[56 + i] * ( (u32) group_order_crandall_tail[k - i] << 2 );
         }
         t[k] = (u8) carry;
         carry >>= 8;
     }
-    FE3C_SANITY_CHECK(carry == 0, NULL);
+    FE3C_SANITY_CHECK(carry == 0, "Unexpected carry after second-pass scalar reduction: %" PRId32, carry);
 
     /* Do one last rough reduction. At this point we have only three bytes above
      * the 56-byte boundary. */
     for (int k = 0; k < 3; k++) {
 
         carry += t[k];
-        for (int i = 0; i <= k; i++) {
-
-            int j = k - i;
-            carry += t[56 + i] * ( (u32) group_order_crandall_tail[j] << 2 );
-        }
+        for (int i = 0; i <= k; i++)
+            carry += t[56 + i] * ( (u32) group_order_crandall_tail[k - i] << 2 );
         t[k] = (u8) carry;
         carry >>= 8;
     }
     for (int k = 3; k < 28; k++) {
 
         carry += t[k];
-        for (int i = 0; i < 3; i++) {
-
-            int j = k - i;
-            carry += t[56 + i] * ( (u32) group_order_crandall_tail[j] << 2 );
-        }
+        for (int i = 0; i < 3; i++)
+            carry += t[56 + i] * ( (u32) group_order_crandall_tail[k - i] << 2 );
         t[k] = (u8) carry;
         carry >>= 8;
     }
     for (int k = 28; k < 31; k++) {
 
         carry += t[k];
-        for (int i = k + 1 - 28; i < 3; i++) {
-
-            int j = k - i;
-            carry += t[56 + i] * ( (u32) group_order_crandall_tail[j] << 2 );
-        }
+        for (int i = k + 1 - 28; i < 3; i++)
+            carry += t[56 + i] * ( (u32) group_order_crandall_tail[k - i] << 2 );
         t[k] = (u8) carry;
         carry >>= 8;
     }
@@ -274,7 +222,7 @@ static void ed448_scalar_reduce(u8 * s) {
         t[k] = (u8) carry;
         carry >>= 8;
     }
-    FE3C_SANITY_CHECK(carry == 0, NULL);
+    FE3C_SANITY_CHECK(carry == 0, "Unexpected carry after third-pass scalar reduction: %" PRId32, carry);
 
     /* Do a careful (albeit still weak) reduction */
     u32 overflow = (t[55] >> 6);
@@ -293,7 +241,7 @@ static void ed448_scalar_reduce(u8 * s) {
         t[k] = (u8) carry;
         carry >>= 8;
     }
-    FE3C_SANITY_CHECK(carry == 0, NULL);
+    FE3C_SANITY_CHECK(carry == 0, "Unexpected carry after fourth-pass scalar reduction: %" PRId32, carry);
     t[56] = 0;
 
     /* At this point we have successfully done a weak reduction and
@@ -304,19 +252,16 @@ static void ed448_scalar_reduce(u8 * s) {
     purge_secrets(t, sizeof(t));
 }
 
-static void ed448_scalars_muladd(u8 * r, const u8 * a, const u8 * b, const u8 * c) {
-
+static void ed448_scalars_muladd(u8 *r, const u8 *a, const u8 *b, const u8 *c)
+{
     u8 t[114];
     u32 carry = 0;
     for (int k = 0; k < 56; k++) {
 
         carry += c[k];
         /* Convolve a and b */
-        for (int i = 0; i <= k; i++) {
-
-            int j = k - i;
-            carry += a[i] * b[j];
-        }
+        for (int i = 0; i <= k; i++)
+            carry += a[i] * b[k - i];
         t[k] = (u8) carry;
         carry >>= 8;
     }
@@ -324,11 +269,8 @@ static void ed448_scalars_muladd(u8 * r, const u8 * a, const u8 * b, const u8 * 
     for (int k = 56; k < 114; k++) {
 
         /* Convolve a and b */
-        for (int i = k + 1 - 56; i < 56; i++) {
-
-            int j = k - i;
-            carry += a[i] * b[j];
-        }
+        for (int i = k + 1 - 56; i < 56; i++)
+            carry += a[i] * b[k - i];
         t[k] = (u8) carry;
         carry >>= 8;
     }

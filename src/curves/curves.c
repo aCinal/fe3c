@@ -9,7 +9,7 @@ extern curve ed25519_curve;
 extern curve ed448_curve;
 #endif /* FE3C_SUPPORT_CURVE_ED448 */
 
-const curve * curves[EDDSA_NUMBER_OF_SUPPORTED_CURVES] = {
+const curve *curves[EDDSA_NUMBER_OF_SUPPORTED_CURVES] = {
 
 #if FE3C_SUPPORT_CURVE_ED25519
     [EDDSA_CURVE_ED25519] = &ed25519_curve,

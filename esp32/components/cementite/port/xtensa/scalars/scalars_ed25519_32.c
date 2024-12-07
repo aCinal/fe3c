@@ -15,50 +15,31 @@ static const u8 group_order[] = {
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x10
 };
 
-static int ed25519_scalar_is_canonical(const u8 * s) {
-
+static int ed25519_scalar_is_canonical(const u8 *s)
+{
     /* The scalar is encoded on 32 bytes so we should
      * be able to iterate over it using a u16 iterator. */
     const u16 * si = (const u16 *) s;
     const u16 * qi = (const u16 *) group_order;
     u32 borrow = 0;
-    /* Store a flag in notq indicating whether the scalar is equal
-     * to the group order. If this is the case, borrow will be zero
-     * after the loop, despite the scalar not being canonical. */
-    u32 notq = 0;
 
-    /* Try subtracting s from the group order q and check if borrow is set afterwards */
+    /* Try subtracting the group order L and check if borrow is set afterwards */
     for (int i = 0; i < 16; i++) {
 
-        u32 diff = qi[i] - si[i];
-        /* If the subtraction was non-zero, then s != q,
-         * let the notq variable reflect that */
-        asm volatile("movnez %[notq], %[diff], %[diff]" : [notq] "+&r" (notq) : [diff] "r" (diff) : );
-        diff -= borrow;
+        u32 diff = si[i] - qi[i] - borrow;
         /* Extract the sign bit to identify the borrow */
-        asm volatile("extui %[borrow], %[diff], 31, 1" : [borrow] "+&r" (borrow) : [diff] "r" (diff) : );
+        borrow = diff >> 31;
     }
 
-    /* Normalize the equality indicator */
-    asm volatile(
-        _ "movi.n %[si],   1"
-        _ "movnez %[notq], %[si], %[notq]"
-
-        : [notq] "+r" (notq),
-          [si]   "=r" (si)
-        :
-        :
-    );
-
     /* A scalar is canonical if and only if there was
-     * no borrow at the end of the loop, i.e. s <= q, and
-     * notq is set, i.e. s != q */
-    return ~borrow & notq;
+     * borrow at the end of the loop, i.e., we were not
+     * able to subtract L from s */
+    return borrow;
 }
 
-static inline void ed25519_scalar_add_internal(u8 * r, const u8 * a, const u8 * b, int mock) {
-
-    /* Note that we could do subtraction with u16 granularity since we use packed-radix
+static inline void ed25519_scalar_add_internal(u8 *r, const u8 *a, const u8 *b, int mock)
+{
+    /* Note that we could do addition with u16 granularity since we use packed-radix
      * representation, thus better utilizing the hardware adder and halving the number
      * of iterations. It does not seem to have any bearing on performance, however, so
      * for code clarity we make byte-based accesses and additions. */
@@ -75,8 +56,8 @@ static inline void ed25519_scalar_add_internal(u8 * r, const u8 * a, const u8 * 
     }
 }
 
-static void ed25519_scalar_reduce(u8 * s) {
-
+static void ed25519_scalar_reduce(u8 *s)
+{
     /* Let L be the group order and c = L - 2^252. Then we have:
      *
      *                     2^256 = -2^4 c (mod L)
@@ -93,37 +74,29 @@ static void ed25519_scalar_reduce(u8 * s) {
     for (int k = 0; k < 16; k++) {
 
         carry += s[k];
-        for (int i = 0; i <= k; i++) {
-
-            int j = k - i;
-            carry -= s[32 + i] * ( (i32) group_order[j] << 4 );
-        }
-        t[k] = carry & 0xFF;
+        for (int i = 0; i <= k; i++)
+            carry -= s[32 + i] * ( (i32) group_order[k - i] << 4 );
+        t[k] = (u8) carry;
         carry >>= 8;
     }
 
     for (int k = 16; k < 32; k++) {
 
         carry += s[k];
-        for (int i = k + 1 - 16; i <= k; i++) {
-
-            int j = k - i;
-            carry -= s[32 + i] * ( (i32) group_order[j] << 4 );
-        }
-        t[k] = carry & 0xFF;
+        for (int i = k + 1 - 16; i <= k; i++)
+            carry -= s[32 + i] * ( (i32) group_order[k - i] << 4 );
+        t[k] = (u8) carry;
         carry >>= 8;
     }
 
     for (int k = 32; k < 48; k++) {
 
-        for (int i = k + 1 - 16; i < 32; i++) {
-
-            int j = k - i;
-            carry -= s[32 + i] * ( (i32) group_order[j] << 4 );
-        }
-        t[k] = carry & 0xFF;
+        for (int i = k + 1 - 16; i < 32; i++)
+            carry -= s[32 + i] * ( (i32) group_order[k - i] << 4 );
+        t[k] = (u8) carry;
         carry >>= 8;
     }
+    FE3C_SANITY_CHECK(carry <= 0 && carry >= -2, "Unexpected carry after first-pass scalar reduction: %" PRId32, carry);
     t[48] = carry;
     carry = 0;
 
@@ -132,38 +105,30 @@ static void ed25519_scalar_reduce(u8 * s) {
     for (int k = 0; k < 16; k++) {
 
         carry += t[k];
-        for (int i = 0; i <= k; i++) {
-
-            int j = k - i;
-            carry -= t[32 + i] * ( (i32) group_order[j] << 4 );
-        }
-        t[k] = carry & 0xFF;
+        for (int i = 0; i <= k; i++)
+            carry -= t[32 + i] * ( (i32) group_order[k - i] << 4 );
+        t[k] = (u8) carry;
         carry >>= 8;
     }
 
     for (int k = 16; k < 17; k++) {
 
         carry += t[k];
-        for (int i = k + 1 - 16; i <= k; i++) {
-
-            int j = k - i;
-            carry -= t[32 + i] * ( (i32) group_order[j] << 4 );
-        }
-        t[k] = carry & 0xFF;
+        for (int i = k + 1 - 16; i <= k; i++)
+            carry -= t[32 + i] * ( (i32) group_order[k - i] << 4 );
+        t[k] = (u8) carry;
         carry >>= 8;
     }
 
     for (int k = 17; k < 32; k++) {
 
         carry += t[k];
-        for (int i = k + 1 - 16; i < 17; i++) {
-
-            int j = k - i;
-            carry -= t[32 + i] * ( (i32) group_order[j] << 4 );
-        }
-        t[k] = carry & 0xFF;
+        for (int i = k + 1 - 16; i < 17; i++)
+            carry -= t[32 + i] * ( (i32) group_order[k - i] << 4 );
+        t[k] = (u8) carry;
         carry >>= 8;
     }
+    FE3C_SANITY_CHECK(carry <= 3 && carry >= -2, "Unexpected carry after second-pass scalar reduction: %" PRId32, carry);
     t[32] = carry;
     carry = 0;
 
@@ -179,26 +144,25 @@ static void ed25519_scalar_reduce(u8 * s) {
 
         carry += t[k];
         carry -= overflow * group_order[k];
-        s[k] = carry & 0xFF;
+        s[k] = (u8) carry;
         carry >>= 8;
     }
     /* Propagate the carry */
     for (int k = 16; k < 32; k++) {
 
         carry += t[k];
-        s[k] = carry & 0xFF;
+        s[k] = (u8) carry;
         carry >>= 8;
     }
-    FE3C_SANITY_CHECK(carry <= 0, NULL);
-    carry = -carry;
+    FE3C_SANITY_CHECK(carry <= 0 && carry >= -1, "Unexpected carry after third-pass scalar reduction: %" PRId32, carry);
     /* At this point the scalar is in the range [-L, L). Conditionally add
      * the group order and use that as a result if underflow occurred. */
-    ed25519_scalar_add_internal(s, s, group_order, 1 - carry);
+    ed25519_scalar_add_internal(s, s, group_order, 1 + carry);
     purge_secrets(t, sizeof(t));
 }
 
-static void ed25519_scalars_muladd(u8 * r, const u8 * a, const u8 * b, const u8 * c) {
-
+static void ed25519_scalars_muladd(u8 *r, const u8 *a, const u8 *b, const u8 *c)
+{
     u8 t[64];
     u32 carry = 0;
     for (int k = 0; k < 32; k++) {

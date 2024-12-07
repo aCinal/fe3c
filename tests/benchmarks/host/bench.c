@@ -7,7 +7,7 @@
 #include <assert.h>
 #include <stdio.h>
 
-static void bench_linux_get_random(u8 * buf, size_t sz);
+static void bench_linux_get_random(u8 *buf, size_t sz);
 static long bench_linux_start_stopwatch(unsigned int expiry_time);
 static double bench_linux_stop_stopwatch(long start);
 static void bench_linux_handle_result(eddsa_curve curve_id, size_t message_length, int verify, int iterations, double elapsed);
@@ -15,8 +15,8 @@ static void sigalrm_handler(int signo);
 
 static volatile int s_stop_test;
 
-int main(int argc, char * argv[]) {
-
+int main(int argc, char *argv[])
+{
     bench_params params;
     params.get_random = bench_linux_get_random;
     params.start_stopwatch = bench_linux_start_stopwatch;
@@ -62,13 +62,13 @@ int main(int argc, char * argv[]) {
     return 0;
 }
 
-static void bench_linux_get_random(u8 * buf, size_t sz) {
-
+static void bench_linux_get_random(u8 *buf, size_t sz)
+{
     assert(sz == getrandom(buf, sz, 0));
 }
 
-static long bench_linux_start_stopwatch(unsigned int expiry_time) {
-
+static long bench_linux_start_stopwatch(unsigned int expiry_time)
+{
     static struct timespec now;
 
     int ret = clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &now);
@@ -80,14 +80,14 @@ static long bench_linux_start_stopwatch(unsigned int expiry_time) {
     return (long) &now;
 }
 
-static double bench_linux_stop_stopwatch(long start) {
-
+static double bench_linux_stop_stopwatch(long start)
+{
     struct timespec now;
     /* Get current time */
     int ret = clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &now);
     assert(ret == 0);
 
-    struct timespec * start_struct = (struct timespec *) start;
+    struct timespec *start_struct = (struct timespec *) start;
 
     /* Convert the timestamps to seconds and compute the time elapsed */
     double nows = now.tv_sec + now.tv_nsec * 1e-9;
@@ -100,8 +100,8 @@ static double bench_linux_stop_stopwatch(long start) {
     return delta;
 }
 
-static void bench_linux_handle_result(eddsa_curve curve_id, size_t message_length, int verify, int iterations, double elapsed) {
-
+static void bench_linux_handle_result(eddsa_curve curve_id, size_t message_length, int verify, int iterations, double elapsed)
+{
     double secs_per_sig = elapsed / iterations;
     double sigs_per_sec = iterations / elapsed;
 
@@ -124,8 +124,8 @@ static void bench_linux_handle_result(eddsa_curve curve_id, size_t message_lengt
     );
 }
 
-static void sigalrm_handler(int signo) {
-
+static void sigalrm_handler(int signo)
+{
     (void) signo;
     /* Break out of the benchmark loop */
     s_stop_test = 1;

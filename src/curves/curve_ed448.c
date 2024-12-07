@@ -8,7 +8,7 @@
     #error "Build system inconsistency detected! curve_ed448.c in use despite FE3C_SUPPORT_CURVE_ED448 not being set"
 #endif /* !FE3C_SUPPORT_CURVE_ED448 */
 
-static void prune_buffer(u8 * buffer);
+static void prune_buffer(u8 *buffer);
 
 curve ed448_curve = {
     .hash_function = hash_shake256,
@@ -20,8 +20,8 @@ curve ed448_curve = {
     .dom_string_length = 8
 };
 
-static void prune_buffer(u8 * buffer) {
-
+static void prune_buffer(u8 *buffer)
+{
     /* Prune the buffer or "clamp" the encoded scalar as specified by RFC 8032 */
 
     /* The two least significant bits of the first octet are cleared, so that the scalar is a multiple of the cofactor 4 */

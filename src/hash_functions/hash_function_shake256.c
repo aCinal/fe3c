@@ -4,15 +4,15 @@
 /* Note that the SHAKE-256 implementation provided is specifically tailored to EdDSA use and so
  * uses a fixed-length 114-byte output. */
 
-static inline void absorb_block(shake256_state * state, const u8 * block, shake256_working_variables * working_variables);
+static inline void absorb_block(shake256_state *state, const u8 *block, shake256_working_variables *working_variables);
 static inline void keccak_f(u64 A[5][5], u64 B[5][5], u64 C[5], u64 D[5]);
 static inline void keccak_theta(u64 A[5][5], u64 C[5], u64 D[5]);
 static inline void keccak_chi(u64 A[5][5], const u64 B[5][5]);
 static inline u64 load_64(const u8 src[8]);
-static inline void store_64(u8 * dst, const u64 * src, int bytecount);
+static inline void store_64(u8 *dst, const u64 *src, int bytecount);
 
-void hash_shake256(u8 * output, const struct iovec * iov, int iovcnt) {
-
+void hash_shake256(u8 *output, const struct iovec *iov, int iovcnt)
+{
     /* Start with an empty state */
     shake256_state state = {};
     shake256_working_variables working_variables;
@@ -25,7 +25,7 @@ void hash_shake256(u8 * output, const struct iovec * iov, int iovcnt) {
     for (int i = 0; i < iovcnt; i++) {
 
         size_t input_length = iov[i].iov_len;
-        const u8 * input = iov[i].iov_base;
+        const u8 *input = iov[i].iov_base;
 
         size_t remaining_space = SHAKE256_BLOCK_SIZE_BYTES - where_were_we;
         if (input_length >= remaining_space) {
@@ -74,13 +74,12 @@ void hash_shake256(u8 * output, const struct iovec * iov, int iovcnt) {
     purge_secrets(&working_variables, sizeof(working_variables));
 }
 
-static inline void absorb_block(shake256_state * state, const u8 * block, shake256_working_variables * working_variables) {
-
+static inline void absorb_block(shake256_state *state, const u8 *block, shake256_working_variables *working_variables)
+{
     /* XOR the block buffer with the state */
-    for (size_t j = 0; j < sizeof(state->outer_state) / sizeof(state->outer_state[0]); j++) {
-
+    for (size_t j = 0; j < sizeof(state->outer_state) / sizeof(state->outer_state[0]); j++)
         state->outer_state[j] ^= load_64(&block[j << 3]);
-    }
+
     /* Apply the Keccak-f permutation to the state */
     keccak_f(
         state->permutation_state_array,
@@ -90,8 +89,8 @@ static inline void absorb_block(shake256_state * state, const u8 * block, shake2
     );
 }
 
-static inline void keccak_f(u64 A[5][5], u64 B[5][5], u64 C[5], u64 D[5]) {
-
+static inline void keccak_f(u64 A[5][5], u64 B[5][5], u64 C[5], u64 D[5])
+{
     for (int i = 0; i < SHAKE256_ROUNDS_COUNT; i++) {
 
         /* Do the theta step */
@@ -132,8 +131,8 @@ static inline void keccak_f(u64 A[5][5], u64 B[5][5], u64 C[5], u64 D[5]) {
     }
 }
 
-static inline void keccak_theta(u64 A[5][5], u64 C[5], u64 D[5]) {
-
+static inline void keccak_theta(u64 A[5][5], u64 C[5], u64 D[5])
+{
     C[0] = A[0][0] ^ A[1][0] ^ A[2][0] ^ A[3][0] ^ A[4][0];
     C[1] = A[0][1] ^ A[1][1] ^ A[2][1] ^ A[3][1] ^ A[4][1];
     C[2] = A[0][2] ^ A[1][2] ^ A[2][2] ^ A[3][2] ^ A[4][2];
@@ -153,8 +152,8 @@ static inline void keccak_theta(u64 A[5][5], u64 C[5], u64 D[5]) {
     A[4][0] ^= D[0];   A[4][1] ^= D[1];   A[4][2] ^= D[2];   A[4][3] ^= D[3];   A[4][4] ^= D[4];
 }
 
-static inline void keccak_chi(u64 A[5][5], const u64 B[5][5]) {
-
+static inline void keccak_chi(u64 A[5][5], const u64 B[5][5])
+{
     A[0][0] = B[0][0] ^ (~B[0][1] & B[0][2]);
     A[1][0] = B[1][0] ^ (~B[1][1] & B[1][2]);
     A[2][0] = B[2][0] ^ (~B[2][1] & B[2][2]);
@@ -182,8 +181,8 @@ static inline void keccak_chi(u64 A[5][5], const u64 B[5][5]) {
     A[4][4] = B[4][4] ^ (~B[4][0] & B[4][1]);
 }
 
-static inline u64 load_64(const u8 src[8]) {
-
+static inline u64 load_64(const u8 src[8])
+{
     u64 dst;
 #if FE3C_LILENDIAN_TARGET
     /* Target already little endian - copy the bytes with no shifts */
@@ -202,8 +201,8 @@ static inline u64 load_64(const u8 src[8]) {
     return dst;
 }
 
-static inline void store_64(u8 * dst, const u64 * src, int bytecount) {
-
+static inline void store_64(u8 *dst, const u64 *src, int bytecount)
+{
     int wordcount = bytecount >> 3;
     int trailer = bytecount & 0x7;
 #if FE3C_LILENDIAN_TARGET
@@ -225,8 +224,6 @@ static inline void store_64(u8 * dst, const u64 * src, int bytecount) {
 #endif /* FE3C_LILENDIAN_TARGET */
     /* Set the trailer manually for either endianness to not risk reading
      * uninitialized stack later */
-    for (int j = 0; j < trailer; j++) {
-
-        dst[wordcount * 8 + j] = (u8) (src[wordcount] >> j * 8);
-    }
+    for (int j = 0; j < trailer; j++)
+        dst[wordcount *8 + j] = (u8) (src[wordcount] >> j * 8);
 }

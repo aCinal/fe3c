@@ -46,6 +46,11 @@ __LIB__libcementite_la_SOURCES += \
     points/comb/precomputation/precomputation_ed25519$(ed25519_small_precomp_tag)_$(archbits).c
 endif
 
+if FE3C_ED25519_LATTICE_BASIS_REDUCTION
+__LIB__libcementite_la_SOURCES += \
+    points/lattice_basis_reduction/lattices_ed25519.c
+endif
+
 endif
 # -------------------------------------------------------------------
 
@@ -62,6 +67,11 @@ if FE3C_COMB_METHOD
 __LIB__libcementite_la_SOURCES += \
     points/comb/comb_ed448$(ed448_small_precomp_tag).c \
     points/comb/precomputation/precomputation_ed448$(ed448_small_precomp_tag)_$(archbits).c
+endif
+
+if FE3C_ED448_LATTICE_BASIS_REDUCTION
+__LIB__libcementite_la_SOURCES += \
+    points/lattice_basis_reduction/lattices_ed448.c
 endif
 
 endif

@@ -2,13 +2,13 @@
 #include <fe3c/eddsa.h>
 
 #if FE3C_FUNCTIONAL_TESTS_HOST
-TEST_GROUP(EDDSA_FAIL_CASES_ED25519) {
-
+TEST_GROUP(EDDSA_FAIL_CASES_ED25519)
+{
 };
 #endif /* FE3C_FUNCTIONAL_TESTS_HOST */
 
-FE3C_TEST(EDDSA_FAIL_CASES_ED25519, Verify_GroupEquationNotSatisifed_ExpectVerificationFailure) {
-
+FE3C_TEST(EDDSA_FAIL_CASES_ED25519, Verify_GroupEquationNotSatisifed_ExpectVerificationFailure)
+{
     const u8 signature[] = \
         "\xe5\x56\x43\x00\xc3\x60\xac\x72" \
         "\x90\x86\xe2\xcc\x80\x6e\x82\x8a" \
@@ -36,8 +36,8 @@ FE3C_TEST(EDDSA_FAIL_CASES_ED25519, Verify_GroupEquationNotSatisifed_ExpectVerif
     FAIL_UNLESS_EQUAL(0, verified);
 }
 
-FE3C_TEST(EDDSA_FAIL_CASES_ED25519, Verify_PublicKeyDecodingFails_ExpectVerificationFailure) {
-
+FE3C_TEST(EDDSA_FAIL_CASES_ED25519, Verify_PublicKeyDecodingFails_ExpectVerificationFailure)
+{
     const u8 signature[] = \
         "\xe5\x56\x43\x00\xc3\x60\xac\x72" \
         "\x90\x86\xe2\xcc\x80\x6e\x82\x8a" \
@@ -66,8 +66,8 @@ FE3C_TEST(EDDSA_FAIL_CASES_ED25519, Verify_PublicKeyDecodingFails_ExpectVerifica
     FAIL_UNLESS_EQUAL(0, verified);
 }
 
-FE3C_TEST(EDDSA_FAIL_CASES_ED25519, Verify_CommitmentDecodingFails_ExpectVerificationFailure) {
-
+FE3C_TEST(EDDSA_FAIL_CASES_ED25519, Verify_CommitmentDecodingFails_ExpectVerificationFailure)
+{
     /* Let the y-coordinate of the commitment lead to (y^2 - 1)/(dy^2 + 1)
      * being a quadratic non-residue in the field */
     const u8 signature[] = \

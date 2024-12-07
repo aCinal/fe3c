@@ -41,30 +41,30 @@ typedef struct eddsa_sign_request {
      * @brief Output buffer for the signature
      * @see eddsa_get_signature_length
      */
-    u8 * signature;
+    u8 *signature;
 
     /**
      * @brief Message on which the signature has been produced
      */
-    const u8 * message;
+    const u8 *message;
 
     /**
      * @brief Private key
      * @see eddsa_get_secret_key_length
      */
-    const u8 * secret_key;
+    const u8 *secret_key;
 
     /**
      * @brief Public key encoded according to RFC 8032 cached by the application to speed up the signing procedure
      * @see eddsa_derive_public_key
      * @warning When not NULL, the application is responsible for consistency between the secret and public keys
      */
-    const u8 * public_key;
+    const u8 *public_key;
 
     /**
      * @brief Pointer to the context, can be NULL if context_length=0
      */
-    const u8 * context;
+    const u8 *context;
 
     /**
      * @brief Length of the message
@@ -99,23 +99,23 @@ typedef struct eddsa_verify_request {
     /**
      * @brief EdDSA signature of the format (R, S) where R is an Edwards curve point (commitment) and S is a scalar (response)
      */
-    const u8 * signature;
+    const u8 *signature;
 
     /**
      * @brief Message on which the signature has been produced
      */
-    const u8 * message;
+    const u8 *message;
 
     /**
      * @brief Public key encoded according to RFC 8032
      * @see eddsa_get_public_key_length
      */
-    const u8 * public_key;
+    const u8 *public_key;
 
     /**
      * @brief Pointer to the context, can be NULL if context_length=0
      */
-    const u8 * context;
+    const u8 *context;
 
     /**
      * @brief Length of the message
@@ -146,7 +146,7 @@ typedef struct eddsa_verify_request {
  * @param req A signature request structure
  * @see eddsa_sign_request
  */
-void eddsa_sign(const eddsa_sign_request * req);
+void eddsa_sign(const eddsa_sign_request *req);
 
 /**
  * @brief Verify an EdDSA signature on a given message
@@ -154,7 +154,7 @@ void eddsa_sign(const eddsa_sign_request * req);
  * @return Non-zero value on verification success or zero on verification failure
  * @see eddsa_verify_request
  */
-int eddsa_verify(const eddsa_verify_request * req);
+int eddsa_verify(const eddsa_verify_request *req);
 
 /**
  * @brief Derive the public key from the secret key
@@ -164,7 +164,7 @@ int eddsa_verify(const eddsa_verify_request * req);
  * @note The buffers for both keys must be of adequate length
  * @see eddsa_curve, eddsa_get_public_key_length, eddsa_get_secret_key_length
  */
-void eddsa_derive_public_key(u8 * public_key, const u8 * secret_key, eddsa_curve curve_id);
+void eddsa_derive_public_key(u8 *public_key, const u8 *secret_key, eddsa_curve curve_id);
 
 /**
  * @brief Return the signature length for a given Edwards curve
@@ -198,7 +198,7 @@ int eddsa_get_secret_key_length(eddsa_curve curve_id);
  * @param[in] curve_id Identifier of the curve
  * @see eddsa_curve
  */
-void eddsa_prehash(u8 * output, const u8 * input, size_t length, eddsa_curve curve_id);
+void eddsa_prehash(u8 *output, const u8 *input, size_t length, eddsa_curve curve_id);
 
 /**
  * @brief Return the prehash length for a given Edwards curve

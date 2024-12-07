@@ -3,8 +3,8 @@
 #include <assert.h>
 #include <limits.h>
 
-void run_benchmark(const bench_params * params) {
-
+void run_benchmark(const bench_params *params)
+{
     int iterations;
     double elapsed;
     long stopwatch_start;

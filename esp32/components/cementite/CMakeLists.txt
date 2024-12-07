@@ -69,6 +69,11 @@ if (CONFIG_FE3C_SUPPORT_CURVE_ED25519)
         list(APPEND FE3C_DEFINES "FE3C_USE_SHA512_HARDWARE")
     endif()
 
+    if (CONFIG_FE3C_ED25519_LATTICE_BASIS_REDUCTION)
+        list(APPEND FE3C_SOURCES "${FE3C_SRC_DIR}/points/lattice_basis_reduction/lattices_ed25519.c")
+        list(APPEND FE3C_DEFINES "FE3C_ED25519_LATTICE_BASIS_REDUCTION")
+    endif()
+
     list(APPEND FE3C_DEFINES "FE3C_SUPPORT_CURVE_ED25519")
 endif()
 
@@ -89,6 +94,11 @@ if (CONFIG_FE3C_SUPPORT_CURVE_ED448)
     else()
         # No parallelism - use common group arithmetic
         list(APPEND FE3C_SOURCES "${FE3C_SRC_DIR}/points/points_ed448.c")
+    endif()
+
+    if (CONFIG_FE3C_ED448_LATTICE_BASIS_REDUCTION)
+        list(APPEND FE3C_SOURCES "${FE3C_SRC_DIR}/points/lattice_basis_reduction/lattices_ed448.c")
+        list(APPEND FE3C_DEFINES "FE3C_ED448_LATTICE_BASIS_REDUCTION")
     endif()
 
     list(APPEND FE3C_DEFINES "FE3C_SUPPORT_CURVE_ED448")

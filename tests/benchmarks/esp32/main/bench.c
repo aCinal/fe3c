@@ -9,12 +9,12 @@
 #define BENCHMARK_TASK_STACK_DEPTH  (8 * 1024)
 #define BENCHMARK_TASK_PRIORITY     (configMAX_PRIORITIES - 4)
 
-static void benchmark_task(void * arg);
-static void bench_esp32_get_random(u8 * buf, size_t sz);
+static void benchmark_task(void *arg);
+static void bench_esp32_get_random(u8 *buf, size_t sz);
 static long bench_esp32_start_stopwatch(unsigned int expiry_time);
 static double bench_esp32_stop_stopwatch(long start);
 static void bench_esp32_handle_result(eddsa_curve curve_id, size_t message_length, int verify, int iterations, double elapsed);
-static void timer_callback(void * arg);
+static void timer_callback(void *arg);
 
 static volatile int s_stop_test;
 
@@ -23,8 +23,8 @@ typedef struct esp32_bench_stopwatch {
     esp_timer_handle_t timer_handle;
 } esp32_bench_stopwatch;
 
-void app_main(void) {
-
+void app_main(void)
+{
     /* Spawn a new task to have strict control over the stack size */
     BaseType_t ret = xTaskCreate(
         benchmark_task,
@@ -37,8 +37,8 @@ void app_main(void) {
     assert(pdPASS == ret);
 }
 
-static void benchmark_task(void * arg) {
-
+static void benchmark_task(void *arg)
+{
     (void) arg;
 
     /* Measure stack usage */
@@ -105,13 +105,13 @@ static void benchmark_task(void * arg) {
     vTaskDelete(NULL);
 }
 
-static void bench_esp32_get_random(u8 * buf, size_t sz) {
-
+static void bench_esp32_get_random(u8 *buf, size_t sz)
+{
     esp_fill_random(buf, sz);
 }
 
-static long bench_esp32_start_stopwatch(unsigned int expiry_time) {
-
+static long bench_esp32_start_stopwatch(unsigned int expiry_time)
+{
     static esp32_bench_stopwatch stopwatch;
 
     /* Create a timer */
@@ -134,10 +134,10 @@ static long bench_esp32_start_stopwatch(unsigned int expiry_time) {
     return (long) &stopwatch;
 }
 
-static double bench_esp32_stop_stopwatch(long start) {
-
+static double bench_esp32_stop_stopwatch(long start)
+{
     uint64_t end_tick = (uint64_t) esp_timer_get_time();
-    esp32_bench_stopwatch * stopwatch = (esp32_bench_stopwatch *) start;
+    esp32_bench_stopwatch *stopwatch = (esp32_bench_stopwatch *) start;
     uint64_t start_tick = stopwatch->start_tick;
 
     /* Disarm any active timers */
@@ -149,8 +149,8 @@ static double bench_esp32_stop_stopwatch(long start) {
     return ((double) end_tick - start_tick) * 1e-6;
 }
 
-static void bench_esp32_handle_result(eddsa_curve curve_id, size_t message_length, int verify, int iterations, double elapsed) {
-
+static void bench_esp32_handle_result(eddsa_curve curve_id, size_t message_length, int verify, int iterations, double elapsed)
+{
     double secs_per_sig = elapsed / iterations;
     double sigs_per_sec = iterations / elapsed;
 
@@ -174,8 +174,8 @@ static void bench_esp32_handle_result(eddsa_curve curve_id, size_t message_lengt
     );
 }
 
-static void timer_callback(void * arg) {
-
+static void timer_callback(void *arg)
+{
     (void) arg;
     /* Break out of the benchmark loop */
     s_stop_test = 1;
