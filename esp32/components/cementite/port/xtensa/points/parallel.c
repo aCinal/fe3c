@@ -9,7 +9,7 @@
 
 static StaticSemaphore_t worker_mutex_buffer;
 static StaticQueue_t work_queue_buffer;
-static parallel_work *work_queue_storage[1];
+static struct parallel_work *work_queue_storage[1];
 static StaticSemaphore_t completion_semaphore_buffer;
 static StackType_t worker_stack[WORKER_STACK_SIZE];
 static StaticTask_t worker_tcb;
@@ -32,7 +32,7 @@ static void worker_body(void *arg)
     FE3C_SANITY_CHECK(work_queue, NULL);
     FE3C_SANITY_CHECK(completion_semaphore, NULL);
 
-    parallel_work *work;
+    struct parallel_work *work;
     for (;;) {
 
         /* Block indefinitely waiting for work to do */
@@ -53,7 +53,7 @@ static void worker_lazy_init(void)
         /* Create a mutex for serializing access to the worker thread */
         worker_mutex = xSemaphoreCreateMutexStatic(&worker_mutex_buffer);
         /* Create a work queue for the thread */
-        work_queue = xQueueCreateStatic(1, sizeof(parallel_work *), (uint8_t *) work_queue_storage, &work_queue_buffer);
+        work_queue = xQueueCreateStatic(1, sizeof(struct parallel_work *), (uint8_t *) work_queue_storage, &work_queue_buffer);
         /* Create the semaphore for signalling end of work */
         completion_semaphore = xSemaphoreCreateBinaryStatic(&completion_semaphore_buffer);
         /* Spawn the worker thread */
@@ -72,7 +72,7 @@ static void worker_lazy_init(void)
     portEXIT_CRITICAL(&init_spinlock);
 }
 
-int schedule_parallel_work(parallel_work *work)
+int schedule_parallel_work(struct parallel_work *work)
 {
     if (unlikely(0 == initialized))
         worker_lazy_init();

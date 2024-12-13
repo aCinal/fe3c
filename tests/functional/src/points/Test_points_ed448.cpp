@@ -108,15 +108,6 @@ FE3C_TEST(POINTS_ED448, Decode_X2IsANonResidue_FailDecoding)
     FAIL_UNLESS_EQUAL(0, success);
 }
 
-#include <stdio.h>
-static inline void hexdump(const u8 *hex, size_t size)
-{
-    printf("0x");
-    /* Everything is little endian, print in reverse */
-    for (size_t i = 0; i < size; i++)
-        printf("%02x", hex[size - 1 - i]);
-}
-
 FE3C_TEST(POINTS_ED448, MultiplyBasepoint_MultiplyByOrder_ResultInIdentity)
 {
     const u8 group_order[] = {
@@ -143,9 +134,6 @@ FE3C_TEST(POINTS_ED448, MultiplyBasepoint_MultiplyByOrder_ResultInIdentity)
     };
     ed448_group_ops.multiply_basepoint(&output, group_order);
     ed448_group_ops.encode(encoded_output, &output);
-    printf("Result: ");
-    hexdump(encoded_output, sizeof(encoded_output));
-    printf("\nSize: %d\n", sizeof(encoded_output));
     FAIL_IF_MEMCMP(expected_output, encoded_output, sizeof(encoded_output));
 }
 

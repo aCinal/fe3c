@@ -29,12 +29,17 @@ struct ed25519_comb_work {
 #else
 struct ed25519_ladder_work {
     point_ed25519 *thread_result;
-    const point_ed25519 *basepoint;
     const u8 *scalar;
-    int start_bit;
-    int stop_bit;
 };
 #endif /* FE3C_ED25519_COMB_METHOD */
+
+#if FE3C_ED25519_LATTICE_BASIS_REDUCTION
+struct ed25519_lattices_work {
+    point_ed25519 *thread_result;
+    const u8 * delta_response;
+    const point_ed25519 **lookup;
+};
+#endif /* FE3C_ED25519_LATTICE_BASIS_REDUCTION */
 
 static const point_ed25519 ed25519_basepoint = {
     .X = ED25519_BASEPOINT_X,
@@ -417,7 +422,8 @@ static void ed25519_scalar_multiply_partial(point_ed25519 *r, const point_ed2551
 static void ed25519_ladder_parallel_callback(void *arg)
 {
     struct ed25519_ladder_work *work = arg;
-    ed25519_scalar_multiply_partial(work->thread_result, work->basepoint, work->scalar, work->start_bit, work->stop_bit);
+    /* Handle the upper half of the scalar */
+    ed25519_scalar_multiply_partial(work->thread_result, &ed25519_basepoint_times_2_128, work->scalar, 254, 128);
 }
 
 static inline void ed25519_multiply_basepoint_ladder(point_ed25519 *r, const u8 *s)
@@ -425,10 +431,7 @@ static inline void ed25519_multiply_basepoint_ladder(point_ed25519 *r, const u8 
     point_ed25519 upper_half;
     struct ed25519_ladder_work ladder_work = {
         .thread_result = &upper_half,
-        .basepoint = &ed25519_basepoint_times_2_128,
-        .scalar = s,
-        .start_bit = 254,
-        .stop_bit = 128
+        .scalar = s
     };
     struct parallel_work work = {
         .func = ed25519_ladder_parallel_callback,
@@ -524,7 +527,6 @@ static inline void ed25519_multiply_basepoint_comb(point_ed25519 *r, const u8 *s
 static void ed25519_multiply_basepoint(point *rgen, const u8 *s)
 {
     point_ed25519 *r = (point_ed25519 *) rgen;
-
 #if !FE3C_ED25519_COMB_METHOD
     ed25519_multiply_basepoint_ladder(r, s);
 #else
@@ -554,6 +556,20 @@ static inline void ed25519_double_scalar_multiply_vartime(point_ed25519 *r, cons
         int index = (array_bit(h, i) << 1) | array_bit(s, i);
         if (index)
             ed25519_points_add(r, r, lookup[index - 1]);
+    }
+}
+#else
+static void ed25519_lattices_parallel_callback(void *arg)
+{
+    struct ed25519_lattices_work *work = arg;
+    /* Handle the left-hand side of the Schnorr equation */
+    ed25519_identity(work->thread_result);
+    for (int i = 127; i >= 0; i--) {
+
+        ed25519_point_double(work->thread_result, work->thread_result, 1);
+        int lookup_index = (array_bit(work->delta_response, 128 + i) << 1) | array_bit(work->delta_response, i);
+        if (lookup_index)
+            ed25519_points_add(work->thread_result, work->thread_result, work->lookup[lookup_index - 1]);
     }
 }
 #endif /* !FE3C_ED25519_LATTICE_BASIS_REDUCTION */
@@ -615,8 +631,12 @@ static int ed25519_check_group_equation(point *pubkey_gen, point *commit_gen, co
 
     /* Use two small lookup tables instead of one large one. It is possible to precompute more combinations of the points
      * here and use a 15-entry lookup table saving a point addition in each loop iteration. */
-    const point_ed25519 *right_lookup[3];
     const point_ed25519 *left_lookup[3];
+    const point_ed25519 *right_lookup[3];
+
+    left_lookup[0] = &ed25519_basepoint;
+    left_lookup[1] = &ed25519_basepoint_times_2_128;
+    left_lookup[2] = &ed25519_basepoint_times_2_128_plus_1;
 
     point_ed25519 sum;
     ed25519_points_add(&sum, commitment, public_key);
@@ -624,11 +644,18 @@ static int ed25519_check_group_equation(point *pubkey_gen, point *commit_gen, co
     right_lookup[1] = public_key;
     right_lookup[2] = &sum;
 
-    left_lookup[0] = &ed25519_basepoint;
-    left_lookup[1] = &ed25519_basepoint_times_2_128;
-    left_lookup[2] = &ed25519_basepoint_times_2_128_plus_1;
-
     point_ed25519 accumulator;
+    point_ed25519 thread_accumulator;
+    struct ed25519_lattices_work lattices_work = {
+        .thread_result = &thread_accumulator,
+        .delta_response = delta_response,
+        .lookup = left_lookup
+    };
+    struct parallel_work work = {
+        .func = ed25519_lattices_parallel_callback,
+        .arg = &lattices_work
+    };
+    int parallel = schedule_parallel_work(&work);
     ed25519_identity(&accumulator);
     for (int i = 127; i >= 0; i--) {
 
@@ -636,9 +663,17 @@ static int ed25519_check_group_equation(point *pubkey_gen, point *commit_gen, co
         int right_lookup_index = (array_bit(delta_challenge, i) << 1) | array_bit(delta, i);
         if (right_lookup_index)
             ed25519_points_add(&accumulator, &accumulator, right_lookup[right_lookup_index - 1]);
-        int left_lookup_index = (array_bit(delta_response, 128 + i) << 1) | array_bit(delta_response, i);
-        if (left_lookup_index)
-            ed25519_points_add(&accumulator, &accumulator, left_lookup[left_lookup_index - 1]);
+        /* Only handle the left-hand side of the Schnorr equation if it is not being handled in parallel */
+        if (!parallel) {
+            int left_lookup_index = (array_bit(delta_response, 128 + i) << 1) | array_bit(delta_response, i);
+            if (left_lookup_index)
+                ed25519_points_add(&accumulator, &accumulator, left_lookup[left_lookup_index - 1]);
+        }
+    }
+
+    if (parallel) {
+        wait_for_parallel_work();
+        ed25519_points_add(&accumulator, &accumulator, &thread_accumulator);
     }
 
     point_ed25519 identity;
