@@ -225,5 +225,5 @@ static inline void store_64(u8 *dst, const u64 *src, int bytecount)
     /* Set the trailer manually for either endianness to not risk reading
      * uninitialized stack later */
     for (int j = 0; j < trailer; j++)
-        dst[wordcount *8 + j] = (u8) (src[wordcount] >> j * 8);
+        dst[wordcount * 8 + j] = (u8) (src[wordcount] >> j * 8);
 }

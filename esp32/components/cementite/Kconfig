@@ -79,6 +79,14 @@ menu "cementite (fe3c)"
             When possible, use parallel implementations of the group arithmetic which yield
             great performance benefits in systems with small CPU load.
 
+    config FE3C_FAST_SQUARING
+        bool "Use optimized squaring"
+        depends on IDF_TARGET_ARCH_RISCV
+        default n
+        help
+            Use an optimized routine for squaring in the field which should increase performance
+            at the cost of larger code footprint.
+
     config FE3C_SKIP_ZEROIZATION
         bool "Skip secret zeroization"
         depends on FE3C_SUPPORT_CURVE_ED25519 || FE3C_SUPPORT_CURVE_ED448

@@ -23,7 +23,7 @@ const fe25519 fe25519_i = {
     0x20ea0b0, 0x186c9d2, 0x8f189d, 0x35697f, 0xbd0c60, 0x1fbd7a7, 0x2804c9e, 0x1e16569, 0x4fc1d, 0xae0c92
 };
 
-static inline u32 _load_32(const u8 src[4])
+static inline u32 load_32(const u8 src[4])
 {
     /* Integer encoding is always little endian according to RFC 8032 */
     u32 dst;
@@ -727,21 +727,21 @@ void fe25519_encode(u8 *buffer, fe25519 a)
 __attribute__((warn_unused_result))
 int fe25519_decode(fe25519 r, const u8 *buffer)
 {
-    r[0] = ( _load_32(&buffer[ 0]) >> 0 ) & LOW_26_BITS_MASK;
+    r[0] = ( load_32(&buffer[ 0]) >> 0 ) & LOW_26_BITS_MASK;
     /* Do not offset by 8 now (another 32 bits) since we have dropped 6 bits from buffer[3]. Offset
      * by 26 bits, i.e. 3 bytes of offset + 2 bits of shift*/
-    r[1] = ( _load_32(&buffer[ 3]) >> 2 ) & LOW_25_BITS_MASK;
+    r[1] = ( load_32(&buffer[ 3]) >> 2 ) & LOW_25_BITS_MASK;
     /* Offset by 25 bits this time (the odd-numbered limbs are 25-bits wide) */
-    r[2] = ( _load_32(&buffer[ 6]) >> 3 ) & LOW_26_BITS_MASK;
-    r[3] = ( _load_32(&buffer[ 9]) >> 5 ) & LOW_25_BITS_MASK;
-    r[4] = ( _load_32(&buffer[12]) >> 6 ) & LOW_26_BITS_MASK;
+    r[2] = ( load_32(&buffer[ 6]) >> 3 ) & LOW_26_BITS_MASK;
+    r[3] = ( load_32(&buffer[ 9]) >> 5 ) & LOW_25_BITS_MASK;
+    r[4] = ( load_32(&buffer[12]) >> 6 ) & LOW_26_BITS_MASK;
     /* At this point the shift bits have added up to a full byte */
-    r[5] = ( _load_32(&buffer[16]) >> 0 ) & LOW_25_BITS_MASK;
-    r[6] = ( _load_32(&buffer[19]) >> 1 ) & LOW_26_BITS_MASK;
-    r[7] = ( _load_32(&buffer[22]) >> 3 ) & LOW_25_BITS_MASK;
-    r[8] = ( _load_32(&buffer[25]) >> 4 ) & LOW_26_BITS_MASK;
+    r[5] = ( load_32(&buffer[16]) >> 0 ) & LOW_25_BITS_MASK;
+    r[6] = ( load_32(&buffer[19]) >> 1 ) & LOW_26_BITS_MASK;
+    r[7] = ( load_32(&buffer[22]) >> 3 ) & LOW_25_BITS_MASK;
+    r[8] = ( load_32(&buffer[25]) >> 4 ) & LOW_26_BITS_MASK;
     /* Note that the last bit gets naturally ignored as required by RFC 8032 */
-    r[9] = ( _load_32(&buffer[28]) >> 6 ) & LOW_25_BITS_MASK;
+    r[9] = ( load_32(&buffer[28]) >> 6 ) & LOW_25_BITS_MASK;
 
     return fe25519_is_canonical(r);
 }

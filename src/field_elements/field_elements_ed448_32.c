@@ -26,7 +26,7 @@ const fe448 fe448_zero = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 /* Multiplicative identity in the field */
 const fe448 fe448_one = { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 
-static inline u32 _load_32(const u8 src[4])
+static inline u32 load_32(const u8 src[4])
 {
     /* Integer encoding is always little endian according to RFC 8032 */
     u32 dst;
@@ -658,7 +658,7 @@ void fe448_mul(fe448 r, const fe448 a, const fe448 b)
     u64 r15 =      m0*k7 + m1*k6 + m2*k5 + m3*k4 + m4*k3 + m5*k2 + m6*k1 + m7*k0;
 
     /* Do a schoolbook multiplication for x*u and z*v as well. Here, however, we do not risk
-     * exceeding 2^448 since all inputs are bound by 2^224. */
+     * exceeding 2^448 since all inputs are bounded by 2^224. */
     u64 xu0  = a0*b0;
     u64 xu1  = a0*b1 + a1*b0;
     u64 xu2  = a0*b2 + a1*b1 + a2*b0;
@@ -856,7 +856,7 @@ void fe448_square(fe448 r, const fe448 a)
     u64 r15 =      m0*m7 + m1*m6 + m2*m5 + m3*m4 + m4*m3 + m5*m2 + m6*m1 + m7*m0;
 
     /* Use schoolbook multiplication to square x and z as well, this time without risk of
-     * exceeding 2^448 since all inputs are bound by 2^224. */
+     * exceeding 2^448 since all inputs are bounded by 2^224. */
     u64 xx0  = a0*a0;
     u64 xx1  = a0*a1 + a1*a0;
     u64 xx2  = a0*a2 + a1*a1 + a2*a0;
@@ -1050,26 +1050,26 @@ void fe448_encode(u8 *buffer, fe448 a)
 __attribute__((warn_unused_result))
 int fe448_decode(fe448 r, const u8 *buffer)
 {
-    r[ 0] = ( _load_32(&buffer[ 0]) >>  0 ) & LOW_28_BITS_MASK;
+    r[ 0] = ( load_32(&buffer[ 0]) >>  0 ) & LOW_28_BITS_MASK;
     /* Offset by 28 bits, i.e. three full bytes and a shift of four bits */
-    r[ 1] = ( _load_32(&buffer[ 3]) >>  4 ) & LOW_28_BITS_MASK;
+    r[ 1] = ( load_32(&buffer[ 3]) >>  4 ) & LOW_28_BITS_MASK;
     /* Note that at this point the two shifts by four have added up to a
      * full byte which we incorporate into the offset (array index) */
-    r[ 2] = ( _load_32(&buffer[ 7]) >>  0 ) & LOW_28_BITS_MASK;
+    r[ 2] = ( load_32(&buffer[ 7]) >>  0 ) & LOW_28_BITS_MASK;
     /* Rinse and repeat */
-    r[ 3] = ( _load_32(&buffer[10]) >>  4 ) & LOW_28_BITS_MASK;
-    r[ 4] = ( _load_32(&buffer[14]) >>  0 ) & LOW_28_BITS_MASK;
-    r[ 5] = ( _load_32(&buffer[17]) >>  4 ) & LOW_28_BITS_MASK;
-    r[ 6] = ( _load_32(&buffer[21]) >>  0 ) & LOW_28_BITS_MASK;
-    r[ 7] = ( _load_32(&buffer[24]) >>  4 ) & LOW_28_BITS_MASK;
-    r[ 8] = ( _load_32(&buffer[28]) >>  0 ) & LOW_28_BITS_MASK;
-    r[ 9] = ( _load_32(&buffer[31]) >>  4 ) & LOW_28_BITS_MASK;
-    r[10] = ( _load_32(&buffer[35]) >>  0 ) & LOW_28_BITS_MASK;
-    r[11] = ( _load_32(&buffer[38]) >>  4 ) & LOW_28_BITS_MASK;
-    r[12] = ( _load_32(&buffer[42]) >>  0 ) & LOW_28_BITS_MASK;
-    r[13] = ( _load_32(&buffer[45]) >>  4 ) & LOW_28_BITS_MASK;
-    r[14] = ( _load_32(&buffer[49]) >>  0 ) & LOW_28_BITS_MASK;
-    r[15] = ( _load_32(&buffer[52]) >>  4 ) & LOW_28_BITS_MASK;
+    r[ 3] = ( load_32(&buffer[10]) >>  4 ) & LOW_28_BITS_MASK;
+    r[ 4] = ( load_32(&buffer[14]) >>  0 ) & LOW_28_BITS_MASK;
+    r[ 5] = ( load_32(&buffer[17]) >>  4 ) & LOW_28_BITS_MASK;
+    r[ 6] = ( load_32(&buffer[21]) >>  0 ) & LOW_28_BITS_MASK;
+    r[ 7] = ( load_32(&buffer[24]) >>  4 ) & LOW_28_BITS_MASK;
+    r[ 8] = ( load_32(&buffer[28]) >>  0 ) & LOW_28_BITS_MASK;
+    r[ 9] = ( load_32(&buffer[31]) >>  4 ) & LOW_28_BITS_MASK;
+    r[10] = ( load_32(&buffer[35]) >>  0 ) & LOW_28_BITS_MASK;
+    r[11] = ( load_32(&buffer[38]) >>  4 ) & LOW_28_BITS_MASK;
+    r[12] = ( load_32(&buffer[42]) >>  0 ) & LOW_28_BITS_MASK;
+    r[13] = ( load_32(&buffer[45]) >>  4 ) & LOW_28_BITS_MASK;
+    r[14] = ( load_32(&buffer[49]) >>  0 ) & LOW_28_BITS_MASK;
+    r[15] = ( load_32(&buffer[52]) >>  4 ) & LOW_28_BITS_MASK;
 
     /* Check that the last byte is cleared (except for possibly the highest bit)
      * and that the rest of the bytes (which we have just parsed into limbs)

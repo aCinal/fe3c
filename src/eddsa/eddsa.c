@@ -150,7 +150,7 @@ int eddsa_verify(const eddsa_verify_request *req)
     const scalar_ops *sops = curve->sops;
     const group_ops *gops = curve->gops;
 
-    /* Note that point decoding may fail - we will still however continue with the verification to the end */
+    /* Decode the points */
     point public_key;
     if (!gops->decode(&public_key, req->public_key))
         return 0;

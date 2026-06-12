@@ -16,7 +16,7 @@ const fe25519 fe25519_one = { 1, 0, 0, 0, 0 };
 /* "Positive" (even) square root of -1 in the field */
 const fe25519 fe25519_i = { 0x61b274a0ea0b0, 0xd5a5fc8f189d, 0x7ef5e9cbd0c60, 0x78595a6804c9e, 0x2b8324804fc1d };
 
-static inline u64 _load_64(const u8 src[8])
+static inline u64 load_64(const u8 src[8])
 {
     /* Integer encoding is always little endian according to RFC 8032 */
     u64 dst;
@@ -500,19 +500,19 @@ void fe25519_encode(u8 *buffer, fe25519 a)
 __attribute__((warn_unused_result))
 int fe25519_decode(fe25519 r, const u8 *buffer)
 {
-    r[0] = ( _load_64(&buffer[ 0]) >> 0 ) & LOW_51_BITS_MASK;
+    r[0] = ( load_64(&buffer[ 0]) >> 0 ) & LOW_51_BITS_MASK;
     /* Do not offset by 8 now since we have dropped the top byte
      * and a few more bits from the first word by masking. Offset
      * by 51 bits (6 bytes + 3 bits of shift): */
-    r[1] = ( _load_64(&buffer[ 6]) >> 3 ) & LOW_51_BITS_MASK;
+    r[1] = ( load_64(&buffer[ 6]) >> 3 ) & LOW_51_BITS_MASK;
     /* Same spiel - offset by another 51 bits */
-    r[2] = ( _load_64(&buffer[12]) >> 6 ) & LOW_51_BITS_MASK;
+    r[2] = ( load_64(&buffer[12]) >> 6 ) & LOW_51_BITS_MASK;
     /* Now the "shift" bits have added up to over a byte, and so
      * we offset by 3*6+1 bytes and the leftover bit */
-    r[3] = ( _load_64(&buffer[19]) >> 1 ) & LOW_51_BITS_MASK;
+    r[3] = ( load_64(&buffer[19]) >> 1 ) & LOW_51_BITS_MASK;
     /* Load the last limb (note that the last bit gets naturally ignored
      * as required by RFC 8032) */
-    r[4] = ( _load_64(&buffer[25]) >> 4 ) & LOW_51_BITS_MASK;
+    r[4] = ( load_64(&buffer[25]) >> 4 ) & LOW_51_BITS_MASK;
 
     return fe25519_is_canonical(r);
 }

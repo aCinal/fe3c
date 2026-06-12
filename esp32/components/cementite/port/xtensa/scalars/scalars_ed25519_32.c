@@ -169,11 +169,8 @@ static void ed25519_scalars_muladd(u8 *r, const u8 *a, const u8 *b, const u8 *c)
 
         carry += c[k];
         /* Convolve a and b */
-        for (int i = 0; i <= k; i++) {
-
-            int j = k - i;
-            carry += a[i] * b[j];
-        }
+        for (int i = 0; i <= k; i++)
+            carry += a[i] * b[k - i];
         t[k] = (u8) carry;
         carry >>= 8;
     }
@@ -181,11 +178,8 @@ static void ed25519_scalars_muladd(u8 *r, const u8 *a, const u8 *b, const u8 *c)
     for (int k = 32; k < 64; k++) {
 
         /* Convolve a and b */
-        for (int i = k + 1 - 32; i < 32; i++) {
-
-            int j = k - i;
-            carry += a[i] * b[j];
-        }
+        for (int i = k + 1 - 32; i < 32; i++)
+            carry += a[i] * b[k - i];
         t[k] = (u8) carry;
         carry >>= 8;
     }

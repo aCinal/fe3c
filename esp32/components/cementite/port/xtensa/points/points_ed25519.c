@@ -36,7 +36,7 @@ struct ed25519_ladder_work {
 #if FE3C_ED25519_LATTICE_BASIS_REDUCTION
 struct ed25519_lattices_work {
     point_ed25519 *thread_result;
-    const u8 * delta_response;
+    const u8 *delta_response;
     const point_ed25519 **lookup;
 };
 #endif /* FE3C_ED25519_LATTICE_BASIS_REDUCTION */

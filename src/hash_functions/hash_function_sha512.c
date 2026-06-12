@@ -211,7 +211,7 @@ static inline void store_64(u8 *dst, const u64 *src, size_t wordcount)
 static inline void load_64(u64 *dst, const u8 *src, size_t wordcount)
 {
 #if FE3C_BIGENDIAN_TARGET
-    (void) memcpy(dst, src, wordcount *8);
+    (void) memcpy(dst, src, wordcount * 8);
 #else
     /* Little-endian target or endianness unknown (take the safe route) - load the bytes
      * into words manually */

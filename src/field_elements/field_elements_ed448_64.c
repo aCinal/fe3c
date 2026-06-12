@@ -476,7 +476,7 @@ void fe448_mul(fe448 r, const fe448 a, const fe448 b)
     u128 r7 =      m0*k3 + m1*k2 + m2*k1 + m3*k0;
 
     /* Do a schoolbook multiplication for x*u and z*v as well. Here, however, we do not risk
-     * exceeding 2^448 since all inputs are bound by 2^224. */
+     * exceeding 2^448 since all inputs are bounded by 2^224. */
     u128 xu0 = a0*b0;
     u128 xu1 = a0*b1 + a1*b0;
     u128 xu2 = a0*b2 + a1*b1 + a2*b0;
@@ -598,7 +598,7 @@ void fe448_square(fe448 r, const fe448 a)
     u128 r7 =      m0*m3 + m1*m2 + m2*m1 + m3*m0;
 
     /* Use schoolbook multiplication to square x and z as well, this time without risk of
-     * exceeding 2^448 since all inputs are bound by 2^224. */
+     * exceeding 2^448 since all inputs are bounded by 2^224. */
     u128 xx0 = a0*a0;
     u128 xx1 = a0*a1 + a1*a0;
     u128 xx2 = a0*a2 + a1*a1 + a2*a0;

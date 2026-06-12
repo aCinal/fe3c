@@ -37,7 +37,7 @@ struct ed448_ladder_work {
 #if FE3C_ED448_LATTICE_BASIS_REDUCTION
 struct ed448_lattices_work {
     point_ed448 *thread_result;
-    const u8 * delta_response;
+    const u8 *delta_response;
     const point_ed448 **lookup;
 };
 #endif /* FE3C_ED448_LATTICE_BASIS_REDUCTION */
